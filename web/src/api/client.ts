@@ -13,6 +13,11 @@ class ApiClient {
     });
   }
 
+  async checkConnection(): Promise<string | null> {
+    const response = await this.client.get<ApiResponse<string>>('/connection');
+    return response.data.data || null;
+  }
+
   // Tasks
   async getTasks(): Promise<Task[]> {
     const response = await this.client.get<ApiResponse<Task[]>>('/tasks');
