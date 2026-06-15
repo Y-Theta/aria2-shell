@@ -43,7 +43,9 @@
 
         <button class="floating-settings-button" type="button" :aria-label="t('settings.title') || '设置'"
             @click="showSettings = true">
-            <i class="fas fa-gear floating-settings-icon" aria-hidden="true"></i>
+            <span class="floating-settings-icon-wrap">
+                <i class="fas fa-gear floating-settings-icon" aria-hidden="true"></i>
+            </span>
         </button>
 
         <!-- 设置面板 -->
@@ -394,17 +396,25 @@ const handleDelete = async (id: string) => {
     background: linear-gradient(135deg, #337ecc, #409eff);
 }
 
-.floating-settings-button:hover .floating-settings-icon {
-  transform: rotate(45deg);
+.floating-settings-icon-wrap {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  transition: transform 0.25s ease;
+  will-change: transform;
 }
 
 .floating-settings-icon {
   font-size: 24px;
   line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.25s ease;
+  display: block;
+}
+
+.floating-settings-button:hover .floating-settings-icon-wrap {
+  transform: rotate(45deg);
 }
 
 /* 移动端保持现状：隐藏桌面悬浮设置按钮 */

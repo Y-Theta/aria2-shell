@@ -19,6 +19,106 @@ export default {
         paused: 'Paused',
         settings: 'Settings',
     },
+    settings: {
+        title: '设置',
+        subtitle: '管理应用、下载、连接和界面偏好',
+        actions: {
+            select: '选择',
+            save: '保存设置',
+            resetDefault: '恢复默认',
+        },
+        tabs: {
+            general: '常规',
+            download: '下载',
+            connection: '连接',
+            appearance: '外观',
+            about: '关于',
+        },
+        sections: {
+            general: '常规设置',
+            download: '下载设置',
+            connection: '连接设置',
+            appearance: '外观设置',
+        },
+        general: {
+            autoStart: {
+                label: '开机自动启动',
+                desc: '系统启动后自动打开下载管理器',
+            },
+            minimizeToTray: {
+                label: '关闭窗口时最小化到托盘',
+                desc: '点击关闭按钮后程序继续在后台运行',
+            },
+            downloadPath: {
+                label: '默认保存路径',
+                desc: '新建下载任务时默认保存的位置',
+                placeholder: '请选择下载路径',
+            },
+        },
+        download: {
+            maxActiveDownloads: {
+                label: '最大同时下载任务数',
+                desc: '限制同时处于下载状态的任务数量',
+            },
+            downloadLimit: {
+                label: '下载速度限制',
+                desc: '设置为 0 表示不限速，单位 KB/s',
+            },
+            uploadLimit: {
+                label: '上传速度限制',
+                desc: '设置为 0 表示不限速，单位 KB/s',
+            },
+            keepSeeding: {
+                label: '任务完成后继续做种',
+                desc: 'BT 任务下载完成后继续上传分享',
+            },
+        },
+        connection: {
+            serverUrl: {
+                label: '后端服务地址',
+                desc: '用于连接下载服务的 API 地址',
+                placeholder: 'http://127.0.0.1:8080',
+            },
+            timeout: {
+                label: '连接超时时间',
+                desc: '请求后端接口的最大等待时间，单位秒',
+            },
+            autoReconnect: {
+                label: '自动重连',
+                desc: '连接断开后自动尝试重新连接',
+            },
+        },
+        appearance: {
+            theme: {
+                label: '主题模式',
+                desc: '选择应用显示主题',
+                light: '浅色模式',
+                dark: '深色模式',
+                system: '跟随系统',
+            },
+            language: {
+                label: '语言',
+                desc: '选择界面显示语言',
+                zhCN: '简体中文',
+                enUS: 'English',
+            },
+            compactMode: {
+                label: '紧凑模式',
+                desc: '减少列表间距，显示更多任务',
+            },
+        },
+        about: {
+            title: '关于应用',
+            appName: 'Download Manager',
+            appDesc: '一个简洁的下载任务管理工具',
+            version: '当前版本',
+            versionValue: '1.0.0',
+            build: '构建类型',
+            buildValue: 'Desktop/Web',
+            status: '状态',
+            statusValue: '运行正常',
+        },
+    },
     nav: {
         home: 'Home',
         settings: 'Settings',
