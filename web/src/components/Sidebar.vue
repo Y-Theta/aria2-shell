@@ -220,6 +220,7 @@ const selectMenu = (menuId: string) => {
 }
 
 .sidebar-footer {
+    display: none;
     padding: var(--spacing-sm) 0;
     border-top: 1px solid var(--sidebar-border);
 }
@@ -232,5 +233,92 @@ const selectMenu = (menuId: string) => {
 
 .sidebar.collapsed .nav-item.active {
     border-right-width: 3px;
+}
+
+/* 手机端适配：侧边栏变为底部固定导航栏 */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        z-index: 1000;
+
+        width: 100%;
+        height: 64px;
+        min-height: 64px;
+
+        flex-direction: row;
+        align-items: center;
+
+        border-right: none;
+        border-top: 1px solid var(--sidebar-border);
+        background-color: var(--sidebar-bg);
+
+        overflow: visible;
+        transition: none;
+    }
+
+    .sidebar.collapsed {
+        width: 100%;
+    }
+
+    .sidebar-header {
+        display: none;
+    }
+
+    .nav-menu {
+        flex: 1;
+        height: 100%;
+        padding: 0;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        gap: 0;
+    }
+
+    .sidebar-footer {
+        display: flex;
+        width: 25%;
+        height: 100%;
+        padding: 0;
+        border-top: none;
+    }
+
+    .nav-item,
+    .sidebar.collapsed .nav-item {
+        height: 100%;
+        flex: 1;
+
+        padding: 0;
+        gap: 0;
+
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+
+        border-right: none;
+        border-top: 3px solid transparent;
+    }
+
+    .nav-item.active,
+    .sidebar.collapsed .nav-item.active {
+        border-right: none;
+        border-top: 3px solid var(--primary-blue);
+        background-color: rgba(31, 111, 235, 0.08);
+    }
+
+    .nav-item i {
+        font-size: 18px;
+        width: auto;
+    }
+
+    .nav-label,
+    .badge {
+        display: none;
+    }
 }
 </style>

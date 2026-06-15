@@ -3,25 +3,33 @@
         <sidebar ref="sidebarRef" @menu-change="handleMenuChange" />
 
         <div class="main-content">
+            <!-- 连接中 -->
             <div v-if="connectionStatus === 'checking'" class="connection-page">
                 <div class="connection-panel">
-                    <div class="loading-spinner"></div>
+                    <div class="spinner-wrapper">
+                        <svg class="spinner" viewBox="0 0 50 50">
+                            <circle class="spinner-path" cx="25" cy="25" r="20" fill="none" stroke-width="5" />
+                        </svg>
+                    </div>
                     <div class="connection-title">{{ t('connection.checkingTitle') }}</div>
                     <div class="connection-desc">{{ t('connection.checkingDesc') }}</div>
                 </div>
             </div>
 
+            <!-- 连接失败 -->
             <div v-else-if="connectionStatus === 'failed'" class="connection-page">
                 <div class="connection-panel">
                     <div class="error-icon">!</div>
                     <div class="connection-title">{{ t('connection.failedTitle') }}</div>
                     <div class="connection-desc">{{ t('connection.failedDesc') }}</div>
-                    <button class="retry-button" @click="checkBackendConnection">
+
+                    <button class="retry-button" @click="retryAll">
                         {{ t('connection.retry') }}
                     </button>
                 </div>
             </div>
 
+            <!-- 正常内容 -->
             <template v-else>
                 <top-bar @search="handleSearch" />
 
@@ -32,6 +40,14 @@
                 <bottom-stats :stats="stats" />
             </template>
         </div>
+
+        <button class="floating-settings-button" type="button" :aria-label="t('settings.title') || '设置'"
+            @click="showSettings = true">
+            <i class="fas fa-gear floating-settings-icon" aria-hidden="true"></i>
+        </button>
+
+        <!-- 设置面板 -->
+        <settings-panel v-model:visible="showSettings" />
     </div>
 </template>
 
@@ -43,6 +59,7 @@ import Sidebar from './components/Sidebar.vue'
 import TopBar from './components/TopBar.vue'
 import TaskList from './components/TaskList.vue'
 import BottomStats from './components/BottomStats.vue'
+import SettingsPanel from './components/SettingsPanel.vue'
 import apiClient from './api/client'
 
 type ConnectionStatus = 'checking' | 'connected' | 'failed'
@@ -61,8 +78,13 @@ const stats = ref<Stats>({
 const currentMenu = ref('active')
 const searchQuery = ref('')
 const connectionStatus = ref<ConnectionStatus>('checking')
+const showSettings = ref(false)
 
 let timer: ReturnType<typeof setInterval> | null = null
+let retrying = false
+
+const RETRY_COUNT = 3
+const RETRY_DELAY = 5000
 
 const filteredTasks = computed(() => {
     let result = tasks.value
@@ -87,7 +109,7 @@ const filteredTasks = computed(() => {
 
 onMounted(async () => {
     window.addEventListener('menu-change', handleWindowMenuChange)
-    await checkBackendConnection()
+    await retryAll()
 })
 
 onUnmounted(() => {
@@ -99,53 +121,108 @@ onUnmounted(() => {
     }
 })
 
-const checkBackendConnection = async () => {
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+const checkBackendConnectionWithRetry = async () => {
+    let lastError: unknown
+
+    for (let i = 1; i <= RETRY_COUNT; i++) {
+        try {
+            await apiClient.checkConnection()
+            return
+        } catch (error) {
+            lastError = error
+            console.error(`Backend connection attempt ${i} failed:`, error)
+
+            if (i < RETRY_COUNT) {
+                await wait(RETRY_DELAY)
+            }
+        }
+    }
+
+    throw lastError
+}
+
+const loadDataWithRetry = async () => {
+    let lastError: unknown
+
+    for (let i = 1; i <= RETRY_COUNT; i++) {
+        try {
+            const [taskList, statData] = await Promise.all([
+                apiClient.getTasks(),
+                apiClient.getStats(),
+            ])
+
+            tasks.value = taskList
+            stats.value = statData
+            return
+        } catch (error) {
+            lastError = error
+            console.error(`Load data attempt ${i} failed:`, error)
+
+            if (i < RETRY_COUNT) {
+                await wait(RETRY_DELAY)
+            }
+        }
+    }
+
+    throw lastError
+}
+
+const retryAll = async () => {
+    if (retrying) return
+    retrying = true
     connectionStatus.value = 'checking'
 
     try {
-        var version = await apiClient.checkConnection()
-        if (version != null) {
-            connectionStatus.value = 'connected'
-
-            await loadData()
-
-            if (!timer) {
-                timer = setInterval(loadData, 5000)
-            }
-        }
-    } catch (error) {
-        console.error('Failed to connect backend:', error)
-        connectionStatus.value = 'failed'
-
         if (timer) {
             clearInterval(timer)
             timer = null
         }
+
+        await checkBackendConnectionWithRetry()
+        await loadDataWithRetry()
+
+        connectionStatus.value = 'connected'
+
+        if (!timer) {
+            timer = setInterval(async () => {
+                try {
+                    await loadDataWithRetry()
+                } catch (error) {
+                    console.error('Periodic load failed:', error)
+                    connectionStatus.value = 'failed'
+                    if (timer) {
+                        clearInterval(timer)
+                        timer = null
+                    }
+                }
+            }, 5000)
+        }
+    } catch (error) {
+        console.error('Connection flow failed:', error)
+        connectionStatus.value = 'failed'
+    } finally {
+        retrying = false
     }
 }
 
-const loadData = async () => {
-    try {
-        tasks.value = await apiClient.getTasks()
-        stats.value = await apiClient.getStats()
-    } catch (error) {
-        console.error('Failed to load data:', error)
-        connectionStatus.value = 'failed'
-
-        if (timer) {
-            clearInterval(timer)
-            timer = null
-        }
+const openMenu = (menu: string) => {
+    if (menu === 'settings') {
+        showSettings.value = true
+        return
     }
+
+    currentMenu.value = menu
 }
 
 const handleWindowMenuChange = (event: Event) => {
     const customEvent = event as CustomEvent
-    currentMenu.value = customEvent.detail?.menu || 'active'
+    openMenu(customEvent.detail?.menu || 'active')
 }
 
 const handleMenuChange = (event: any) => {
-    currentMenu.value = event.detail?.menu || 'active'
+    openMenu(event.detail?.menu || 'active')
 }
 
 const handleSearch = (query: string) => {
@@ -181,7 +258,6 @@ const handleDelete = async (id: string) => {
     }
 }
 </script>
-
 <style scoped>
 .app-layout {
     display: flex;
@@ -200,18 +276,16 @@ const handleDelete = async (id: string) => {
     overflow: hidden;
 }
 
-/* 连接中 / 失败界面：铺满整个右侧 */
 .connection-page {
     flex: 1;
     width: 100%;
     height: 100%;
     display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-    background-color: #f5f5f5;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
 }
 
-/* 让内容区域撑满 */
 .connection-panel {
     width: 100%;
     height: 100%;
@@ -223,14 +297,21 @@ const handleDelete = async (id: string) => {
     background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
 }
 
-/* 图标更大一点 */
-.loading-spinner {
-    width: 64px;
-    height: 64px;
-    border: 6px solid #e5e7eb;
-    border-top-color: #409eff;
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
+.spinner-wrapper {
+    width: 72px;
+    height: 72px;
+}
+
+.spinner {
+    width: 72px;
+    height: 72px;
+    animation: rotate 1s linear infinite;
+}
+
+.spinner-path {
+    stroke: #409eff;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
 }
 
 .connection-title {
@@ -277,12 +358,82 @@ const handleDelete = async (id: string) => {
     background-color: #66b1ff;
 }
 
-/* 主内容区域占满剩余空间 */
 .content-area {
     flex: 1;
     width: 100%;
     overflow-y: auto;
     padding: 24px;
     box-sizing: border-box;
+}
+
+.floating-settings-button {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 1200;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #409eff, #66b1ff);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(64, 158, 255, 0.36);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.floating-settings-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(64, 158, 255, 0.44);
+    background: linear-gradient(135deg, #337ecc, #409eff);
+}
+
+.floating-settings-button:hover .floating-settings-icon {
+  transform: rotate(45deg);
+}
+
+.floating-settings-icon {
+  font-size: 24px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease;
+}
+
+/* 移动端保持现状：隐藏桌面悬浮设置按钮 */
+@media (max-width: 768px) {
+    .floating-settings-button {
+        display: none;
+    }
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
 }
 </style>

@@ -7,10 +7,10 @@ export default {
         dark: 'Dark',
     },
     connection: {
-        checkingTitle: 'Connecting to backend service',
+        checkingTitle: 'Connecting to aria2 ',
         checkingDesc: 'Please wait while the connection status is being checked...',
-        failedTitle: 'Backend connection failed',
-        failedDesc: 'Please check whether the backend service is running or the network is available.',
+        failedTitle: 'Connect to aria2 failed',
+        failedDesc: 'Please check whether the aria2 service is running or the network is available.',
         retry: 'Retry',
     },
     sidebar: {

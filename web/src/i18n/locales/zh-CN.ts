@@ -7,10 +7,10 @@ export default {
         dark: '深色',
     },
     connection: {
-        checkingTitle: '正在连接后端服务',
-        checkingDesc: '请稍候，正在校验服务连接状态...',
-        failedTitle: '后端服务连接失败',
-        failedDesc: '请检查后端服务是否已启动，或网络连接是否正常。',
+        checkingTitle: '正在连接 aria2 ',
+        checkingDesc: '请稍候，正在校验 aria2 连接状态...',
+        failedTitle: ' aria2 连接失败',
+        failedDesc: '请检查 aria2 是否已启动，或网络连接是否正常。',
         retry: '重新连接',
     },
     sidebar: {
