@@ -516,6 +516,11 @@ const selectPath = (key: SettingKey) => {
     backdrop-filter: blur(2px);
 }
 
+:global(html[data-theme='dark']) .settings-mask,
+:global(html.dark) .settings-mask {
+    background: rgba(0, 0, 0, 0.56);
+}
+
 .settings-drawer {
     position: fixed;
     top: 0;
@@ -523,12 +528,24 @@ const selectPath = (key: SettingKey) => {
     z-index: 2001;
     width: 560px;
     max-width: 100vw;
+
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
+
     display: flex;
     flex-direction: column;
-    background: #ffffff;
+
+    background: var(--panel-bg);
+    color: var(--text-primary);
     box-shadow: -16px 0 40px rgba(15, 23, 42, 0.16);
+
+    overflow: hidden;
+    overflow-y: hidden;
+}
+
+:global(html[data-theme='dark']) .settings-drawer,
+:global(html.dark) .settings-drawer {
+    box-shadow: -16px 0 40px rgba(0, 0, 0, 0.46);
 }
 
 .settings-header {
@@ -536,18 +553,19 @@ const selectPath = (key: SettingKey) => {
     min-height: 84px;
     padding: 20px 24px 16px;
     box-sizing: border-box;
-    border-bottom: 1px solid #ebeef5;
+    border-bottom: 1px solid var(--border-gray);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
+    background: var(--panel-bg);
 }
 
 .settings-title {
     margin: 0;
     font-size: 22px;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -568,7 +586,7 @@ const selectPath = (key: SettingKey) => {
 .settings-subtitle {
     margin: 6px 0 0;
     font-size: 13px;
-    color: #909399;
+    color: var(--text-muted);
 }
 
 .settings-close {
@@ -576,16 +594,16 @@ const selectPath = (key: SettingKey) => {
     height: 36px;
     border: none;
     border-radius: 10px;
-    background: #f5f7fa;
-    color: #606266;
+    background: var(--bg-gray);
+    color: var(--text-secondary);
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
 }
 
 .settings-close:hover {
-    background: #ebeef5;
-    color: #303133;
+    background: var(--light-gray);
+    color: var(--text-primary);
 }
 
 .settings-tabs {
@@ -594,9 +612,10 @@ const selectPath = (key: SettingKey) => {
     align-items: center;
     gap: 8px;
     padding: 12px 16px 0;
-    border-bottom: 1px solid #ebeef5;
+    border-bottom: 1px solid var(--border-gray);
     overflow-x: auto;
     scrollbar-width: none;
+    background: var(--panel-bg);
 }
 
 .settings-tabs::-webkit-scrollbar {
@@ -610,12 +629,18 @@ const selectPath = (key: SettingKey) => {
     padding: 0 14px;
     border: none;
     background: transparent;
-    color: #606266;
+    color: var(--text-secondary);
     font-size: 14px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+.settings-tab:hover {
+    color: var(--primary);
+    box-shadow: none;
+    transform: none;
 }
 
 .settings-tab::after {
@@ -630,12 +655,12 @@ const selectPath = (key: SettingKey) => {
 }
 
 .settings-tab.active {
-    color: #409eff;
+    color: var(--primary);
     font-weight: 600;
 }
 
 .settings-tab.active::after {
-    background: #409eff;
+    background: var(--primary);
 }
 
 .settings-tab-icon {
@@ -644,11 +669,15 @@ const selectPath = (key: SettingKey) => {
 
 .settings-body {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    padding: 22px 24px calc(96px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    padding: 22px 24px;
     box-sizing: border-box;
-    background: #f8fafc;
+    background: var(--bg-gray);
+    color: var(--text-primary);
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 .settings-section {
@@ -661,22 +690,22 @@ const selectPath = (key: SettingKey) => {
     margin: 0 0 4px;
     font-size: 17px;
     font-weight: 700;
-    color: #303133;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .section-title-icon {
-    color: #409eff;
+    color: var(--primary);
 }
 
 .setting-item {
     min-height: 72px;
     padding: 16px;
     box-sizing: border-box;
-    background: #ffffff;
-    border: 1px solid #ebeef5;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-gray);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -696,21 +725,21 @@ const selectPath = (key: SettingKey) => {
 .setting-label {
     font-size: 15px;
     font-weight: 600;
-    color: #303133;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .setting-label-icon {
-    color: #409eff;
+    color: var(--primary);
 }
 
 .setting-desc {
     margin-top: 5px;
     font-size: 13px;
     line-height: 1.5;
-    color: #909399;
+    color: var(--text-muted);
 }
 
 .path-row {
@@ -722,20 +751,26 @@ const selectPath = (key: SettingKey) => {
 .setting-select,
 .number-input {
     height: 38px;
-    border: 1px solid #dcdfe6;
+    border: 1px solid var(--input-border);
     border-radius: 9px;
     padding: 0 12px;
     box-sizing: border-box;
-    background: #ffffff;
-    color: #303133;
+    background: var(--input-bg);
+    color: var(--input-color);
     font-size: 14px;
     outline: none;
+}
+
+.setting-input::placeholder,
+.number-input::placeholder {
+    color: var(--input-placeholder);
 }
 
 .setting-input:focus,
 .setting-select:focus,
 .number-input:focus {
-    border-color: #409eff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--input-focus-shadow);
 }
 
 .setting-input {
@@ -765,7 +800,7 @@ const selectPath = (key: SettingKey) => {
     position: absolute;
     inset: 0;
     border-radius: 999px;
-    background: #dcdfe6;
+    background: var(--input-border);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -778,24 +813,29 @@ const selectPath = (key: SettingKey) => {
     left: 2px;
     top: 2px;
     border-radius: 50%;
-    background: #ffffff;
+    background: var(--panel-bg);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
     transition: all 0.2s;
 }
 
-.switch input:checked+span {
-    background: #409eff;
+:global(html[data-theme='dark']) .switch span::before,
+:global(html.dark) .switch span::before {
+    background: #ffffff;
 }
 
-.switch input:checked+span::before {
+.switch input:checked + span {
+    background: var(--primary);
+}
+
+.switch input:checked + span::before {
     transform: translateX(20px);
 }
 
 .about-card {
     padding: 18px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #409eff, #79bbff);
-    color: #ffffff;
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: var(--text-inverse);
     display: flex;
     align-items: center;
     gap: 14px;
@@ -806,6 +846,7 @@ const selectPath = (key: SettingKey) => {
     height: 52px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -825,8 +866,8 @@ const selectPath = (key: SettingKey) => {
 }
 
 .info-list {
-    background: #ffffff;
-    border: 1px solid #ebeef5;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-gray);
     border-radius: 14px;
     overflow: hidden;
 }
@@ -834,11 +875,11 @@ const selectPath = (key: SettingKey) => {
 .info-row {
     min-height: 52px;
     padding: 0 16px;
-    border-bottom: 1px solid #ebeef5;
+    border-bottom: 1px solid var(--border-gray);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    color: #606266;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
@@ -847,11 +888,11 @@ const selectPath = (key: SettingKey) => {
 }
 
 .info-row strong {
-    color: #303133;
+    color: var(--text-primary);
 }
 
 .info-row .success {
-    color: #67c23a;
+    color: var(--success-green);
 }
 
 .reset-in-page {
@@ -860,15 +901,13 @@ const selectPath = (key: SettingKey) => {
 }
 
 .settings-footer {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    flex-shrink: 0;
+    position: static;
     min-height: 72px;
     padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
     box-sizing: border-box;
-    border-top: 1px solid #ebeef5;
-    background: rgba(255, 255, 255, 0.94);
+    border-top: 1px solid var(--footer-border);
+    background: var(--footer-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     display: flex;
@@ -892,33 +931,38 @@ const selectPath = (key: SettingKey) => {
 
 .primary-button {
     border: none;
-    color: #ffffff;
-    background: #409eff;
+    color: var(--text-inverse);
+    background: var(--primary);
 }
 
 .primary-button:hover {
-    background: #66b1ff;
+    background: var(--primary-hover);
 }
 
 .secondary-button {
-    border: 1px solid #dcdfe6;
-    color: #606266;
-    background: #ffffff;
+    border: 1px solid var(--input-border);
+    color: var(--text-secondary);
+    background: var(--panel-bg);
 }
 
 .secondary-button:hover {
-    color: #409eff;
-    border-color: #409eff;
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
 .danger-button {
     border: none;
-    color: #ffffff;
-    background: #f56c6c;
+    color: var(--text-inverse);
+    background: var(--danger);
 }
 
 .danger-button:hover {
     background: #ff8787;
+}
+
+:global(html[data-theme='dark']) .danger-button:hover,
+:global(html.dark) .danger-button:hover {
+    background: #f87171;
 }
 
 .settings-mask-fade-enter-active,
@@ -963,7 +1007,6 @@ const selectPath = (key: SettingKey) => {
     min-width: 120px;
 }
 
-
 .setting-action-button {
     min-width: 120px;
     height: 36px;
@@ -981,7 +1024,8 @@ const selectPath = (key: SettingKey) => {
         background 0.2s ease,
         color 0.2s ease,
         box-shadow 0.2s ease,
-        transform 0.2s ease;
+        transform 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .setting-action-button:hover {
@@ -989,35 +1033,40 @@ const selectPath = (key: SettingKey) => {
 }
 
 .setting-action-button.primary-button {
-    background: #409eff;
-    color: #ffffff;
-    box-shadow: 0 6px 14px rgba(64, 158, 255, 0.24);
+    background: var(--primary);
+    color: var(--text-inverse);
+    box-shadow: 0 6px 14px var(--button-shadow);
 }
 
 .setting-action-button.primary-button:hover {
-    background: #337ecc;
+    background: var(--primary-blue);
 }
 
 .setting-action-button.secondary-button {
-    background: #f4f7fb;
-    color: #303133;
-    border: 1px solid #dcdfe6;
+    background: var(--bg-gray);
+    color: var(--text-primary);
+    border: 1px solid var(--input-border);
 }
 
 .setting-action-button.secondary-button:hover {
-    background: #ecf5ff;
-    color: #409eff;
-    border-color: #409eff;
+    background: var(--light-blue);
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
 .setting-action-button.danger-button {
-    background: #f56c6c;
-    color: #ffffff;
+    background: var(--danger);
+    color: var(--text-inverse);
     box-shadow: 0 6px 14px rgba(245, 108, 108, 0.24);
 }
 
 .setting-action-button.danger-button:hover {
     background: #dd6161;
+}
+
+:global(html[data-theme='dark']) .setting-action-button.danger-button:hover,
+:global(html.dark) .setting-action-button.danger-button:hover {
+    background: #f87171;
 }
 
 @media (max-width: 768px) {
@@ -1034,7 +1083,7 @@ const selectPath = (key: SettingKey) => {
     }
 
     .settings-footer {
-        padding: 14px 18px;
+        padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
     }
 
     .setting-item.button {

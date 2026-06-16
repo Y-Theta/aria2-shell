@@ -265,7 +265,7 @@ const handleDelete = async (id: string) => {
     display: flex;
     height: 100vh;
     width: 100%;
-    background-color: #f5f5f5;
+    background-color: var(--app-bg);
 }
 
 .main-content {
@@ -285,7 +285,7 @@ const handleDelete = async (id: string) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f5f5f5;
+    background: var(--page-bg);
 }
 
 .connection-panel {
@@ -296,7 +296,7 @@ const handleDelete = async (id: string) => {
     align-items: center;
     justify-content: center;
     gap: 16px;
-    background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+    background: var(--panel-bg-gradient);
 }
 
 .spinner-wrapper {
@@ -311,7 +311,7 @@ const handleDelete = async (id: string) => {
 }
 
 .spinner-path {
-    stroke: #409eff;
+    stroke: var(--primary);
     stroke-linecap: round;
     animation: dash 1.5s ease-in-out infinite;
 }
@@ -319,12 +319,12 @@ const handleDelete = async (id: string) => {
 .connection-title {
     font-size: 24px;
     font-weight: 600;
-    color: #303133;
+    color: var(--text-primary);
 }
 
 .connection-desc {
     font-size: 16px;
-    color: #909399;
+    color: var(--text-muted);
     text-align: center;
     line-height: 1.8;
     max-width: 520px;
@@ -335,8 +335,8 @@ const handleDelete = async (id: string) => {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background-color: #f56c6c;
-    color: #ffffff;
+    background-color: var(--danger);
+    color: var(--text-inverse);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -350,14 +350,14 @@ const handleDelete = async (id: string) => {
     padding: 0 28px;
     border: none;
     border-radius: 8px;
-    background-color: #409eff;
-    color: #ffffff;
+    background-color: var(--primary);
+    color: var(--text-inverse);
     font-size: 15px;
     cursor: pointer;
 }
 
 .retry-button:hover {
-    background-color: #66b1ff;
+    background-color: var(--primary-hover);
 }
 
 .content-area {
@@ -366,6 +366,8 @@ const handleDelete = async (id: string) => {
     overflow-y: auto;
     padding: 24px;
     box-sizing: border-box;
+    background: var(--app-bg);
+    color: var(--text-primary);
 }
 
 .floating-settings-button {
@@ -377,9 +379,9 @@ const handleDelete = async (id: string) => {
     height: 56px;
     border: none;
     border-radius: 50%;
-    background: linear-gradient(135deg, #409eff, #66b1ff);
-    color: #ffffff;
-    box-shadow: 0 10px 24px rgba(64, 158, 255, 0.36);
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: var(--text-inverse);
+    box-shadow: 0 10px 24px var(--button-shadow);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -392,8 +394,8 @@ const handleDelete = async (id: string) => {
 
 .floating-settings-button:hover {
     transform: translateY(-2px) scale(1.06);
-    box-shadow: 0 14px 30px rgba(64, 158, 255, 0.44);
-    background: linear-gradient(135deg, #337ecc, #409eff);
+    box-shadow: 0 14px 30px var(--button-shadow-hover);
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary));
 }
 
 .floating-settings-icon-wrap {
