@@ -58,3 +58,7 @@ coverage/
 .nuxt/
 .svelte-kit/
 .vite/
+
+**/*.db
+**/*.db-shm
+**/*.db-wal

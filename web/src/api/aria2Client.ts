@@ -1,4 +1,5 @@
 import {
+    JsonRpcFailure,
     FetchLike,
     JsonRpcId, 
     JsonRpcRequest, 
@@ -8,7 +9,6 @@ import {
     Aria2File,
     Aria2Gid,
     Aria2GlobalStat,
-    Aria2HttpError,
     Aria2Method,
     Aria2MulticallItem,
     Aria2OptionMap,
@@ -17,7 +17,6 @@ import {
     Aria2Peer,
     Aria2PositionHow,
     Aria2Result,
-    Aria2RpcError,
     Aria2Server,
     Aria2SessionInfo,
     Aria2Status,
@@ -26,6 +25,35 @@ import {
     Aria2Version,
     BatchCall,
 } from '../types/aria2';
+
+
+export class Aria2RpcError extends Error {
+
+    public readonly code: number;
+    public readonly response: JsonRpcFailure;
+
+    constructor(response: JsonRpcFailure) {
+        super(response.error.message);
+        this.name = "Aria2RpcError";
+        this.code = response.error.code;
+        this.response = response;
+    }
+}
+
+export class Aria2HttpError extends Error {
+
+    public readonly status: number;
+    public readonly statusText: string;
+    public readonly bodyText?: string;
+
+    constructor(status: number, statusText: string, bodyText?: string) {
+        super(`HTTP Error: ${status} ${statusText}`);
+        this.name = "Aria2HttpError";
+        this.status = status;
+        this.statusText = statusText;
+        this.bodyText = bodyText;
+    }
+}
 
 export class Aria2Client {
     private readonly url: string;

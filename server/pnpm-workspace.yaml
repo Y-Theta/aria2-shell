@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - better-sqlite3
+
+onlyBuiltDependencies:
+  - bcrypt
+  - esbuild
+  - sqlite3
