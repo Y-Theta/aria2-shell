@@ -72,14 +72,6 @@ export interface Aria2ClientConfig {
   secret?: string;
 
   /**
-   * 自定义 fetch
-   *
-   * Node.js 18+ 和浏览器默认都有 fetch。
-   * 如果你在 Node.js 16，可传入 node-fetch / undici。
-   */
-  fetch?: FetchLike;
-
-  /**
    * 是否自动注入 token:secret
    *
    * @default true

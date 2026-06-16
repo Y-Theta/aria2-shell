@@ -19,6 +19,7 @@ export default {
         completed: '完成',
         paused: '暂停',
         settings: '设置',
+        torrents: '种子',
     },
     settings: {
         title: '设置',

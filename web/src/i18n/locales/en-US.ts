@@ -19,6 +19,7 @@ export default {
         completed: 'Completed',
         paused: 'Paused',
         settings: 'Settings',
+        torrents: 'Torrents',
     },
     settings: {
         title: '设置',

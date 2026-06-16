@@ -11,9 +11,19 @@
             </button>
         </div>
 
-        <nav class="nav-menu">
-            <div v-for="item in menuItems" :key="item.id" class="nav-item" :class="{ active: activeMenu === item.id }"
-                @click="selectMenu(item.id)">
+        <button class="mobile-menu-btn" type="button" @click="toggleMobileMenu">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <nav class="nav-menu" :class="{ 'mobile-open': isMobileMenuOpen }">
+            <router-link
+                v-for="item in menuItems"
+                :key="item.id"
+                class="nav-item"
+                active-class="active"
+                :to="item.to"
+                @click="closeMobileMenu"
+            >
                 <i :class="item.icon"></i>
 
                 <span v-if="!isCollapsed" class="nav-label">
@@ -23,63 +33,73 @@
                 <span v-if="!isCollapsed && item.badge" class="badge">
                     {{ item.badge }}
                 </span>
-            </div>
+            </router-link>
         </nav>
 
         <div class="sidebar-footer">
-            <div class="nav-item" :class="{ active: activeMenu === 'settings' }" @click="selectMenu('settings')">
+            <button class="nav-item settings-item" type="button" @click="openSettings">
                 <i class="fas fa-cog"></i>
 
                 <span v-if="!isCollapsed" class="nav-label">
                     {{ t('sidebar.settings') }}
                 </span>
-            </div>
+            </button>
         </div>
     </aside>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface MenuItem {
-    id: string;
-    labelKey: string;
-    icon: string;
-    badge?: number;
+    id: string
+    labelKey: string
+    icon: string
+    to: string
+    badge?: number
 }
 
-const { t } = useI18n();
+const { t } = useI18n()
 
-defineEmits<{
-    'menu-change': [event: { detail: { menu: string } }];
-}>();
+const emit = defineEmits<{
+    'menu-change': [event: { detail: { menu: string } }]
+}>()
 
-const activeMenu = ref('active');
-const isCollapsed = ref(false);
+const isCollapsed = ref(false)
+const isMobileMenuOpen = ref(false)
+
+const toggleMobileMenu = () => {
+    isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+    isMobileMenuOpen.value = false
+}
 
 const menuItems: MenuItem[] = [
-    { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', badge: 2 },
-    { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check' },
-    { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause' },
-];
+    { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active', badge: 2 },
+    { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check', to: '/completed' },
+    { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause', to: '/paused' },
+    { id: 'torrents', labelKey: 'sidebar.torrents', icon: 'fas fa-file-arrow-down', to: '/torrents' },
+]
 
 const toggleCollapse = () => {
-    isCollapsed.value = !isCollapsed.value;
-};
+    isCollapsed.value = !isCollapsed.value
+}
 
-const selectMenu = (menuId: string) => {
-    activeMenu.value = menuId;
+const openSettings = () => {
+    closeMobileMenu()
 
-    const event = new CustomEvent('menu-change', {
-        bubbles: true,
+    const event = {
         detail: {
-            menu: menuId,
+            menu: 'settings',
         },
-    });
+    }
 
-    window.dispatchEvent(event);
-};
+    emit('menu-change', event)
+    window.dispatchEvent(new CustomEvent('menu-change', event))
+}
 </script>
 
 <style scoped>
@@ -133,6 +153,13 @@ const selectMenu = (menuId: string) => {
 .logo-text {
     user-select: none;
     white-space: nowrap;
+}
+
+.settings-item {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
 }
 
 .collapse-btn {
@@ -235,6 +262,10 @@ const selectMenu = (menuId: string) => {
     border-right-width: 3px;
 }
 
+.mobile-menu-btn {
+    display: none;
+}
+
 /* 手机端适配：侧边栏变为底部固定导航栏 */
 @media (max-width: 768px) {
     .sidebar {
@@ -251,6 +282,7 @@ const selectMenu = (menuId: string) => {
 
         flex-direction: row;
         align-items: center;
+        justify-content: space-between;
 
         border-right: none;
         border-top: 1px solid var(--sidebar-border);
@@ -268,30 +300,86 @@ const selectMenu = (menuId: string) => {
         display: none;
     }
 
-    .nav-menu {
-        flex: 1;
-        height: 100%;
-        padding: 0;
-
+    .mobile-menu-btn {
         display: flex;
-        flex-direction: row;
+        width: 64px;
+        height: 100%;
+
+        border: none;
+        background: transparent;
+        color: var(--neutral-gray);
+        cursor: pointer;
+
         align-items: center;
-        justify-content: space-around;
-        gap: 0;
+        justify-content: center;
+
+        font-size: 20px;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-menu-btn:hover {
+        color: var(--primary-blue);
+        background-color: rgba(31, 111, 235, 0.05);
+    }
+
+    .nav-menu {
+        position: absolute;
+        left: var(--spacing-sm);
+        right: var(--spacing-sm);
+        bottom: calc(64px + var(--spacing-sm));
+
+        display: none;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+
+        padding: var(--spacing-sm);
+        border: 1px solid var(--sidebar-border);
+        border-radius: 12px;
+        background-color: var(--sidebar-bg);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .nav-menu.mobile-open {
+        display: flex;
     }
 
     .sidebar-footer {
         display: flex;
-        width: 25%;
+        width: 64px;
         height: 100%;
         padding: 0;
         border-top: none;
+        margin-left: auto;
     }
 
     .nav-item,
     .sidebar.collapsed .nav-item {
+        height: 44px;
+        flex: none;
+
+        padding: 0 var(--spacing-md);
+        gap: var(--spacing-sm);
+
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: row;
+
+        border-right: none;
+        border-top: none;
+        border-radius: 8px;
+    }
+
+    .nav-item.active,
+    .sidebar.collapsed .nav-item.active {
+        border-right: none;
+        border-top: none;
+        background-color: rgba(31, 111, 235, 0.08);
+    }
+
+    .sidebar-footer .nav-item,
+    .sidebar.collapsed .sidebar-footer .nav-item {
+        width: 100%;
         height: 100%;
-        flex: 1;
 
         padding: 0;
         gap: 0;
@@ -300,24 +388,26 @@ const selectMenu = (menuId: string) => {
         align-items: center;
         flex-direction: column;
 
-        border-right: none;
-        border-top: 3px solid transparent;
-    }
-
-    .nav-item.active,
-    .sidebar.collapsed .nav-item.active {
-        border-right: none;
-        border-top: 3px solid var(--primary-blue);
-        background-color: rgba(31, 111, 235, 0.08);
+        border-radius: 0;
     }
 
     .nav-item i {
         font-size: 18px;
-        width: auto;
+        width: 20px;
     }
 
-    .nav-label,
+    .nav-label {
+        display: inline;
+        flex: 1;
+        white-space: nowrap;
+    }
+
     .badge {
+        display: inline-block;
+    }
+
+    .sidebar-footer .nav-label,
+    .sidebar-footer .badge {
         display: none;
     }
 }

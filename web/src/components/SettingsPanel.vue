@@ -31,11 +31,6 @@
                 <main class="settings-body">
                     <section v-for="tab in configurableTabs" v-show="activeTab === tab.key" :key="tab.key"
                         class="settings-section">
-                        <h3 class="section-title">
-                            <i class="section-title-icon" :class="tab.icon" aria-hidden="true"></i>
-                            <span>{{ t(tab.titleKey) }}</span>
-                        </h3>
-
 
                         <div v-for="item in tab.items" :key="item.key" class="setting-item"
                             :class="{ vertical: isVerticalItem(item), button: item.type === 'button' }">
