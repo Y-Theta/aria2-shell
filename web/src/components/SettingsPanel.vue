@@ -36,15 +36,19 @@
                             <span>{{ t(tab.titleKey) }}</span>
                         </h3>
 
+
                         <div v-for="item in tab.items" :key="item.key" class="setting-item"
-                            :class="{ vertical: isVerticalItem(item) }">
+                            :class="{ vertical: isVerticalItem(item), button: item.type === 'button' }">
                             <div class="setting-info">
                                 <div class="setting-label">
                                     <i v-if="item.icon" class="setting-label-icon" :class="item.icon"
                                         aria-hidden="true"></i>
                                     <span>{{ t(item.labelKey) }}</span>
                                 </div>
-                                <div class="setting-desc">{{ t(item.descKey) }}</div>
+
+                                <div v-if="item.descKey" class="setting-desc">
+                                    {{ t(item.descKey) }}
+                                </div>
                             </div>
 
                             <!-- switch -->
@@ -80,12 +84,22 @@
                                 <input :value="String(settings[item.key] ?? '')" class="setting-input" type="text"
                                     :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
                                     @input="setSettingValue(item.key, ($event.target as HTMLInputElement).value)">
+
                                 <button class="secondary-button" type="button" @click="selectPath(item.key)">
                                     <i class="fas fa-folder-open button-icon" aria-hidden="true"></i>
                                     {{ t('settings.actions.select') }}
                                 </button>
                             </div>
+
+                            <!-- button -->
+                            <button v-else-if="item.type === 'button'" class="setting-action-button"
+                                :class="getButtonClass(item)" type="button" @click="handleButtonClick(item)">
+                                <i v-if="item.buttonIcon || item.icon" class="button-icon"
+                                    :class="item.buttonIcon || item.icon" aria-hidden="true"></i>
+                                {{ t(item.buttonTextKey || item.labelKey) }}
+                            </button>
                         </div>
+
                     </section>
 
                     <!-- 关于 -->
@@ -141,6 +155,8 @@ import { useI18n } from 'vue-i18n'
 
 type SettingValue = string | number | boolean
 type SettingType = 'switch' | 'text' | 'number' | 'select' | 'path'
+type ButtonType = 'button'
+type SettingButtonVariant = 'primary' | 'secondary' | 'danger'
 type SettingKey =
     | 'autoStart'
     | 'minimizeToTray'
@@ -161,16 +177,35 @@ interface SettingOption {
     value: string | number
 }
 
-interface SettingItem {
+interface BaseSettingItem {
+    key: string
+    labelKey: string
+    descKey?: string
+    icon?: string
+}
+
+interface ValueSettingItem extends BaseSettingItem {
     key: SettingKey
     type: SettingType
-    labelKey: string
-    descKey: string
-    icon?: string
     placeholderKey?: string
     min?: number
     max?: number
     options?: SettingOption[]
+}
+
+interface ButtonSettingItem extends BaseSettingItem {
+    type: ButtonType
+    action: string
+    buttonTextKey?: string
+    buttonIcon?: string
+    variant?: SettingButtonVariant
+}
+
+type SettingItem = ValueSettingItem | ButtonSettingItem
+
+interface SettingOption {
+    labelKey: string
+    value: string | number
 }
 
 interface SettingTab {
@@ -192,6 +227,7 @@ const { t } = useI18n()
 
 const props = defineProps<{
     visible: boolean
+    buttonCallbacks?: Record<string, (item: ButtonSettingItem) => void>
 }>()
 
 const emit = defineEmits<{
@@ -246,6 +282,17 @@ const tabs: SettingTab[] = [
                 descKey: 'settings.general.downloadPath.desc',
                 icon: 'fas fa-folder',
                 placeholderKey: 'settings.general.downloadPath.placeholder',
+            },
+            {
+                key: 'resetSettings',
+                type: 'button',
+                labelKey: 'settings.actions.resetDefault',
+                descKey: 'settings.general.reset.desc',
+                icon: 'fas fa-rotate-left',
+                buttonIcon: 'fas fa-rotate-left',
+                buttonTextKey: 'settings.actions.resetDefault',
+                variant: 'danger',
+                action: 'resetSettings',
             },
         ],
     },
@@ -391,11 +438,43 @@ watch(
     },
 )
 
+const isButtonItem = (item: SettingItem): item is ButtonSettingItem => {
+    return item.type === 'button'
+}
+
+const getButtonClass = (item: SettingItem) => {
+    if (!isButtonItem(item)) return ''
+
+    return {
+        'primary-button': item.variant === 'primary',
+        'secondary-button': !item.variant || item.variant === 'secondary',
+        'danger-button': item.variant === 'danger',
+    }
+}
+
+const handleButtonClick = (item: ButtonSettingItem) => {
+    if (item.action === 'resetSettings') {
+        resetSettings()
+        return
+    }
+
+    const callback = props.buttonCallbacks?.[item.action]
+
+    if (callback) {
+        callback(item)
+        return
+    }
+
+    console.warn(`No callback found for settings button action: ${item.action}`)
+}
+
 const close = () => {
     emit('update:visible', false)
 }
 
-const isVerticalItem = (item: SettingItem) => item.type === 'path'
+const isVerticalItem = (item: SettingItem) => {
+    return item.type === 'path'
+}
 
 const setSettingValue = (key: SettingKey, value: SettingValue) => {
     settings[key] = value
@@ -419,6 +498,7 @@ const saveSettings = () => {
 }
 
 const resetSettings = () => {
+    console.log("reset setting");
     Object.assign(settings, defaultSettings)
 }
 
@@ -861,6 +941,85 @@ const selectPath = (key: SettingKey) => {
     transform: translateX(100%);
 }
 
+/* 按钮类型设置项：电脑端左右排布 */
+.setting-item.button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+/* 左侧说明区域 */
+.setting-item.button .setting-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 右侧按钮 */
+.setting-item.button .setting-action-button {
+    flex-shrink: 0;
+    width: auto;
+    min-width: 120px;
+}
+
+
+.setting-action-button {
+    min-width: 120px;
+    height: 36px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.setting-action-button:hover {
+    transform: scale(1.03);
+}
+
+.setting-action-button.primary-button {
+    background: #409eff;
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(64, 158, 255, 0.24);
+}
+
+.setting-action-button.primary-button:hover {
+    background: #337ecc;
+}
+
+.setting-action-button.secondary-button {
+    background: #f4f7fb;
+    color: #303133;
+    border: 1px solid #dcdfe6;
+}
+
+.setting-action-button.secondary-button:hover {
+    background: #ecf5ff;
+    color: #409eff;
+    border-color: #409eff;
+}
+
+.setting-action-button.danger-button {
+    background: #f56c6c;
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(245, 108, 108, 0.24);
+}
+
+.setting-action-button.danger-button:hover {
+    background: #dd6161;
+}
+
 @media (max-width: 768px) {
     .settings-drawer {
         width: 88vw;
@@ -876,6 +1035,21 @@ const selectPath = (key: SettingKey) => {
 
     .settings-footer {
         padding: 14px 18px;
+    }
+
+    .setting-item.button {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .setting-item.button .setting-info {
+        width: 100%;
+    }
+
+    .setting-item.button .setting-action-button {
+        width: 100%;
+        min-width: 0;
     }
 }
 

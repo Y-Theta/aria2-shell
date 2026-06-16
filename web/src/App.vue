@@ -391,30 +391,25 @@ const handleDelete = async (id: string) => {
 }
 
 .floating-settings-button:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.06);
     box-shadow: 0 14px 30px rgba(64, 158, 255, 0.44);
     background: linear-gradient(135deg, #337ecc, #409eff);
 }
 
 .floating-settings-icon-wrap {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform-origin: center center;
-  transition: transform 0.25s ease;
-  will-change: transform;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .floating-settings-icon {
-  font-size: 24px;
-  line-height: 1;
-  display: block;
+    font-size: 20px;
+    line-height: 1;
+    transition: transform 0.2s ease;
 }
 
-.floating-settings-button:hover .floating-settings-icon-wrap {
-  transform: rotate(45deg);
+.floating-settings-button:hover .floating-settings-icon {
+    transform: scale(1.08);
 }
 
 /* 移动端保持现状：隐藏桌面悬浮设置按钮 */

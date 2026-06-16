@@ -5,6 +5,7 @@ export default {
         theme: '主题',
         light: '浅色',
         dark: '深色',
+        close: '关闭'
     },
     connection: {
         checkingTitle: '正在连接 aria2 ',
@@ -53,6 +54,9 @@ export default {
                 label: '默认保存路径',
                 desc: '新建下载任务时默认保存的位置',
                 placeholder: '请选择下载路径',
+            },
+            reset: {
+                desc: '将所有设置恢复为默认值',
             },
         },
         download: {
