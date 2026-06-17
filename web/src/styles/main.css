@@ -100,8 +100,8 @@ html[data-theme='light'] {
 
     /* Sidebar */
     --sidebar-width: 240px;
-    --sidebar-bg: #f6f8fa;
-    --sidebar-border: #d0d7de;
+    --sidebar-bg: #fafbfc;
+    --sidebar-border: #e1e4e8;
 
     /* Top bar height */
     --topbar-height: 60px;

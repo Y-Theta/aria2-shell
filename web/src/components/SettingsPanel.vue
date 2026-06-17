@@ -1,24 +1,26 @@
 <template>
-    <teleport to="body">
-        <transition name="settings-mask-fade">
-            <div v-if="visible" class="settings-mask" @click="close" />
-        </transition>
+    <!-- Drawer mode: slide-in panel -->
+    <template v-if="!inline">
+        <teleport to="body">
+            <transition name="settings-mask-fade">
+                <div v-if="visible" class="settings-mask" @click="close" />
+            </transition>
 
-        <transition name="settings-slide">
-            <aside v-if="visible" class="settings-drawer">
-                <header class="settings-header">
-                    <div>
-                        <h2 class="settings-title">
-                            <i class="fas fa-gear settings-title-icon" aria-hidden="true"></i>
-                            <span>{{ t('settings.title') }}</span>
-                        </h2>
-                        <p class="settings-subtitle">{{ t('settings.subtitle') }}</p>
-                    </div>
+            <transition name="settings-slide">
+                <aside v-if="visible" class="settings-drawer">
+                    <header class="settings-header">
+                        <div>
+                            <h2 class="settings-title">
+                                <i class="fas fa-gear settings-title-icon" aria-hidden="true"></i>
+                                <span>{{ t('settings.title') }}</span>
+                            </h2>
+                            <p class="settings-subtitle">{{ t('settings.subtitle') }}</p>
+                        </div>
 
-                    <button class="settings-close" type="button" :aria-label="t('common.close')" @click="close">
-                        <i class="fas fa-xmark" aria-hidden="true"></i>
-                    </button>
-                </header>
+                        <button class="settings-close" type="button" :aria-label="t('common.close')" @click="close">
+                            <i class="fas fa-xmark" aria-hidden="true"></i>
+                        </button>
+                    </header>
 
                 <nav class="settings-tabs">
                     <button v-for="tab in tabs" :key="tab.key" class="settings-tab"
@@ -142,6 +144,140 @@
             </aside>
         </transition>
     </teleport>
+    </template>
+
+    <!-- Inline mode: rendered as page content -->
+    <div v-else class="settings-inline">
+        <header class="settings-header settings-header-inline">
+            <div>
+                <h2 class="settings-title">
+                    <i class="fas fa-gear settings-title-icon" aria-hidden="true"></i>
+                    <span>{{ t('settings.title') }}</span>
+                </h2>
+                <p class="settings-subtitle">{{ t('settings.subtitle') }}</p>
+            </div>
+        </header>
+
+        <nav class="settings-tabs">
+            <button v-for="tab in tabs" :key="tab.key" class="settings-tab"
+                :class="{ active: activeTab === tab.key }" type="button" @click="activeTab = tab.key">
+                <i class="settings-tab-icon" :class="tab.icon" aria-hidden="true"></i>
+                <span>{{ t(tab.labelKey) }}</span>
+            </button>
+        </nav>
+
+        <main class="settings-body">
+            <section v-for="tab in configurableTabs" v-show="activeTab === tab.key" :key="tab.key"
+                class="settings-section">
+
+                <div v-for="item in tab.items" :key="item.key" class="setting-item"
+                    :class="{ vertical: isVerticalItem(item), button: item.type === 'button' }">
+                    <div class="setting-info">
+                        <div class="setting-label">
+                            <i v-if="item.icon" class="setting-label-icon" :class="item.icon"
+                                aria-hidden="true"></i>
+                            <span>{{ t(item.labelKey) }}</span>
+                        </div>
+
+                        <div v-if="item.descKey" class="setting-desc">
+                            {{ t(item.descKey) }}
+                        </div>
+                    </div>
+
+                    <!-- switch -->
+                    <label v-if="item.type === 'switch'" class="switch">
+                        <input :checked="Boolean(settings[item.key])" type="checkbox"
+                            @change="setSettingValue(item.key, ($event.target as HTMLInputElement).checked)">
+                        <span />
+                    </label>
+
+                    <!-- text -->
+                    <input v-else-if="item.type === 'text'" :value="String(settings[item.key] ?? '')"
+                        class="setting-input" type="text"
+                        :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
+                        @input="setSettingValue(item.key, ($event.target as HTMLInputElement).value)">
+
+                    <!-- number -->
+                    <input v-else-if="item.type === 'number'" :value="Number(settings[item.key] ?? 0)"
+                        class="number-input" type="number" :min="item.min" :max="item.max"
+                        :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
+                        @input="setSettingValue(item.key, Number(($event.target as HTMLInputElement).value))">
+
+                    <!-- select -->
+                    <select v-else-if="item.type === 'select'" :value="String(settings[item.key] ?? '')"
+                        class="setting-select"
+                        @change="setSettingValue(item.key, ($event.target as HTMLSelectElement).value)">
+                        <option v-for="option in item.options || []" :key="option.value" :value="option.value">
+                            {{ t(option.labelKey) }}
+                        </option>
+                    </select>
+
+                    <!-- path -->
+                    <div v-else-if="item.type === 'path'" class="path-row">
+                        <input :value="String(settings[item.key] ?? '')" class="setting-input" type="text"
+                            :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
+                            @input="setSettingValue(item.key, ($event.target as HTMLInputElement).value)">
+
+                        <button class="secondary-button" type="button" @click="selectPath(item.key)">
+                            <i class="fas fa-folder-open button-icon" aria-hidden="true"></i>
+                            {{ t('settings.actions.select') }}
+                        </button>
+                    </div>
+
+                    <!-- button -->
+                    <button v-else-if="item.type === 'button'" class="setting-action-button"
+                        :class="getButtonClass(item)" type="button" @click="handleButtonClick(item)">
+                        <i v-if="item.buttonIcon || item.icon" class="button-icon"
+                            :class="item.buttonIcon || item.icon" aria-hidden="true"></i>
+                        {{ t(item.buttonTextKey || item.labelKey) }}
+                    </button>
+                </div>
+
+            </section>
+
+            <!-- 关于 -->
+            <section v-show="activeTab === 'about'" class="settings-section">
+                <h3 class="section-title">
+                    <i class="fas fa-circle-info section-title-icon" aria-hidden="true"></i>
+                    <span>{{ t('settings.about.title') }}</span>
+                </h3>
+
+                <div class="about-card">
+                    <div class="about-logo">
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="about-title">{{ t('settings.about.appName') }}</div>
+                        <div class="about-desc">{{ t('settings.about.appDesc') }}</div>
+                    </div>
+                </div>
+
+                <div class="info-list">
+                    <div v-for="row in aboutInfoRows" :key="row.labelKey" class="info-row">
+                        <span>
+                            <i v-if="row.icon" class="info-row-icon" :class="row.icon" aria-hidden="true"></i>
+                            {{ t(row.labelKey) }}
+                        </span>
+                        <strong :class="{ success: row.type === 'success' }">
+                            {{ t(row.valueKey) }}
+                        </strong>
+                    </div>
+                </div>
+
+                <button class="danger-button reset-in-page" type="button" @click="resetSettings">
+                    <i class="fas fa-rotate-left button-icon" aria-hidden="true"></i>
+                    {{ t('settings.actions.resetDefault') }}
+                </button>
+            </section>
+        </main>
+
+        <footer class="settings-footer">
+            <button class="primary-button" type="button" @click="saveSettings">
+                <i class="fas fa-floppy-disk button-icon" aria-hidden="true"></i>
+                {{ t('settings.actions.save') }}
+            </button>
+        </footer>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -222,6 +358,7 @@ const { t } = useI18n()
 
 const props = defineProps<{
     visible: boolean
+    inline?: boolean
     buttonCallbacks?: Record<string, (item: ButtonSettingItem) => void>
 }>()
 
@@ -589,16 +726,19 @@ const selectPath = (key: SettingKey) => {
     height: 36px;
     border: none;
     border-radius: 10px;
-    background: var(--bg-gray);
-    color: var(--text-secondary);
+    background: var(--danger);
+    color: #fff;
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
 }
 
 .settings-close:hover {
-    background: var(--light-gray);
-    color: var(--text-primary);
+    background: #e04848;
 }
 
 .settings-tabs {
@@ -1173,6 +1313,42 @@ const selectPath = (key: SettingKey) => {
         height: 46px;
         justify-content: center;
         font-size: 15px;
+    }
+}
+
+/* Inline mode styles */
+.settings-inline {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--panel-bg);
+}
+
+.settings-header-inline {
+    border-bottom: 1px solid var(--border-gray);
+}
+
+.settings-inline .settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px 24px;
+}
+
+.settings-inline .settings-footer {
+    position: static;
+    border-top: 1px solid var(--border-gray);
+    background: var(--footer-bg);
+    backdrop-filter: blur(8px);
+}
+
+@media (max-width: 768px) {
+    .settings-inline .settings-body {
+        padding: 16px 16px 24px;
+    }
+
+    .settings-inline .settings-footer {
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
     }
 }
 </style>

@@ -1,55 +1,71 @@
 <template>
-    <aside class="sidebar" :class="{ collapsed: isCollapsed }">
+    <aside class="sidebar" :class="{ collapsed: isCollapsed, 'is-mobile': isMobile }">
         <div class="sidebar-header">
             <div class="logo" @click="toggleCollapse">
                 <i class="fas fa-download"></i>
-                <span v-if="!isCollapsed" class="logo-text">BitStream</span>
+                <span v-if="!isCollapsed && !isMobile" class="logo-text">BitStream</span>
             </div>
 
-            <button class="collapse-btn" type="button" @click="toggleCollapse">
+            <button class="collapse-btn" type="button" @click="toggleCollapse" v-if="!isMobile">
                 <i :class="isCollapsed ? 'fas fa-angle-right' : 'fas fa-angle-left'"></i>
             </button>
         </div>
 
-        <button class="mobile-menu-btn" type="button" @click="toggleMobileMenu">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <nav class="nav-menu" :class="{ 'mobile-open': isMobileMenuOpen }">
-            <router-link
-                v-for="item in menuItems"
-                :key="item.id"
-                class="nav-item"
-                active-class="active"
-                :to="item.to"
-                @click="closeMobileMenu"
-            >
-                <i :class="item.icon"></i>
-
-                <span v-if="!isCollapsed" class="nav-label">
-                    {{ t(item.labelKey) }}
-                </span>
-
-                <span v-if="!isCollapsed && item.badge" class="badge">
-                    {{ item.badge }}
-                </span>
-            </router-link>
+        <nav class="nav-menu">
+            <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.status') }}</div>
+            <template v-if="!isMobile">
+                <router-link
+                    v-for="item in statusMenuItems"
+                    :key="item.id"
+                    class="nav-item"
+                    active-class="active"
+                    :to="item.to"
+                >
+                    <i :class="item.icon"></i>
+                    <span v-if="!isCollapsed" class="nav-label">{{ t(item.labelKey) }}</span>
+                    <span v-if="!isCollapsed && item.badge" class="badge">{{ item.badge }}</span>
+                </router-link>
+            </template>
+            <template v-else>
+                <div class="nav-item menu-toggle" @click="toggleMobileMenu">
+                    <i class="fas fa-bars"></i>
+                    <span v-if="isMobileMenuOpen" class="nav-label">{{ t('sidebar.menu') }}</span>
+                </div>
+                <div v-if="isMobileMenuOpen" class="mobile-menu-dropdown">
+                    <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
+                    <router-link
+                        v-for="item in statusMenuItems"
+                        :key="item.id"
+                        class="nav-item"
+                        active-class="active"
+                        :to="item.to"
+                        @click="closeMobileMenu"
+                    >
+                        <i :class="item.icon"></i>
+                        <span class="nav-label">{{ t(item.labelKey) }}</span>
+                        <span v-if="item.badge" class="badge">{{ item.badge }}</span>
+                    </router-link>
+                </div>
+            </template>
         </nav>
 
         <div class="sidebar-footer">
-            <button class="nav-item settings-item" type="button" @click="openSettings">
+            <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.features') }}</div>
+            <router-link
+                class="nav-item"
+                active-class="active"
+                to="/settings"
+                @click="closeMobileMenu"
+            >
                 <i class="fas fa-cog"></i>
-
-                <span v-if="!isCollapsed" class="nav-label">
-                    {{ t('sidebar.settings') }}
-                </span>
-            </button>
+                <span v-if="!isCollapsed && !isMobile" class="nav-label">{{ t('sidebar.settings') }}</span>
+            </router-link>
         </div>
     </aside>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface MenuItem {
@@ -61,23 +77,11 @@ interface MenuItem {
 }
 
 const { t } = useI18n()
-
-const emit = defineEmits<{
-    'menu-change': [event: { detail: { menu: string } }]
-}>()
-
 const isCollapsed = ref(false)
+const isMobile = ref(false)
 const isMobileMenuOpen = ref(false)
 
-const toggleMobileMenu = () => {
-    isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
-
-const closeMobileMenu = () => {
-    isMobileMenuOpen.value = false
-}
-
-const menuItems: MenuItem[] = [
+const statusMenuItems: MenuItem[] = [
     { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active', badge: 2 },
     { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check', to: '/completed' },
     { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause', to: '/paused' },
@@ -88,18 +92,26 @@ const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value
 }
 
-const openSettings = () => {
-    closeMobileMenu()
-
-    const event = {
-        detail: {
-            menu: 'settings',
-        },
-    }
-
-    emit('menu-change', event)
-    window.dispatchEvent(new CustomEvent('menu-change', event))
+const toggleMobileMenu = () => {
+    isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
+
+const closeMobileMenu = () => {
+    isMobileMenuOpen.value = false
+}
+
+const checkIsMobile = () => {
+    isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => {
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkIsMobile)
+})
 </script>
 
 <style scoped>
@@ -133,7 +145,7 @@ const openSettings = () => {
     gap: var(--spacing-sm);
     font-size: 18px;
     font-weight: 700;
-    color: #333;
+    color: var(--text-primary);
     cursor: pointer;
     transition: color 0.2s ease;
     overflow: hidden;
@@ -153,13 +165,6 @@ const openSettings = () => {
 .logo-text {
     user-select: none;
     white-space: nowrap;
-}
-
-.settings-item {
-    width: 100%;
-    border: none;
-    background: transparent;
-    font: inherit;
 }
 
 .collapse-btn {
@@ -193,14 +198,25 @@ const openSettings = () => {
 
 .nav-menu {
     flex: 1;
-    padding: var(--spacing-sm) 0;
+    padding: var(--spacing-sm) var(--spacing-sm);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 2px;
+}
+
+.nav-section-title {
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-xs);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    user-select: none;
 }
 
 .nav-item {
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: 8px var(--spacing-md);
+    margin: 0 var(--spacing-xs);
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -210,17 +226,17 @@ const openSettings = () => {
     transition: all 0.2s ease;
     position: relative;
     font-weight: 500;
+    border-radius: 6px;
 }
 
 .nav-item:hover {
     color: var(--primary-blue);
-    background-color: rgba(31, 111, 235, 0.05);
+    background-color: rgba(31, 111, 235, 0.06);
 }
 
 .nav-item.active {
     color: var(--primary-blue);
     background-color: rgba(31, 111, 235, 0.1);
-    border-right: 3px solid var(--primary-blue);
 }
 
 .nav-item i {
@@ -236,179 +252,146 @@ const openSettings = () => {
 }
 
 .badge {
-    background-color: var(--primary-blue);
-    color: white;
-    border-radius: 10px;
-    padding: 2px 6px;
-    font-size: 11px;
-    font-weight: 600;
+    color: var(--primary-blue);
+    font-size: 13px;
+    font-weight: 500;
     min-width: 20px;
-    text-align: center;
-}
-
-.sidebar-footer {
-    display: none;
-    padding: var(--spacing-sm) 0;
-    border-top: 1px solid var(--sidebar-border);
+    text-align: right;
 }
 
 .sidebar.collapsed .nav-item {
     justify-content: center;
     padding: var(--spacing-sm) 0;
+    margin: 0;
     gap: 0;
 }
 
 .sidebar.collapsed .nav-item.active {
-    border-right-width: 3px;
+    border-right: none;
 }
 
-.mobile-menu-btn {
-    display: none;
+.sidebar-footer {
+    padding: var(--spacing-sm) var(--spacing-sm);
+    border-top: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-/* 手机端适配：侧边栏变为底部固定导航栏 */
+.mobile-menu-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: var(--spacing-sm);
+    right: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background-color: var(--sidebar-bg);
+    border: 1px solid var(--sidebar-border);
+    border-radius: 12px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+}
+
+.mobile-menu-section {
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-xs);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    user-select: none;
+}
+
+/* 手机端适配 */
 @media (max-width: 768px) {
-    .sidebar {
+    .sidebar.is-mobile {
         position: fixed;
         left: 0;
         right: 0;
         bottom: 0;
         top: auto;
-        z-index: 1000;
-
+        z-index: 999;
         width: 100%;
         height: 64px;
         min-height: 64px;
-
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-
         border-right: none;
         border-top: 1px solid var(--sidebar-border);
-        background-color: var(--sidebar-bg);
-
         overflow: visible;
         transition: none;
     }
 
-    .sidebar.collapsed {
+    .sidebar.is-mobile.collapsed {
         width: 100%;
     }
 
-    .sidebar-header {
+    .sidebar.is-mobile .sidebar-header {
         display: none;
     }
 
-    .mobile-menu-btn {
-        display: flex;
-        width: 64px;
+    .sidebar.is-mobile .nav-menu {
+        flex: none;
+        padding: 0;
+        flex-direction: row;
+        gap: 0;
         height: 100%;
-
-        border: none;
-        background: transparent;
-        color: var(--neutral-gray);
-        cursor: pointer;
-
-        align-items: center;
-        justify-content: center;
-
-        font-size: 20px;
-        transition: all 0.2s ease;
     }
 
-    .mobile-menu-btn:hover {
-        color: var(--primary-blue);
-        background-color: rgba(31, 111, 235, 0.05);
-    }
-
-    .nav-menu {
-        position: absolute;
-        left: var(--spacing-sm);
-        right: var(--spacing-sm);
-        bottom: calc(64px + var(--spacing-sm));
-
+    .sidebar.is-mobile .nav-section-title {
         display: none;
-        flex-direction: column;
-        gap: var(--spacing-xs);
-
-        padding: var(--spacing-sm);
-        border: 1px solid var(--sidebar-border);
-        border-radius: 12px;
-        background-color: var(--sidebar-bg);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
-    .nav-menu.mobile-open {
-        display: flex;
-    }
-
-    .sidebar-footer {
-        display: flex;
-        width: 64px;
-        height: 100%;
+    .sidebar.is-mobile .sidebar-footer {
         padding: 0;
         border-top: none;
-        margin-left: auto;
+        flex-direction: row;
+        gap: 0;
+        height: 100%;
     }
 
-    .nav-item,
-    .sidebar.collapsed .nav-item {
-        height: 44px;
+    .sidebar.is-mobile .nav-item {
+        height: 100%;
         flex: none;
-
         padding: 0 var(--spacing-md);
         gap: var(--spacing-sm);
-
-        justify-content: flex-start;
-        align-items: center;
-        flex-direction: row;
-
-        border-right: none;
-        border-top: none;
-        border-radius: 8px;
-    }
-
-    .nav-item.active,
-    .sidebar.collapsed .nav-item.active {
-        border-right: none;
-        border-top: none;
-        background-color: rgba(31, 111, 235, 0.08);
-    }
-
-    .sidebar-footer .nav-item,
-    .sidebar.collapsed .sidebar-footer .nav-item {
-        width: 100%;
-        height: 100%;
-
-        padding: 0;
-        gap: 0;
-
         justify-content: center;
         align-items: center;
         flex-direction: column;
-
         border-radius: 0;
+        margin: 0;
     }
 
-    .nav-item i {
-        font-size: 18px;
-        width: 20px;
+    .sidebar.is-mobile .nav-item.menu-toggle {
+        width: 64px;
     }
 
-    .nav-label {
-        display: inline;
-        flex: 1;
-        white-space: nowrap;
+    .sidebar.is-mobile .nav-item i {
+        font-size: 20px;
     }
 
-    .badge {
-        display: inline-block;
-    }
-
-    .sidebar-footer .nav-label,
-    .sidebar-footer .badge {
+    .sidebar.is-mobile .nav-label,
+    .sidebar.is-mobile .badge {
         display: none;
+    }
+
+    .sidebar.is-mobile .mobile-menu-dropdown .nav-label,
+    .sidebar.is-mobile .mobile-menu-dropdown .badge {
+        display: block;
+    }
+
+    .sidebar.is-mobile .mobile-menu-dropdown .nav-item {
+        height: auto;
+        padding: 8px var(--spacing-md);
+        margin: 0 var(--spacing-xs);
+        flex-direction: row;
+        justify-content: flex-start;
+        border-radius: 6px;
+    }
+
+    .sidebar.is-mobile .mobile-menu-dropdown .nav-item i {
+        font-size: 16px;
     }
 }
 </style>

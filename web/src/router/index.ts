@@ -4,6 +4,7 @@ import ActiveTasks from '../views/ActiveTasks.vue'
 import CompletedTasks from '../views/CompletedTasks.vue'
 import PausedTasks from '../views/PausedTasks.vue'
 import Torrents from '../views/Torrents.vue'
+import SettingsPage from '../views/SettingsPage.vue'
 
 const router = createRouter({
     history: createWebHashHistory(),
@@ -31,6 +32,11 @@ const router = createRouter({
             path: '/torrents',
             name: 'torrents',
             component: Torrents,
+        },
+        {
+            path: '/settings',
+            name: 'settings',
+            component: SettingsPage,
         },
     ],
 })
