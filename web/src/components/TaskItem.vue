@@ -267,6 +267,7 @@ const formatSpeed = (bytesPerSecond: number) => {
     border-radius: var(--radius-md);
     overflow: hidden;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .task-item:hover {
@@ -494,17 +495,21 @@ const formatSpeed = (bytesPerSecond: number) => {
     align-items: center;
     gap: var(--spacing-md);
     flex-shrink: 0;
+    justify-content: flex-end;
 }
 
 .file-size {
     font-size: 12px;
+    min-width: 64px;
     color: var(--text-muted);
+    text-align: right;
 }
 
 .file-progress-text {
     font-size: 13px;
     font-weight: 500;
     color: var(--text-primary);
+    text-align: right;
 }
 
 .expanded-row {

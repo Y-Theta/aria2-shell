@@ -202,24 +202,30 @@ defineEmits<{
 <style scoped>
 .task-list {
     flex: 1;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     padding: var(--spacing-lg);
+    overflow: hidden;
 }
 
 .task-table {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow: hidden;
 }
 
 .task-header {
     display: flex;
     align-items: center;
     padding: var(--spacing-lg);
+    padding-right: calc(var(--spacing-lg) + var(--spacing-sm) + 8px);
     background-color: var(--panel-bg);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-sm);
     border: 1px solid var(--border-gray);
     user-select: none;
+    flex-shrink: 0;
 }
 
 .header-cell {
@@ -262,6 +268,29 @@ defineEmits<{
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 2px;
+    padding-left: 2px;
+}
+
+.task-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.task-body::-webkit-scrollbar-track {
+    background: var(--bg-gray);
+    border-radius: 4px;
+}
+
+.task-body::-webkit-scrollbar-thumb {
+    background: var(--border-gray);
+    border-radius: 4px;
+}
+
+.task-body::-webkit-scrollbar-thumb:hover {
+    background: var(--neutral-gray);
 }
 
 .resize-handle {
@@ -305,7 +334,30 @@ defineEmits<{
     }
 
     .task-list {
-        padding-bottom: 180px;
+        overflow: hidden;
+    }
+
+    .task-table {
+        overflow: hidden;
+    }
+
+    .task-body {
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .task-body::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .task-body::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 2px;
+    }
+
+    .task-body::-webkit-scrollbar-thumb {
+        background: var(--border-gray);
+        border-radius: 4px;
     }
 }
 </style>

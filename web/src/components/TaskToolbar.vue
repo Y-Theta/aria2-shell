@@ -144,8 +144,13 @@ defineEmits<{
     padding: 0;
 }
 
-.search-box input::placeholder {
-    color: var(--input-placeholder);
+.search-box input:focus {
+    box-shadow: none;
+}
+
+.search-box:focus-within {
+    border-color: var(--primary-blue);
+    box-shadow: none;
 }
 
 @media (max-width: 768px) {

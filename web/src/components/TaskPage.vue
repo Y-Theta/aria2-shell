@@ -104,15 +104,7 @@ const handleOpenFile = (id: string) => emit('openFile', id)
     }
 
     .task-footer-component {
-        position: fixed;
-        bottom: 72px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1000;
-        width: auto;
-        max-width: none;
-        border-radius: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        display: none;
     }
 }
 </style>

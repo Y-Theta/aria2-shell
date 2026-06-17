@@ -98,46 +98,6 @@ const tasks = ref<Task[]>([
         ]
     },
     {
-        id: '3',
-        name: '课程资料全集.7z',
-        totalSize: 2.5 * 1024 * 1024 * 1024,
-        progress: 55,
-        downloadSpeed: 4.1 * 1024 * 1024,
-        uploadSpeed: 0,
-        status: 'downloading',
-        path: '/downloads/courses'
-    },
-    {
-        id: '4',
-        name: '素材包\图片\封面.jpg',
-        totalSize: 4.2 * 1024 * 1024,
-        progress: 85,
-        downloadSpeed: 1.2 * 1024 * 1024,
-        uploadSpeed: 0,
-        status: 'downloading',
-        path: '/downloads/images'
-    },
-    {
-        id: '5',
-        name: '素材包\视频\片头.mp4',
-        totalSize: 128.7 * 1024 * 1024,
-        progress: 40,
-        downloadSpeed: 2 * 1024 * 1024,
-        uploadSpeed: 0,
-        status: 'downloading',
-        path: '/downloads/videos'
-    },
-    {
-        id: '6',
-        name: '素材包\文档\说明.txt',
-        totalSize: 2.1 * 1024,
-        progress: 100,
-        downloadSpeed: 0,
-        uploadSpeed: 0,
-        status: 'completed',
-        path: '/downloads/docs'
-    },
-    {
         id: '7',
         name: '课程资料合集.mp4',
         totalSize: 2.15 * 1024 * 1024 * 1024,
