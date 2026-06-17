@@ -1,59 +1,9 @@
 <template>
-  <div class="task-list">
-    <div class="table-header">
-      <div class="col-file">File</div>
-      <div class="col-progress">Progress</div>
-      <div class="col-speed">Spd</div>
-      <div class="col-eta">ETA</div>
-      <div class="col-actions">Actions</div>
-    </div>
-
-    <div v-if="tasks.length === 0" class="empty-state">
-      <i class="fas fa-inbox"></i>
-      <p>No tasks found</p>
-    </div>
-
-    <div v-else class="tasks-container">
-      <task-row 
-        v-for="task in tasks"
-        :key="task.id"
-        :task="task"
-        @play="handlePlay"
-        @pause="handlePause"
-        @delete="handleDelete"
-      />
-    </div>
-  </div>
+  
 </template>
 
 <script setup lang="ts">
-import type { Task } from '../types';
-import TaskRow from './TaskRow.vue';
 
-interface Props {
-  tasks: Task[];
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<{
-  play: [id: string];
-  pause: [id: string];
-  delete: [id: string];
-}>();
-
-const handlePlay = (id: string) => {
-  emit('play', id);
-};
-
-const handlePause = (id: string) => {
-  emit('pause', id);
-};
-
-const handleDelete = (id: string) => {
-  if (confirm('Are you sure you want to delete this task?')) {
-    emit('delete', id);
-  }
-};
 </script>
 
 <style scoped>

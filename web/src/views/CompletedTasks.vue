@@ -1,7 +1,7 @@
 <template>
-    <task-list :tasks="[]"/>
+    <task-page :tasks="[]"/>
 </template>
 
 <script setup lang="ts">
-import TaskList from '../components/TaskList.vue'
+import TaskPage from '../components/TaskPage.vue';
 </script>

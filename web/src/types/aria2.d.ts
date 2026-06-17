@@ -71,7 +71,7 @@ export interface Aria2ClientConfig {
    */
   secret?: string;
 
-  /**
+   /**
    * 自定义 fetch
    *
    * Node.js 18+ 和浏览器默认都有 fetch。

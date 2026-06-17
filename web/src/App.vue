@@ -38,7 +38,7 @@ import SettingsPanel from './components/SettingsPanel.vue'
 const { t } = useI18n()
 const router = useRouter()
 
-const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
+// const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 const showSettings = ref(false)
 
 onMounted(() => {
