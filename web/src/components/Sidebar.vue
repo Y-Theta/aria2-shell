@@ -50,7 +50,7 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.features') }}</div>
+            <!-- <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.features') }}</div> -->
             <router-link
                 class="nav-item"
                 active-class="active"
@@ -136,7 +136,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 48px;
+    min-height: 56px;
 }
 
 .logo {
@@ -276,6 +276,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    height: 56px;
 }
 
 .mobile-menu-dropdown {
