@@ -1,9 +1,17 @@
 <template>
-    <div class="task-item" :class="{ expanded: isExpanded }">
+    <div class="task-item" :class="{ expanded: isExpanded, selected: isSelected }">
         <div v-if="tooltipVisible" class="task-tooltip" :style="tooltipStyle">{{ task.name }}</div>
-        <div class="task-main" @click="toggleExpand">
+        <div class="task-main" @click="handleMainClick">
             <!-- 桌面端布局 -->
             <div class="desktop-layout">
+                <div v-if="isBatchMode" class="task-cell checkbox-cell">
+                    <input
+                        type="checkbox"
+                        :checked="isSelected"
+                        @click.stop
+                        @change="handleToggleSelect"
+                    />
+                </div>
                 <div class="task-cell info-cell" :style="getColumnStyle('info')">
                     <div class="task-info">
                         <div class="task-icon">
@@ -65,6 +73,14 @@
             <!-- 移动端布局 -->
             <div class="mobile-layout">
                 <div class="mobile-top">
+                    <div v-if="isBatchMode" class="task-cell checkbox-cell">
+                        <input
+                            type="checkbox"
+                            :checked="isSelected"
+                            @click.stop
+                            @change="handleToggleSelect"
+                        />
+                    </div>
                     <div class="task-info">
                         <div class="task-details">
                             <div class="task-name" @mouseenter="showTooltip($event)" @mouseleave="hideTooltip"
@@ -204,6 +220,8 @@ const props = defineProps<{
     task: Task
     columnOrder?: Column[]
     columnWidths?: Record<string, number>
+    isBatchMode?: boolean
+    isSelected?: boolean
 }>()
 
 const getColumnStyle = (columnId: string) => {
@@ -230,6 +248,7 @@ const emit = defineEmits<{
     (e: 'delete', id: string): void
     (e: 'openFolder', id: string): void
     (e: 'openFile', id: string): void
+    (e: 'toggle-select', id: string): void
 }>()
 
 const iconClass = computed(() => {
@@ -245,6 +264,18 @@ const iconClass = computed(() => {
 
 const toggleExpand = () => {
     isExpanded.value = !isExpanded.value
+}
+
+const handleMainClick = () => {
+    if (props.isBatchMode) {
+        emit('toggle-select', props.task.id)
+    } else {
+        toggleExpand()
+    }
+}
+
+const handleToggleSelect = () => {
+    emit('toggle-select', props.task.id)
 }
 
 const getStatusText = (status: string) => {
@@ -296,10 +327,22 @@ const formatSpeed = (bytesPerSecond: number) => {
     overflow: hidden;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    border: 2px solid transparent;
 }
 
 .task-item:hover {
     box-shadow: var(--shadow-sm);
+}
+
+.task-item.selected {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(31, 111, 235, 0.2);
+}
+
+.task-cell.checkbox-cell {
+    flex: 0 0 40px;
+    justify-content: center;
+    padding: 0;
 }
 
 .task-main {
@@ -371,7 +414,7 @@ const formatSpeed = (bytesPerSecond: number) => {
     display: flex;
     align-items: center;
     flex-direction: row;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-lg);
 }
 
 .task-name-text {
@@ -379,7 +422,7 @@ const formatSpeed = (bytesPerSecond: number) => {
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
-    flex-grow: 1;
+    flex-grow: 0;
 }
 
 .torrent-badge {
@@ -631,6 +674,7 @@ const formatSpeed = (bytesPerSecond: number) => {
         flex-direction: row;
         align-items: center;
         gap: var(--spacing-md);
+        flex-grow: 1;
     }
 
     .task-name {
@@ -671,9 +715,11 @@ const formatSpeed = (bytesPerSecond: number) => {
 
     .task-meta {
         display: flex;
+        overflow: hidden;
+        text-overflow: ellipsis;
         gap: var(--spacing-lg);
+        line-height: 1.4;
         padding-top: 4px;
-        flex-wrap: wrap;
         font-size: 13px;
     }
 
@@ -683,7 +729,7 @@ const formatSpeed = (bytesPerSecond: number) => {
         flex-shrink: 0;
         flex-wrap: wrap;
         justify-content: flex-end;
-        max-width: 180px;
+        max-width: 120px;
     }
 
     .mobile-bottom {

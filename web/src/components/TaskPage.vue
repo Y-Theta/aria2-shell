@@ -2,14 +2,21 @@
     <div class="task-page">
         <task-toolbar
             v-model:searchText="searchText"
+            v-model:isBatchMode="isBatchMode"
+            :selectedCount="selectedIds.length"
             @addTask="handleAddTask"
             @startAll="handleStartAll"
             @pauseAll="handlePauseAll"
             @deleteAll="handleDeleteAll"
+            @startSelected="handleStartSelected"
+            @pauseSelected="handlePauseSelected"
+            @deleteSelected="handleDeleteSelected"
         />
         <task-list
-            :tasks="tasks"
+            :tasks="tasks!"
             :searchText="searchText"
+            :isBatchMode="isBatchMode"
+            v-model:selectedIds="selectedIds"
             @start="handleStart"
             @pause="handlePause"
             @delete="handleDelete"
@@ -22,7 +29,7 @@
             :totalUploadSpeed="totalUploadSpeed"
             :downloadingCount="downloadingCount"
             :availableSpace="availableSpace"
-            :totalTasks="tasks.length"
+            :totalTasks="tasks!.length"
         />
     </div>
 </template>
@@ -45,11 +52,9 @@ interface Task {
     path?: string
 }
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
     tasks?: Task[]
-}>(), {
-    tasks: () => [],
-})
+}>()
 
 const emit = defineEmits<{
     (e: 'addTask'): void
@@ -61,20 +66,28 @@ const emit = defineEmits<{
     (e: 'delete', id: string): void
     (e: 'openFolder', id: string): void
     (e: 'openFile', id: string): void
+    (e: 'startSelected', ids: string[]): void
+    (e: 'pauseSelected', ids: string[]): void
+    (e: 'deleteSelected', ids: string[]): void
 }>()
 
 const searchText = ref('')
+const isBatchMode = ref(false)
+const selectedIds = ref<string[]>([])
 
 const totalDownloadSpeed = computed(() => {
-    return props.tasks.reduce((sum, task) => sum + task.downloadSpeed, 0)
+    const t = props.tasks || []
+    return t.reduce((sum, task) => sum + task.downloadSpeed, 0)
 })
 
 const totalUploadSpeed = computed(() => {
-    return props.tasks.reduce((sum, task) => sum + task.uploadSpeed, 0)
+    const t = props.tasks || []
+    return t.reduce((sum, task) => sum + task.uploadSpeed, 0)
 })
 
 const downloadingCount = computed(() => {
-    return props.tasks.filter(task => task.status === 'downloading' || task.status === 'seeding').length
+    const t = props.tasks || []
+    return t.filter(task => task.status === 'downloading' || task.status === 'seeding').length
 })
 
 const availableSpace = ref(128 * 1024 * 1024 * 1024) // 128 GB
@@ -88,6 +101,9 @@ const handlePause = (id: string) => emit('pause', id)
 const handleDelete = (id: string) => emit('delete', id)
 const handleOpenFolder = (id: string) => emit('openFolder', id)
 const handleOpenFile = (id: string) => emit('openFile', id)
+const handleStartSelected = () => emit('startSelected', [...selectedIds.value])
+const handlePauseSelected = () => emit('pauseSelected', [...selectedIds.value])
+const handleDeleteSelected = () => emit('deleteSelected', [...selectedIds.value])
 </script>
 
 <style scoped>

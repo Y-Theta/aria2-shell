@@ -7,6 +7,13 @@
         <div v-else class="task-table">
             <!-- 表头 -->
             <div class="task-header">
+                <div v-if="isBatchMode" class="header-cell checkbox-cell">
+                    <input
+                        type="checkbox"
+                        :checked="isAllSelected"
+                        @change="toggleSelectAll"
+                    />
+                </div>
                 <div class="header-cell info-cell" :style="getColumnStyle('info')">
                     {{ t('taskPage.fileName') }}
                     <div class="resize-handle" @mousedown="handleResizeStart($event, 'info')"></div>
@@ -18,14 +25,28 @@
             </div>
             <!-- 任务项 -->
             <div class="task-body">
-                <task-item v-for="task in filteredTasks" :key="task.id" :task="task" :column-order="visibleColumns" :column-widths="columnWidths" @start="$emit('start', $event)" @pause="$emit('pause', $event)" @delete="$emit('delete', $event)" @openFolder="$emit('openFolder', $event)" @openFile="$emit('openFile', $event)" />
+                <task-item
+                    v-for="task in filteredTasks"
+                    :key="task.id"
+                    :task="task"
+                    :column-order="visibleColumns"
+                    :column-widths="columnWidths"
+                    :is-batch-mode="isBatchMode"
+                    :is-selected="selectedIds.includes(task.id)"
+                    @start="$emit('start', $event)"
+                    @pause="$emit('pause', $event)"
+                    @delete="$emit('delete', $event)"
+                    @openFolder="$emit('openFolder', $event)"
+                    @openFile="$emit('openFile', $event)"
+                    @toggle-select="toggleSelect"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TaskItem from './TaskItem.vue'
 
@@ -80,6 +101,7 @@ const resizingColumn = ref<string | null>(null)
 const startX = ref<number>(0)
 const isDragging = ref(false)
 const temporaryOrder = ref<Column[] | null>(null)
+const selectedIds = ref<string[]>([])
 
 const visibleColumns = computed(() => {
     return temporaryOrder.value || columnOrder.value
@@ -88,6 +110,7 @@ const visibleColumns = computed(() => {
 const props = defineProps<{
     tasks: Task[]
     searchText: string
+    isBatchMode: boolean
 }>()
 
 const filteredTasks = computed(() => {
@@ -97,6 +120,29 @@ const filteredTasks = computed(() => {
         task.name.toLowerCase().includes(searchLower)
     )
 })
+
+const isAllSelected = computed(() => {
+    return filteredTasks.value.length > 0 && filteredTasks.value.every(task => selectedIds.value.includes(task.id))
+})
+
+const toggleSelect = (id: string) => {
+    const index = selectedIds.value.indexOf(id)
+    if (index > -1) {
+        selectedIds.value.splice(index, 1)
+    } else {
+        selectedIds.value.push(id)
+    }
+    emit('update:selectedIds', [...selectedIds.value])
+}
+
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        selectedIds.value = []
+    } else {
+        selectedIds.value = filteredTasks.value.map(task => task.id)
+    }
+    emit('update:selectedIds', [...selectedIds.value])
+}
 
 const getColumnStyle = (columnId: string) => {
     return {
@@ -181,6 +227,13 @@ const handleResizeEnd = () => {
     document.removeEventListener('mouseup', handleResizeEnd)
 }
 
+watch(() => props.isBatchMode, (newVal) => {
+    if (!newVal) {
+        selectedIds.value = []
+        emit('update:selectedIds', [])
+    }
+})
+
 onMounted(() => {})
 
 onUnmounted(() => {
@@ -190,12 +243,14 @@ onUnmounted(() => {
     document.removeEventListener('mouseup', handleResizeEnd)
 })
 
-defineEmits<{
+const emit = defineEmits<{
     (e: 'start', id: string): void
     (e: 'pause', id: string): void
     (e: 'delete', id: string): void
     (e: 'openFolder', id: string): void
     (e: 'openFile', id: string): void
+    (e: 'toggle-select', id: string): void
+    (e: 'update:selectedIds', ids: string[]): void
 }>()
 </script>
 
@@ -252,6 +307,11 @@ defineEmits<{
 
 .header-cell:last-child {
     border-right: none;
+}
+
+.header-cell.checkbox-cell {
+    cursor: default;
+    flex: 0 0 40px;
 }
 
 .header-cell.info-cell {
