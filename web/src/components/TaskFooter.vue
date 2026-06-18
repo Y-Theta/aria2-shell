@@ -83,7 +83,7 @@ const formatSpeed = (bytesPerSecond: number) => {
     background-color: var(--footer-bg);
     border-top: 1px solid var(--footer-border);
     flex-wrap: wrap;
-    min-height: 56px;
+    min-height: 54px;
 }
 
 .footer-stat {

@@ -26,60 +26,68 @@
                     <span v-if="!isCollapsed && item.badge" class="badge">{{ item.badge }}</span>
                 </router-link>
             </template>
-            <template v-else>
-                <div class="nav-item menu-toggle" @click="toggleMobileMenu">
-                    <i class="fas fa-bars"></i>
-                    <span v-if="isMobileMenuOpen" class="nav-label">{{ t('sidebar.menu') }}</span>
-                </div>
-                <div v-if="isMobileMenuOpen" class="mobile-menu-dropdown">
-                    <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
-                    <router-link
-                        v-for="item in statusMenuItems"
-                        :key="item.id"
-                        class="nav-item"
-                        active-class="active"
-                        :to="item.to"
-                        @click="closeMobileMenu"
-                    >
-                        <i :class="item.icon"></i>
-                        <span class="nav-label">{{ t(item.labelKey) }}</span>
-                        <span v-if="item.badge" class="badge">{{ item.badge }}</span>
-                    </router-link>
-                    <div class="mobile-menu-section">{{ t('sidebar.settings') }}</div>
-                    <router-link
-                        class="nav-item"
-                        active-class="active"
-                        to="/settings"
-                        @click="closeMobileMenu"
-                    >
-                        <i class="fas fa-cog"></i>
-                        <span class="nav-label">{{ t('sidebar.settings') }}</span>
-                    </router-link>
-                    <div class="mobile-menu-divider"></div>
-                    <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
-                        <i class="fas fa-right-from-bracket"></i>
-                        <span class="nav-label">{{ t('common.logout') }}</span>
-                    </button>
-                </div>
+
+            <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.features') }}</div>
+            <template v-if="!isMobile">
+                <router-link
+                    class="nav-item"
+                    active-class="active"
+                    to="/settings"
+                >
+                    <i class="fas fa-cog"></i>
+                    <span v-if="!isCollapsed" class="nav-label">{{ t('sidebar.settings') }}</span>
+                </router-link>
             </template>
         </nav>
 
         <div class="sidebar-footer" v-if="!isMobile">
-            <!-- <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.features') }}</div> -->
-            <router-link
-                class="nav-item"
-                active-class="active"
-                to="/settings"
-                @click="closeMobileMenu"
-            >
-                <i class="fas fa-cog"></i>
-                <span v-if="!isCollapsed" class="nav-label">{{ t('sidebar.settings') }}</span>
-            </router-link>
             <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
                 <i class="fas fa-right-from-bracket"></i>
                 <span v-if="!isCollapsed" class="nav-label">{{ t('common.logout') }}</span>
             </button>
         </div>
+
+        <!-- 移动端布局 -->
+        <template v-else>
+            <router-link
+                class="mobile-bottom-nav"
+                :to="activeMenuItem.to"
+                @click="toggleMobileMenu"
+            >
+                <i :class="activeMenuItem.icon"></i>
+                <span class="nav-label">{{ t(activeMenuItem.labelKey) }}</span>
+            </router-link>
+            <div v-if="isMobileMenuOpen" class="mobile-menu-dropdown">
+                <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
+                <router-link
+                    v-for="item in statusMenuItems"
+                    :key="item.id"
+                    class="nav-item"
+                    active-class="active"
+                    :to="item.to"
+                    @click="selectMenuItem(item)"
+                >
+                    <i :class="item.icon"></i>
+                    <span class="nav-label">{{ t(item.labelKey) }}</span>
+                    <span v-if="item.badge" class="badge">{{ item.badge }}</span>
+                </router-link>
+                <div class="mobile-menu-section">{{ t('sidebar.features') }}</div>
+                <router-link
+                    class="nav-item"
+                    active-class="active"
+                    to="/settings"
+                    @click="selectMenuItem(settingItem)"
+                >
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-label">{{ t('sidebar.settings') }}</span>
+                </router-link>
+                <div class="mobile-menu-divider"></div>
+                <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
+                    <i class="fas fa-right-from-bracket"></i>
+                    <span class="nav-label">{{ t('common.logout') }}</span>
+                </button>
+            </div>
+        </template>
 
         <ConfirmDialog
             v-model:visible="showConfirmLogout"
@@ -91,9 +99,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../services/auth'
 import ConfirmDialog from './ConfirmDialog.vue'
 
@@ -107,11 +115,32 @@ interface MenuItem {
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const { logout, isAuthenticated } = useAuth()
 const isCollapsed = ref(false)
 const isMobile = ref(false)
 const isMobileMenuOpen = ref(false)
 const showConfirmLogout = ref(false)
+
+const statusMenuItems: MenuItem[] = [
+    { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active', badge: 2 },
+    { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check', to: '/completed' },
+    { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause', to: '/paused' },
+    { id: 'torrents', labelKey: 'sidebar.torrents', icon: 'fas fa-file-arrow-down', to: '/torrents' },
+]
+
+const settingItem: MenuItem = {
+    id: 'settings',
+    labelKey: 'sidebar.settings',
+    icon: 'fas fa-cog',
+    to: '/settings'
+}
+
+const allMenuItems = [...statusMenuItems, settingItem]
+
+const activeMenuItem = computed(() => {
+    return allMenuItems.find(item => route.path === item.to) || statusMenuItems[0]
+})
 
 const showLogoutConfirm = () => {
     showConfirmLogout.value = true
@@ -122,12 +151,9 @@ const confirmLogout = () => {
     router.push('/login')
 }
 
-const statusMenuItems: MenuItem[] = [
-    { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active', badge: 2 },
-    { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check', to: '/completed' },
-    { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause', to: '/paused' },
-    { id: 'torrents', labelKey: 'sidebar.torrents', icon: 'fas fa-file-arrow-down', to: '/torrents' },
-]
+const selectMenuItem = (item: MenuItem) => {
+    closeMobileMenu()
+}
 
 const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value
@@ -434,6 +460,7 @@ onUnmounted(() => {
 
     .sidebar.is-mobile .nav-item.menu-toggle {
         width: 64px;
+        flex: none;
     }
 
     .sidebar.is-mobile .nav-item i {
@@ -477,6 +504,31 @@ onUnmounted(() => {
 
     .sidebar.is-mobile .mobile-menu-dropdown .logout-btn:hover {
         background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .mobile-bottom-nav {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-sm) var(--spacing-lg);
+        background-color: var(--panel-bg);
+        color: var(--primary-blue);
+        text-decoration: none;
+        gap: var(--spacing-xs);
+        transition: all 0.2s ease;
+        height: 100%;
+    }
+
+    .mobile-bottom-nav:hover {
+        background-color: var(--bg-gray);
+    }
+
+    .mobile-bottom-nav .nav-label {
+        font-size: 12px;
+        font-weight: 600;
+        display: block;
     }
 }
 </style>
