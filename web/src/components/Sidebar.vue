@@ -362,6 +362,7 @@ onUnmounted(() => {
         flex-direction: column;
         border-radius: 0;
         margin: 0;
+        min-width: 144px;
     }
 
     .sidebar.is-mobile .nav-item.menu-toggle {

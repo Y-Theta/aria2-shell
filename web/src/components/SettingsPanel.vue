@@ -1078,6 +1078,13 @@ const selectPath = (key: SettingKey) => {
     border: 1px solid var(--input-border);
     color: var(--text-secondary);
     background: var(--panel-bg);
+    display: flex;
+    flex-direction: row;
+    text-overflow:ellipsis;
+    overflow: hidden;
+    min-width: 96px;
+    letter-spacing: 4px;
+    padding: var(--spacing-xs);
 }
 
 .secondary-button:hover {
