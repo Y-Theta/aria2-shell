@@ -60,6 +60,12 @@ export default {
         totalTasks: 'Total Tasks',
         expand: 'Expand',
         collapse: 'Collapse',
+        batchOperation: 'Batch Operation',
+        startSelected: 'Start Selected',
+        pauseSelected: 'Pause Selected',
+        deleteSelected: 'Delete Selected',
+        selectedCount: '{count} items selected',
+        torrentFileList: 'Torrent File List',
     },
     settings: {
         title: 'Settings',

@@ -60,6 +60,12 @@ export default {
         totalTasks: '总任务',
         expand: '展开',
         collapse: '收起',
+        batchOperation: '批量操作',
+        startSelected: '开始选中',
+        pauseSelected: '暂停选中',
+        deleteSelected: '删除选中',
+        selectedCount: '已选 {count} 项',
+        torrentFileList: '种子文件列表',
     },
     settings: {
         title: '设置',

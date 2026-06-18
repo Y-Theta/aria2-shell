@@ -8,15 +8,15 @@
             <template v-if="isBatchMode">
                 <button class="btn-secondary" @click="$emit('startSelected')">
                     <i class="fas fa-play"></i>
-                    <span>开始选中</span>
+                    <span>{{ t('taskPage.startSelected') }}</span>
                 </button>
                 <button class="btn-secondary" @click="$emit('pauseSelected')">
                     <i class="fas fa-pause"></i>
-                    <span>暂停选中</span>
+                    <span>{{ t('taskPage.pauseSelected') }}</span>
                 </button>
                 <button class="btn-danger" @click="$emit('deleteSelected')">
                     <i class="fas fa-trash"></i>
-                    <span>删除选中</span>
+                    <span>{{ t('taskPage.deleteSelected') }}</span>
                 </button>
             </template>
             <template v-else>
@@ -39,10 +39,10 @@
                 @click="$emit('update:isBatchMode', !isBatchMode)"
             >
                 <i class="fas fa-check-square"></i>
-                <span>批量操作</span>
+                <span>{{ t('taskPage.batchOperation') }}</span>
             </button>
             <div v-if="isBatchMode" class="selected-count">
-                已选 {{ selectedCount }} 项 
+                {{ t('taskPage.selectedCount', { count: selectedCount }) }}
             </div>
         </div>
         <div class="toolbar-right">

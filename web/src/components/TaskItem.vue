@@ -5,12 +5,7 @@
             <!-- 桌面端布局 -->
             <div class="desktop-layout">
                 <div v-if="isBatchMode" class="task-cell checkbox-cell">
-                    <input
-                        type="checkbox"
-                        :checked="isSelected"
-                        @click.stop
-                        @change="handleToggleSelect"
-                    />
+                    <input type="checkbox" :checked="isSelected" @click.stop @change="handleToggleSelect" />
                 </div>
                 <div class="task-cell info-cell" :style="getColumnStyle('info')">
                     <div class="task-info">
@@ -74,12 +69,7 @@
             <div class="mobile-layout">
                 <div class="mobile-top">
                     <div v-if="isBatchMode" class="task-cell checkbox-cell">
-                        <input
-                            type="checkbox"
-                            :checked="isSelected"
-                            @click.stop
-                            @change="handleToggleSelect"
-                        />
+                        <input type="checkbox" :checked="isSelected" @click.stop @change="handleToggleSelect" />
                     </div>
                     <div class="task-info">
                         <div class="task-details">
@@ -122,17 +112,20 @@
         <div v-if="isExpanded" class="task-expanded">
             <div v-if="task.isTorrent && task.files && task.files.length > 0" class="torrent-files">
                 <div class="files-header">
-                    <span class="files-title">种子文件列表 ({{ task.files.length }})</span>
+                    <span class="files-title">{{ t('taskPage.torrentFileList') }} ({{ task.files.length }})</span>
                 </div>
                 <div class="files-list">
                     <div v-for="file in task.files" :key="file.id" class="file-item">
-                        <div class="file-info">
-                            <i :class="getFileIcon(file.name)" class="file-icon"></i>
-                            <span class="file-name">{{ file.name }}</span>
-                        </div>
-                        <div class="file-details">
-                            <span class="file-progress-text">{{ file.progress }}%</span>
-                            <span class="file-size">{{ formatSize(file.size) }}</span>
+                        <div class="file-progress-bg" :style="{ width: file.progress + '%' }"></div>
+                        <div class="file-content">
+                            <div class="file-info">
+                                <i :class="getFileIcon(file.name)" class="file-icon"></i>
+                                <span class="file-name">{{ file.name }}</span>
+                            </div>
+                            <div class="file-details">
+                                <span class="file-speed">{{ formatSpeed(0) }}</span>
+                                <span class="file-size">{{ formatSize(file.size) }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -152,7 +145,7 @@
                 </div>
             </div>
             <div class="expanded-row" v-if="task.path">
-                <div class="expanded-item full-width">
+                <div class="expanded-item full-width expanded-path">
                     <span class="label">{{ t('settings.general.downloadPath.desc') }}:</span>
                     <span class="value">{{ task.path }}</span>
                 </div>
@@ -561,12 +554,33 @@ const formatSpeed = (bytesPerSecond: number) => {
 }
 
 .file-item {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-sm) var(--spacing-md);
     background-color: var(--bg-gray);
     border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.file-progress-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background-color: rgba(31, 111, 235, 0.1);
+    transition: width 0.3s ease;
+    z-index: 1;
+}
+
+.file-content {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 2;
 }
 
 .file-info {
@@ -606,10 +620,10 @@ const formatSpeed = (bytesPerSecond: number) => {
     text-align: right;
 }
 
-.file-progress-text {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
+.file-speed {
+    font-size: 12px;
+    min-width: 72px;
+    color: var(--text-secondary);
     text-align: right;
 }
 
@@ -702,6 +716,10 @@ const formatSpeed = (bytesPerSecond: number) => {
         word-break: break-word;
     }
 
+    .task-cell.checkbox-cell {
+        display: none;
+    }
+
     .torrent-badge {
         display: block;
         flex-grow: 1;
@@ -746,6 +764,10 @@ const formatSpeed = (bytesPerSecond: number) => {
     }
 
     .priority-badge {
+        display: none;
+    }
+
+    .expanded-path .label {
         display: none;
     }
 }
