@@ -1244,7 +1244,7 @@ const selectPath = (key: SettingKey) => {
     }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 768px) {
     .settings-drawer {
         width: 100vw;
         height: 100vh;
@@ -1291,10 +1291,15 @@ const selectPath = (key: SettingKey) => {
         gap: 12px;
     }
 
-    .setting-item .switch,
     .setting-item .setting-select,
     .setting-item .number-input {
         align-self: flex-start;
+    }
+
+    /* 针对包含switch的setting-item，保持row布局 */
+    .setting-item:has(.switch) {
+        flex-direction: row;
+        align-items: center;
     }
 
     .path-row {

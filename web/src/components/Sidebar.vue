@@ -3,7 +3,7 @@
         <div class="sidebar-header">
             <div class="logo" @click="toggleCollapse">
                 <i class="fas fa-download"></i>
-                <span v-if="!isCollapsed && !isMobile" class="logo-text">BitStream</span>
+                <span v-if="!isCollapsed && !isMobile" class="logo-text">Bitstream</span>
             </div>
 
             <button class="collapse-btn" type="button" @click="toggleCollapse" v-if="!isMobile">
@@ -45,11 +45,26 @@
                         <span class="nav-label">{{ t(item.labelKey) }}</span>
                         <span v-if="item.badge" class="badge">{{ item.badge }}</span>
                     </router-link>
+                    <div class="mobile-menu-section">{{ t('sidebar.settings') }}</div>
+                    <router-link
+                        class="nav-item"
+                        active-class="active"
+                        to="/settings"
+                        @click="closeMobileMenu"
+                    >
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-label">{{ t('sidebar.settings') }}</span>
+                    </router-link>
+                    <div class="mobile-menu-divider"></div>
+                    <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
+                        <i class="fas fa-right-from-bracket"></i>
+                        <span class="nav-label">{{ t('common.logout') }}</span>
+                    </button>
                 </div>
             </template>
         </nav>
 
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" v-if="!isMobile">
             <!-- <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.features') }}</div> -->
             <router-link
                 class="nav-item"
@@ -58,15 +73,29 @@
                 @click="closeMobileMenu"
             >
                 <i class="fas fa-cog"></i>
-                <span v-if="!isCollapsed && !isMobile" class="nav-label">{{ t('sidebar.settings') }}</span>
+                <span v-if="!isCollapsed" class="nav-label">{{ t('sidebar.settings') }}</span>
             </router-link>
+            <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
+                <i class="fas fa-right-from-bracket"></i>
+                <span v-if="!isCollapsed" class="nav-label">{{ t('common.logout') }}</span>
+            </button>
         </div>
+
+        <ConfirmDialog
+            v-model:visible="showConfirmLogout"
+            :title="t('common.confirmLogoutTitle')"
+            :message="t('common.confirmLogoutMessage')"
+            @confirm="confirmLogout"
+        />
     </aside>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { useAuth } from '../services/auth'
+import ConfirmDialog from './ConfirmDialog.vue'
 
 interface MenuItem {
     id: string
@@ -77,9 +106,21 @@ interface MenuItem {
 }
 
 const { t } = useI18n()
+const router = useRouter()
+const { logout, isAuthenticated } = useAuth()
 const isCollapsed = ref(false)
 const isMobile = ref(false)
 const isMobileMenuOpen = ref(false)
+const showConfirmLogout = ref(false)
+
+const showLogoutConfirm = () => {
+    showConfirmLogout.value = true
+}
+
+const confirmLogout = () => {
+    logout()
+    router.push('/login')
+}
 
 const statusMenuItems: MenuItem[] = [
     { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active', badge: 2 },
@@ -276,7 +317,27 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    height: 56px;
+    height: auto;
+}
+
+.logout-btn {
+    border: none;
+    background: transparent;
+    padding: 8px var(--spacing-md);
+    margin: 0 var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    color: var(--error-red);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+.logout-btn:hover {
+    color: var(--error-red);
+    background-color: rgba(220, 53, 69, 0.1);
 }
 
 .mobile-menu-dropdown {
@@ -301,6 +362,12 @@ onUnmounted(() => {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     user-select: none;
+}
+
+.mobile-menu-divider {
+    height: 1px;
+    background-color: var(--border-gray);
+    margin: var(--spacing-sm) var(--spacing-xs);
 }
 
 /* 手机端适配 */
@@ -394,6 +461,22 @@ onUnmounted(() => {
 
     .sidebar.is-mobile .mobile-menu-dropdown .nav-item i {
         font-size: 16px;
+    }
+
+    .sidebar.is-mobile .mobile-menu-dropdown .logout-btn {
+        height: auto;
+        padding: 8px var(--spacing-md);
+        margin: 0 var(--spacing-xs);
+        flex-direction: row;
+        justify-content: flex-start;
+        border-radius: 6px;
+        color: var(--error-red);
+        display: flex;
+        width: calc(100% - var(--spacing-md));
+    }
+
+    .sidebar.is-mobile .mobile-menu-dropdown .logout-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
     }
 }
 </style>

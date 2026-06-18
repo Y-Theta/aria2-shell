@@ -5,7 +5,22 @@ export default {
         theme: '主题',
         light: '浅色',
         dark: '深色',
-        close: '关闭'
+        close: '关闭',
+        logout: '退出登录',
+        confirm: '确认',
+        cancel: '取消',
+        confirmLogoutTitle: '确认退出',
+        confirmLogoutMessage: '确定要退出登录吗？',
+    },
+    login: {
+        subtitle: '高效的下载管理器',
+        login: '登录',
+        register: '注册',
+        username: '用户名',
+        password: '密码',
+        usernamePlaceholder: '请输入用户名',
+        passwordPlaceholder: '请输入密码',
+        footerText: 'Powered by Aria2',
     },
     connection: {
         checkingTitle: '正在连接 aria2 ',

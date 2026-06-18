@@ -5,7 +5,22 @@ export default {
         theme: 'Theme',
         light: 'Light',
         dark: 'Dark',
-        close: 'Close'
+        close: 'Close',
+        logout: 'Logout',
+        confirm: 'Confirm',
+        cancel: 'Cancel',
+        confirmLogoutTitle: 'Confirm Logout',
+        confirmLogoutMessage: 'Are you sure you want to logout?',
+    },
+    login: {
+        subtitle: 'Efficient Download Manager',
+        login: 'Login',
+        register: 'Register',
+        username: 'Username',
+        password: 'Password',
+        usernamePlaceholder: 'Enter your username',
+        passwordPlaceholder: 'Enter your password',
+        footerText: 'Powered by Aria2',
     },
     connection: {
         checkingTitle: 'Connecting to aria2 ',

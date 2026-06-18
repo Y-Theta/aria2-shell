@@ -1,6 +1,6 @@
 <template>
-    <div class="app-layout">
-        <sidebar />
+    <div class="app-layout" :class="{ 'login-layout': isLoginPage }">
+        <sidebar v-if="!isLoginPage" />
 
         <div class="main-content">
             <router-view />
@@ -9,7 +9,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Sidebar from './components/Sidebar.vue'
+
+const route = useRoute()
+const isLoginPage = computed(() => route.path === '/login')
 </script>
 
 <style scoped>
@@ -18,6 +23,10 @@ import Sidebar from './components/Sidebar.vue'
     height: 100vh;
     width: 100%;
     background-color: var(--app-bg);
+}
+
+.app-layout.login-layout {
+    display: block;
 }
 
 .main-content {
@@ -30,10 +39,19 @@ import Sidebar from './components/Sidebar.vue'
     overflow: hidden;
 }
 
+.app-layout.login-layout .main-content {
+    flex: none;
+    width: 100%;
+}
+
 @media (max-width: 768px) {
     .app-layout {
         height: 100dvh;
         overflow: hidden;
+    }
+
+    .app-layout.login-layout {
+        height: 100dvh;
     }
 
     .main-content {
@@ -42,6 +60,10 @@ import Sidebar from './components/Sidebar.vue'
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         padding-bottom: 64px;
+    }
+
+    .app-layout.login-layout .main-content {
+        padding-bottom: 0;
     }
 }
 </style>
