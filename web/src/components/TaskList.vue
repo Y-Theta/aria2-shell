@@ -23,30 +23,39 @@
                     <div class="resize-handle" @mousedown="handleResizeStart($event, column.id)"></div>
                 </div>
             </div>
-            <!-- 任务项 -->
-            <div class="task-body">
-                <task-item
-                    v-for="task in filteredTasks"
-                    :key="task.id"
-                    :task="task"
-                    :column-order="visibleColumns"
-                    :column-widths="columnWidths"
-                    :is-batch-mode="isBatchMode"
-                    :is-selected="selectedIds.includes(task.id)"
-                    @start="$emit('start', $event)"
-                    @pause="$emit('pause', $event)"
-                    @delete="$emit('delete', $event)"
-                    @openFolder="$emit('openFolder', $event)"
-                    @openFile="$emit('openFile', $event)"
-                    @toggle-select="toggleSelect"
-                />
+            <!-- 任务项 - 虚拟滚动列表 -->
+            <div ref="scrollContainer" class="task-body" @scroll="handleScroll">
+                <div class="virtual-list-container" :style="{ height: totalHeight + 'px' }">
+                    <div
+                        class="virtual-list-items"
+                        :style="{ transform: `translateY(${offsetY}px)` }"
+                    >
+                        <task-item
+                            v-for="task in visibleTasks"
+                            :key="task.id"
+                            :task="task"
+                            :column-order="visibleColumns"
+                            :column-widths="columnWidths"
+                            :is-batch-mode="isBatchMode"
+                            :is-selected="selectedIds.includes(task.id)"
+                            :is-expanded="expandedIds.has(task.id)"
+                            @start="$emit('start', $event)"
+                            @pause="$emit('pause', $event)"
+                            @delete="$emit('delete', $event)"
+                            @openFolder="$emit('openFolder', $event)"
+                            @openFile="$emit('openFile', $event)"
+                            @toggle-select="toggleSelect"
+                            @toggle-expand="toggleExpand"
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TaskItem from './TaskItem.vue'
 
@@ -102,6 +111,15 @@ const startX = ref<number>(0)
 const isDragging = ref(false)
 const temporaryOrder = ref<Column[] | null>(null)
 const selectedIds = ref<string[]>([])
+const expandedIds = ref<Set<string>>(new Set()) // 管理展开状态
+
+// 虚拟滚动相关
+const scrollContainer = ref<HTMLDivElement | null>(null)
+const itemHeight = ref(72) // 每个TaskItem的高度
+const visibleTasks = ref<Task[]>([])
+const offsetY = ref(0)
+const startIndex = ref(0)
+const endIndex = ref(0)
 
 const visibleColumns = computed(() => {
     return temporaryOrder.value || columnOrder.value
@@ -120,6 +138,25 @@ const filteredTasks = computed(() => {
         task.name.toLowerCase().includes(searchLower)
     )
 })
+
+const totalHeight = computed(() => {
+    let height = 0
+    for (const task of filteredTasks.value) {
+        height += expandedIds.value.has(task.id) ? (itemHeight.value + 200) : itemHeight.value
+    }
+    return height
+})
+
+const toggleExpand = (id: string) => {
+    if (expandedIds.value.has(id)) {
+        expandedIds.value.delete(id)
+    } else {
+        expandedIds.value.add(id)
+    }
+    nextTick(() => {
+        updateVisibleItems()
+    })
+}
 
 const isAllSelected = computed(() => {
     return filteredTasks.value.length > 0 && filteredTasks.value.every(task => selectedIds.value.includes(task.id))
@@ -148,6 +185,66 @@ const getColumnStyle = (columnId: string) => {
     return {
         flex: columnWidths.value[columnId],
     }
+}
+
+// 更新可见的任务项
+const updateVisibleItems = () => {
+    if (!scrollContainer.value) return
+    
+    const scrollTop = scrollContainer.value.scrollTop
+    const containerHeight = scrollContainer.value.clientHeight
+    
+    // 计算每个项目的高度和位置
+    const items = []
+    let currentHeight = 0
+    
+    for (let i = 0; i < filteredTasks.value.length; i++) {
+        const task = filteredTasks.value[i]
+        const height = expandedIds.value.has(task.id) ? (itemHeight.value + 200) : itemHeight.value
+        items.push({
+            index: i,
+            task,
+            top: currentHeight,
+            height
+        })
+        currentHeight += height
+    }
+    
+    // 找到第一个与滚动区域重叠的项目
+    let startIdx = 0
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].top + items[i].height > scrollTop) {
+            startIdx = i
+            break
+        }
+    }
+    
+    // 找到最后一个与滚动区域重叠的项目
+    let endIdx = items.length - 1
+    for (let i = startIdx; i < items.length; i++) {
+        if (items[i].top > scrollTop + containerHeight) {
+            endIdx = i - 1
+            break
+        }
+    }
+    
+    // 加上buffer
+    const buffer = 5
+    const newStartIndex = Math.max(0, startIdx - buffer)
+    const newEndIndex = Math.min(items.length, endIdx + buffer)
+    
+    startIndex.value = newStartIndex
+    endIndex.value = newEndIndex
+    
+    // 计算偏移量
+    offsetY.value = items[newStartIndex].top
+    
+    // 更新可见任务
+    visibleTasks.value = filteredTasks.value.slice(newStartIndex, newEndIndex)
+}
+
+const handleScroll = () => {
+    updateVisibleItems()
 }
 
 const handleDragStart = (event: MouseEvent, index: number) => {
@@ -234,7 +331,17 @@ watch(() => props.isBatchMode, (newVal) => {
     }
 })
 
-onMounted(() => {})
+// 当任务变化时，重新计算可见项
+watch(() => filteredTasks.value, () => {
+    updateVisibleItems()
+}, { deep: true })
+
+onMounted(() => {
+    // 延迟确保DOM渲染
+    nextTick(() => {
+        updateVisibleItems()
+    })
+})
 
 onUnmounted(() => {
     document.removeEventListener('mousemove', handleDragMove)
@@ -325,14 +432,13 @@ const emit = defineEmits<{
 }
 
 .task-body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
     padding-right: 2px;
     padding-left: 2px;
+    position: relative;
 }
 
 .task-body::-webkit-scrollbar {
@@ -351,6 +457,21 @@ const emit = defineEmits<{
 
 .task-body::-webkit-scrollbar-thumb:hover {
     background: var(--neutral-gray);
+}
+
+.virtual-list-container {
+    position: relative;
+    width: 100%;
+}
+
+.virtual-list-items {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 .resize-handle {

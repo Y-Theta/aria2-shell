@@ -25,7 +25,7 @@ import {
     Aria2Uri,
     Aria2Version,
     BatchCall,
-} from './types/aria2';
+} from './types/aria2.js';
 
 export class Aria2RpcError extends Error {
 

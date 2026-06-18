@@ -186,7 +186,6 @@ interface Column {
 }
 
 const { t } = useI18n()
-const isExpanded = ref(false)
 const tooltipVisible = ref(false)
 const tooltipStyle = ref({})
 const taskNameDesktop = ref<HTMLElement>()
@@ -215,6 +214,17 @@ const props = defineProps<{
     columnWidths?: Record<string, number>
     isBatchMode?: boolean
     isSelected?: boolean
+    isExpanded?: boolean
+}>()
+
+const emit = defineEmits<{
+    (e: 'start', id: string): void
+    (e: 'pause', id: string): void
+    (e: 'delete', id: string): void
+    (e: 'openFolder', id: string): void
+    (e: 'openFile', id: string): void
+    (e: 'toggle-select', id: string): void
+    (e: 'toggle-expand', id: string): void
 }>()
 
 const getColumnStyle = (columnId: string) => {
@@ -235,15 +245,6 @@ const getDefaultFlex = (columnId: string) => {
     return defaults[columnId] || 1
 }
 
-const emit = defineEmits<{
-    (e: 'start', id: string): void
-    (e: 'pause', id: string): void
-    (e: 'delete', id: string): void
-    (e: 'openFolder', id: string): void
-    (e: 'openFile', id: string): void
-    (e: 'toggle-select', id: string): void
-}>()
-
 const iconClass = computed(() => {
     if (props.task.isTorrent) return 'fas fa-file-archive'
     const ext = props.task.name.split('.').pop()?.toLowerCase()
@@ -256,7 +257,7 @@ const iconClass = computed(() => {
 })
 
 const toggleExpand = () => {
-    isExpanded.value = !isExpanded.value
+    emit('toggle-expand', props.task.id)
 }
 
 const handleMainClick = () => {

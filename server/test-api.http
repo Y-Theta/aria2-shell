@@ -1,0 +1,162 @@
+# HTTP YAC Tests for aria2-shell Server API
+# 
+# How to use:
+# 1. Make sure server is running (pnpm dev)
+# 2. Use VSCode with REST Client or YAC extension
+# 3. Click "Send Request" to run each test
+#
+# Variables
+@baseUrl = http://localhost:65004
+@testUsername = testuser
+@testPassword = password123
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsImlhdCI6MTc4MTc2OTIyNywiZXhwIjoxNzgyMzc0MDI3fQ.c4LipmvrXopW0ao1Ni4wT5Cv6hvvvSmW9yK9kZnTaag
+@gid = 
+
+###
+# Step 1: Register a new user
+# @name registerUser
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "{{testUsername}}",
+  "password": "{{testPassword}}"
+}
+
+###
+# Step 2: Login and get token
+# @name loginUser
+# @prompt token { $.token }
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{testUsername}}",
+  "password": "{{testPassword}}"
+}
+
+###
+# Step 3: Get current user info
+# @name getMe
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+###
+# Step 4: Change password (optional)
+# @name changePassword
+POST {{baseUrl}}/api/auth/change-password
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "oldPassword": "{{testPassword}}",
+  "newPassword": "newpassword123"
+}
+
+###
+# Step 5: Set user config
+# @name setConfig
+POST {{baseUrl}}/api/user/config
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "key": "download_dir",
+  "value": "/downloads/test"
+}
+
+###
+# Step 6: Get specific config
+# @name getConfig
+GET {{baseUrl}}/api/user/config/download_dir
+Authorization: Bearer {{token}}
+
+###
+# Step 7: Get all configs
+# @name getAllConfigs
+GET {{baseUrl}}/api/user/configs
+Authorization: Bearer {{token}}
+
+###
+# Step 8: Delete a config
+# @name deleteConfig
+DELETE {{baseUrl}}/api/user/config/download_dir
+Authorization: Bearer {{token}}
+
+###
+# Step 9: Call aria2 method
+# @name callAria2
+POST {{baseUrl}}/api/aria2/call
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "method": "aria2.getVersion",
+  "params": []
+}
+
+###
+# Step 10: Add a download task
+# @name addUri
+# @prompt gid { $.gid }
+POST {{baseUrl}}/api/aria2/add-uri
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "uris": ["https://httpbin.org/image/jpeg"]
+}
+
+###
+# Step 11: Get task status if gid is set
+# @name getStatus
+GET {{baseUrl}}/api/aria2/status/{{gid}}
+Authorization: Bearer {{token}}
+
+###
+# Step 12: Get aria2 version
+# @name getAria2Version
+GET {{baseUrl}}/api/aria2/version
+Authorization: Bearer {{token}}
+
+###
+# Step 13: Get global statistics
+# @name getGlobalStat
+GET {{baseUrl}}/api/aria2/global-stat
+Authorization: Bearer {{token}}
+
+###
+# Step 14: Get active downloads
+# @name getActive
+GET {{baseUrl}}/api/aria2/active
+Authorization: Bearer {{token}}
+
+###
+# Step 15: Get waiting downloads
+# @name getWaiting
+GET {{baseUrl}}/api/aria2/waiting?offset=0&num=20
+Authorization: Bearer {{token}}
+
+###
+# Step 16: Get stopped downloads
+# @name getStopped
+GET {{baseUrl}}/api/aria2/stopped?offset=0&num=20
+Authorization: Bearer {{token}}
+
+###
+# (Optional) Pause a task if gid is set
+# @name pauseTask
+POST {{baseUrl}}/api/aria2/pause/{{gid}}
+Authorization: Bearer {{token}}
+
+###
+# (Optional) Resume a task if gid is set
+# @name unpauseTask
+POST {{baseUrl}}/api/aria2/unpause/{{gid}}
+Authorization: Bearer {{token}}
+
+###
+# (Optional) Remove a task if gid is set
+# @name removeTask
+DELETE {{baseUrl}}/api/aria2/remove/{{gid}}
+Authorization: Bearer {{token}}

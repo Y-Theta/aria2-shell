@@ -1,8 +1,8 @@
 // userService.ts
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { run, get, all } from "./db";
-import { User, UserConfig, UserRow } from "./types/user";
+import { run, get, all } from "./db.js";
+import { User, UserConfig, UserRow } from "./types/user.js";
 
 const SALT_ROUNDS = 10;
 const JWT_SECRET: string =
