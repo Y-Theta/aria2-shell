@@ -1,5 +1,6 @@
 <template>
     <div class="task-item" :class="{ expanded: isExpanded }">
+        <div v-if="tooltipVisible" class="task-tooltip" :style="tooltipStyle">{{ task.name }}</div>
         <div class="task-main" @click="toggleExpand">
             <!-- 桌面端布局 -->
             <div class="desktop-layout">
@@ -9,11 +10,12 @@
                             <i :class="iconClass"></i>
                         </div>
                         <div class="task-details">
-                            <div class="task-name">
+                            <div class="task-name" @mouseenter="showTooltip($event)" @mouseleave="hideTooltip"
+                                ref="taskNameDesktop">
+                                <span class="task-name-text">{{ task.name }}</span>
                                 <span v-if="task.isTorrent" class="torrent-badge">
                                     <i class="fas fa-magnet"></i>
                                 </span>
-                                {{ task.name }}
                             </div>
                             <div class="task-meta">
                                 <span class="task-size">{{ formatSize(task.totalSize) }}</span>
@@ -42,13 +44,16 @@
                         </template>
                         <template v-else-if="column.id === 'actions'">
                             <div class="task-actions" @click.stop>
-                                <button v-if="task.status === 'paused'" class="action-btn" @click="$emit('start', task.id)" :title="t('taskPage.start')">
+                                <button v-if="task.status === 'paused'" class="action-btn"
+                                    @click="$emit('start', task.id)" :title="t('taskPage.start')">
                                     <i class="fas fa-play"></i>
                                 </button>
-                                <button v-else-if="task.status === 'downloading'" class="action-btn" @click="$emit('pause', task.id)" :title="t('taskPage.pause')">
+                                <button v-else-if="task.status === 'downloading'" class="action-btn"
+                                    @click="$emit('pause', task.id)" :title="t('taskPage.pause')">
                                     <i class="fas fa-pause"></i>
                                 </button>
-                                <button class="action-btn action-btn-danger" @click="$emit('delete', task.id)" :title="t('taskPage.delete')">
+                                <button class="action-btn action-btn-danger" @click="$emit('delete', task.id)"
+                                    :title="t('taskPage.delete')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -61,31 +66,33 @@
             <div class="mobile-layout">
                 <div class="mobile-top">
                     <div class="task-info">
-                        <div class="task-icon">
-                            <i :class="iconClass"></i>
-                        </div>
                         <div class="task-details">
-                            <div class="task-name">
+                            <div class="task-name" @mouseenter="showTooltip($event)" @mouseleave="hideTooltip"
+                                ref="taskNameMobile">
+                                <span class="task-name-text">{{ task.name }}</span>
                                 <span v-if="task.isTorrent" class="torrent-badge">
                                     <i class="fas fa-magnet"></i>
                                 </span>
-                                {{ task.name }}
                             </div>
                             <div class="task-meta">
                                 <span class="task-size">{{ formatSize(task.totalSize) }}</span>
-                                <span v-if="task.status === 'downloading' || task.status === 'seeding'" class="task-speed">
+                                <span v-if="task.status === 'downloading' || task.status === 'seeding'"
+                                    class="task-speed">
                                     {{ formatSpeed(task.downloadSpeed) }}
                                 </span>
                             </div>
                         </div>
                     </div>
                     <div class="task-actions" @click.stop>
-                        <button v-if="task.status === 'paused'" class="action-btn" @click="$emit('start', task.id)" :title="t('taskPage.start')">
+                        <button v-if="task.status === 'paused'" class="action-btn" @click="$emit('start', task.id)"
+                            :title="t('taskPage.start')">
                             <i class="fas fa-play"></i>
                         </button>
-                        <button v-else-if="task.status === 'downloading'" class="action-btn" @click="$emit('pause', task.id)" :title="t('taskPage.pause')">
-                            <i class="fas fa-pause"></i>  </button>
-                        <button class="action-btn action-btn-danger" @click="$emit('delete', task.id)" :title="t('taskPage.delete')">
+                        <button v-else-if="task.status === 'downloading'" class="action-btn"
+                            @click="$emit('pause', task.id)" :title="t('taskPage.pause')">
+                            <i class="fas fa-pause"></i> </button>
+                        <button class="action-btn action-btn-danger" @click="$emit('delete', task.id)"
+                            :title="t('taskPage.delete')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -171,6 +178,27 @@ interface Column {
 
 const { t } = useI18n()
 const isExpanded = ref(false)
+const tooltipVisible = ref(false)
+const tooltipStyle = ref({})
+const taskNameDesktop = ref<HTMLElement>()
+const taskNameMobile = ref<HTMLElement>()
+
+const showTooltip = (event: MouseEvent) => {
+    const target = event.currentTarget as HTMLElement
+    const textEl = target.querySelector('.task-name-text') as HTMLElement
+    if (textEl && textEl.scrollWidth > textEl.clientWidth) {
+        const rect = target.getBoundingClientRect()
+        tooltipStyle.value = {
+            left: `${rect.left + window.scrollX}px`,
+            top: `${rect.top + window.scrollY - 35}px`
+        }
+        tooltipVisible.value = true
+    }
+}
+
+const hideTooltip = () => {
+    tooltipVisible.value = false
+}
 
 const props = defineProps<{
     task: Task
@@ -285,6 +313,8 @@ const formatSpeed = (bytesPerSecond: number) => {
     display: flex;
     width: 100%;
     align-items: center;
+    flex-shrink: 0;
+    min-width: 0;
 }
 
 .task-cell {
@@ -293,6 +323,9 @@ const formatSpeed = (bytesPerSecond: number) => {
     justify-content: center;
     position: relative;
     padding: 0 var(--spacing-md);
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .task-cell:last-child {
@@ -303,6 +336,7 @@ const formatSpeed = (bytesPerSecond: number) => {
     justify-content: flex-start;
     padding-left: 0;
     padding-right: var(--spacing-md);
+    flex-shrink: 1;
 }
 
 .task-info {
@@ -334,10 +368,18 @@ const formatSpeed = (bytesPerSecond: number) => {
     font-size: 15px;
     font-weight: 500;
     color: var(--text-primary);
-    margin-bottom: 2px;
     display: flex;
     align-items: center;
+    flex-direction: row;
     gap: var(--spacing-sm);
+}
+
+.task-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex-grow: 1;
 }
 
 .torrent-badge {
@@ -357,17 +399,29 @@ const formatSpeed = (bytesPerSecond: number) => {
 .size-text {
     font-size: 14px;
     color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .speed-text {
     font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .speed-placeholder {
     font-size: 14px;
     color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .status-badge {
@@ -375,6 +429,10 @@ const formatSpeed = (bytesPerSecond: number) => {
     border-radius: 20px;
     font-size: 13px;
     font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .status-downloading,
@@ -580,10 +638,31 @@ const formatSpeed = (bytesPerSecond: number) => {
         line-height: 1.4;
         overflow: hidden;
         text-overflow: ellipsis;
-        display: -webkit-box;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         word-break: break-word;
+    }
+
+    .task-name-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        -webkit-line-clamp: 2;
+        flex-shrink: 0;
+        flex-grow: 0;
+        min-width: 0;
+        -webkit-box-orient: vertical;
+        word-break: break-word;
+    }
+
+    .torrent-badge {
+        display: block;
+        flex-grow: 1;
+        color: var(--success-green);
+        font-size: 12px;
     }
 
     .task-meta .task-size {
@@ -592,7 +671,8 @@ const formatSpeed = (bytesPerSecond: number) => {
 
     .task-meta {
         display: flex;
-        gap: var(--spacing-sm);
+        gap: var(--spacing-lg);
+        padding-top: 4px;
         flex-wrap: wrap;
         font-size: 13px;
     }
@@ -622,5 +702,30 @@ const formatSpeed = (bytesPerSecond: number) => {
     .priority-badge {
         display: none;
     }
+}
+
+.task-tooltip {
+    position: fixed;
+    background-color: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    max-width: 300px;
+    word-wrap: break-word;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.task-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
 }
 </style>

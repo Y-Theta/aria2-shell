@@ -49,7 +49,8 @@ const displayProgress = computed(() => {
 
 <style scoped>
 .task-progress-bar {
-    min-width: 120px;
+    width: 100%;
+    min-width: 0;
 }
 
 .progress-track {

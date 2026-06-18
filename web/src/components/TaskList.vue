@@ -219,7 +219,7 @@ defineEmits<{
     display: flex;
     align-items: center;
     padding: var(--spacing-lg);
-    padding-right: calc(var(--spacing-lg) + var(--spacing-sm) + 8px);
+    padding-right: calc(var(--spacing-lg) + 12px);
     background-color: var(--panel-bg);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-sm);

@@ -56,7 +56,7 @@ defineEmits<{
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-md);
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--panel-bg);
     border-bottom: 1px solid var(--border-gray);
     min-height: 56px;
