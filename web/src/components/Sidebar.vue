@@ -38,32 +38,44 @@
             </button>
         </div>
 
-        <!-- 移动端布局 -->
+        <!-- 移动端底部导航 -->
         <template v-else>
-            <router-link class="mobile-bottom-nav" :to="activeMenuItem.to" @click="toggleMobileMenu">
+            <button class="mobile-bottom-nav" type="button" @click="toggleMobileMenu">
                 <i :class="activeMenuItem.icon"></i>
                 <span class="nav-label">{{ t(activeMenuItem.labelKey) }}</span>
-            </router-link>
-            <div v-if="isMobileMenuOpen" class="mobile-menu-dropdown">
-                <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
-                <router-link v-for="item in statusMenuItems" :key="item.id" class="nav-item" active-class="active"
-                    :to="item.to" @click="selectMenuItem(item)">
-                    <i :class="item.icon"></i>
-                    <span class="nav-label">{{ t(item.labelKey) }}</span>
-                    <span v-if="item.badge" class="badge">{{ item.badge }}</span>
-                </router-link>
-                <div class="mobile-menu-section">{{ t('sidebar.features') }}</div>
-                <router-link class="nav-item" active-class="active" to="/settings" @click="selectMenuItem(settingItem)">
-                    <i class="fas fa-cog"></i>
-                    <span class="nav-label">{{ t('sidebar.settings') }}</span>
-                </router-link>
-                <div class="mobile-menu-divider"></div>
-                <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
-                    <i class="fas fa-right-from-bracket"></i>
-                    <span class="nav-label">{{ t('common.logout') }}</span>
-                </button>
-            </div>
+            </button>
         </template>
+
+        <!-- 移动端弹出菜单 -->
+        <teleport to="body">
+            <Transition name="fade">
+                <div v-if="isMobileMenuOpen" class="mobile-menu-overlay" @click="closeMobileMenu">
+                    <Transition name="slide-up">
+                        <div class="mobile-menu-dialog" @click.stop>
+                            <div class="mobile-menu-content">
+                                <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
+                                <router-link v-for="item in statusMenuItems" :key="item.id" class="nav-item" active-class="active"
+                                    :to="item.to" @click="selectMenuItem(item)">
+                                    <i :class="item.icon"></i>
+                                    <span class="nav-label">{{ t(item.labelKey) }}</span>
+                                    <span v-if="item.badge" class="badge">{{ item.badge }}</span>
+                                </router-link>
+                                <div class="mobile-menu-section">{{ t('sidebar.features') }}</div>
+                                <router-link class="nav-item" active-class="active" to="/settings" @click="selectMenuItem(settingItem)">
+                                    <i class="fas fa-cog"></i>
+                                    <span class="nav-label">{{ t('sidebar.settings') }}</span>
+                                </router-link>
+                                <div class="mobile-menu-divider"></div>
+                                <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
+                                    <i class="fas fa-right-from-bracket"></i>
+                                    <span class="nav-label">{{ t('common.logout') }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </Transition>
+                </div>
+            </Transition>
+        </teleport>
 
         <ConfirmDialog v-model:visible="showConfirmLogout" :title="t('common.confirmLogoutTitle')"
             :message="t('common.confirmLogoutMessage')" @confirm="confirmLogout" />
@@ -338,20 +350,6 @@ onUnmounted(() => {
     background-color: rgba(220, 53, 69, 0.1);
 }
 
-.mobile-menu-dropdown {
-    position: absolute;
-    bottom: 100%;
-    left: var(--spacing-sm);
-    right: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    background-color: var(--sidebar-bg);
-    border: 1px solid var(--sidebar-border);
-    border-radius: 12px;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
-    z-index: 1000;
-}
-
 .mobile-menu-section {
     padding: var(--spacing-sm) var(--spacing-md) var(--spacing-xs);
     font-size: 12px;
@@ -366,6 +364,88 @@ onUnmounted(() => {
     height: 1px;
     background-color: var(--border-gray);
     margin: var(--spacing-sm) var(--spacing-xs);
+}
+
+/* 移动端弹出菜单样式 */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+    transition: transform 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+    transform: translateY(100%);
+}
+
+.mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.36);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 9999;
+    padding-bottom: 80px;
+}
+
+:global(html[data-theme='dark']) .mobile-menu-overlay,
+:global(html.dark) .mobile-menu-overlay {
+    background: rgba(0, 0, 0, 0.56);
+}
+
+.mobile-menu-dialog {
+    background-color: var(--panel-bg);
+    border-radius: 12px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+    width: 90%;
+    max-width: 400px;
+    max-height: 70vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+}
+
+.mobile-menu-content {
+    padding: var(--spacing-sm);
+    overflow-y: auto;
+}
+
+.mobile-menu-content .nav-item {
+    padding: 10px var(--spacing-md);
+    margin: 2px var(--spacing-xs);
+    border-radius: 10px;
+}
+
+.mobile-menu-content .nav-item i {
+    font-size: 18px;
+}
+
+.mobile-menu-content .nav-label {
+    display: block;
+    font-size: 14px;
+}
+
+.mobile-menu-content .badge {
+    display: block;
+}
+
+.mobile-menu-content .logout-btn {
+    padding: 10px var(--spacing-md);
+    margin: 2px var(--spacing-xs);
+    border-radius: 10px;
+    width: calc(100% - var(--spacing-md));
 }
 
 /* 手机端适配 */
@@ -444,53 +524,22 @@ onUnmounted(() => {
         display: none;
     }
 
-    .sidebar.is-mobile .mobile-menu-dropdown .nav-label,
-    .sidebar.is-mobile .mobile-menu-dropdown .badge {
-        display: block;
-    }
-
-    .sidebar.is-mobile .mobile-menu-dropdown .nav-item {
-        height: auto;
-        padding: 8px var(--spacing-md);
-        margin: 0 var(--spacing-xs);
-        flex-direction: row;
-        justify-content: flex-start;
-        border-radius: 6px;
-    }
-
-    .sidebar.is-mobile .mobile-menu-dropdown .nav-item i {
-        font-size: 16px;
-    }
-
-    .sidebar.is-mobile .mobile-menu-dropdown .logout-btn {
-        height: auto;
-        padding: 8px var(--spacing-md);
-        margin: 0 var(--spacing-xs);
-        flex-direction: row;
-        justify-content: flex-start;
-        border-radius: 6px;
-        color: var(--error-red);
-        display: flex;
-        width: calc(100% - var(--spacing-md));
-    }
-
-    .sidebar.is-mobile .mobile-menu-dropdown .logout-btn:hover {
-        background-color: rgba(220, 53, 69, 0.1);
-    }
-
     .mobile-bottom-nav {
         width: 100%;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
         justify-content: center;
         padding: var(--spacing-sm) var(--spacing-lg);
         background-color: var(--panel-bg);
         color: var(--primary-blue);
         text-decoration: none;
-        gap: var(--spacing-xs);
+        gap: var(--spacing-sm);
         transition: all 0.2s ease;
         height: 100%;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
     }
 
     .mobile-bottom-nav:hover {
@@ -498,7 +547,7 @@ onUnmounted(() => {
     }
 
     .mobile-bottom-nav .nav-label {
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 600;
         display: block;
     }

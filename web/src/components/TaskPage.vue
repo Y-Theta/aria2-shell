@@ -31,6 +31,7 @@
             :availableSpace="availableSpace"
             :totalTasks="tasks!.length"
         />
+        <add-task-dialog v-model:visible="showAddTaskDialog" @addTask="handleConfirmAddTask" />
     </div>
 </template>
 
@@ -39,6 +40,7 @@ import { ref, computed } from 'vue'
 import TaskToolbar from './TaskToolbar.vue'
 import TaskList from './TaskList.vue'
 import TaskFooter from './TaskFooter.vue'
+import AddTaskDialog from './AddTaskDialog.vue'
 
 interface Task {
     id: string
@@ -58,6 +60,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'addTask'): void
+    (e: 'addTaskWithData', data: any): void
     (e: 'startAll'): void
     (e: 'pauseAll'): void
     (e: 'deleteAll'): void
@@ -70,6 +73,8 @@ const emit = defineEmits<{
     (e: 'pauseSelected', ids: string[]): void
     (e: 'deleteSelected', ids: string[]): void
 }>()
+
+const showAddTaskDialog = ref(false)
 
 const searchText = ref('')
 const isBatchMode = ref(false)
@@ -92,7 +97,13 @@ const downloadingCount = computed(() => {
 
 const availableSpace = ref(128 * 1024 * 1024 * 1024) // 128 GB
 
-const handleAddTask = () => emit('addTask')
+const handleAddTask = () => {
+    showAddTaskDialog.value = true
+}
+
+const handleConfirmAddTask = (data: any) => {
+    emit('addTaskWithData', data)
+}
 const handleStartAll = () => emit('startAll')
 const handlePauseAll = () => emit('pauseAll')
 const handleDeleteAll = () => emit('deleteAll')

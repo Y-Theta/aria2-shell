@@ -2,6 +2,7 @@
     <task-page
         :tasks="tasks"
         @addTask="onAddTask"
+        @addTaskWithData="onAddTaskWithData"
         @startAll="onStartAll"
         @pauseAll="onPauseAll"
         @deleteAll="onDeleteAll"
@@ -140,6 +141,7 @@ const tasks = ref<Task[]>([
 ])
 
 const onAddTask = () => console.log('Add task')
+const onAddTaskWithData = (data: any) => console.log('Add task with data:', data)
 const onStartAll = () => console.log('Start all')
 const onPauseAll = () => console.log('Pause all')
 const onDeleteAll = () => console.log('Delete all')
