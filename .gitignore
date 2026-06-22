@@ -66,3 +66,5 @@ coverage/
 **/*.env
 **/*.env.local
 **/*.env.*.local
+
+server/data/store.json
