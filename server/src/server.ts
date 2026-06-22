@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import fastify, { FastifyInstance } from "fastify";
 import fastifyCors from "@fastify/cors";
 import { Aria2Client } from "./aria2Client.js";
-import { initDb } from "./db.js";
+import { initDb } from "./store.js";
 
 // Import Routes
 import { authRoutes } from "./routes/auth.js";

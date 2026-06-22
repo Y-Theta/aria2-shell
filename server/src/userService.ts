@@ -1,8 +1,7 @@
-// userService.ts
-import bcrypt from "bcrypt";
+﻿import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { run, get, all } from "./db.js";
-import { User, UserConfig, UserRow } from "./types/user.js";
+import * as store from "./store.js";
+import { User, UserConfig } from "./types/user.js";
 
 const SALT_ROUNDS = 10;
 const JWT_SECRET: string =
@@ -10,50 +9,36 @@ const JWT_SECRET: string =
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? "7d";
 
 export class UserService {
-    // 创建用户
     createUser(username: string, password: string): User {
         const passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
-        const now = Date.now();
-
-        const result = run(
-            "INSERT INTO users (username, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?)",
-            [username, passwordHash, now, now]
-        );
-
+        const userData = store.createUser(username, passwordHash);
         return {
-            id: result.lastID,
-            username,
-            created_at: now,
-            updated_at: now,
+            id: userData.id,
+            username: userData.username,
+            created_at: userData.created_at,
+            updated_at: userData.updated_at,
         };
     }
 
-    // 验证用户
     validateUser(username: string, password: string): User | null {
-        const row = get<UserRow>(
-            "SELECT id, username, password_hash, created_at, updated_at FROM users WHERE username = ?",
-            [username]
-        );
-
-        if (!row) {
+        const userData = store.getUserByUsername(username);
+        if (!userData) {
             return null;
         }
 
-        const isValid = bcrypt.compareSync(password, row.password_hash);
-
+        const isValid = bcrypt.compareSync(password, userData.password_hash);
         if (!isValid) {
             return null;
         }
 
         return {
-            id: row.id,
-            username: row.username,
-            created_at: row.created_at,
-            updated_at: row.updated_at,
+            id: userData.id,
+            username: userData.username,
+            created_at: userData.created_at,
+            updated_at: userData.updated_at,
         };
     }
 
-    // 生成 JWT token
     generateToken(user: User): string {
         const payload = {
             id: user.id,
@@ -65,7 +50,6 @@ export class UserService {
         } as jwt.SignOptions);
     }
 
-    // 验证 JWT token
     verifyToken(token: string): { id: number; username: string } | null {
         try {
             const decoded = jwt.verify(token, JWT_SECRET) as {
@@ -82,118 +66,88 @@ export class UserService {
         }
     }
 
-    // 获取用户，通过 ID
     getUserById(id: number): User | null {
-        const row = get<User>(
-            "SELECT id, username, created_at, updated_at FROM users WHERE id = ?",
-            [id]
-        );
-
-        return row ?? null;
+        const userData = store.getUserById(id);
+        if (!userData) return null;
+        return {
+            id: userData.id,
+            username: userData.username,
+            created_at: userData.created_at,
+            updated_at: userData.updated_at,
+        };
     }
 
-    // 获取用户，通过用户名
     getUserByUsername(username: string): User | null {
-        const row = get<User>(
-            "SELECT id, username, created_at, updated_at FROM users WHERE username = ?",
-            [username]
-        );
-
-        return row ?? null;
+        const userData = store.getUserByUsername(username);
+        if (!userData) return null;
+        return {
+            id: userData.id,
+            username: userData.username,
+            created_at: userData.created_at,
+            updated_at: userData.updated_at,
+        };
     }
 
-    // 更新密码
     updatePassword(userId: number, newPassword: string): boolean {
         const passwordHash = bcrypt.hashSync(newPassword, SALT_ROUNDS);
-        const now = Date.now();
-
-        const result = run(
-            "UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?",
-            [passwordHash, now, userId]
-        );
-
-        return result.changes > 0;
+        return store.updateUserPassword(userId, passwordHash);
     }
 
-    // 删除用户
     deleteUser(userId: number): boolean {
-        const result = run("DELETE FROM users WHERE id = ?", [userId]);
-
-        return result.changes > 0;
+        return store.deleteUser(userId);
     }
 
-    // 获取所有用户
     getAllUsers(): User[] {
-        return all<User>(
-            "SELECT id, username, created_at, updated_at FROM users"
-        );
+        return store.getAllUsers().map(userData => ({
+            id: userData.id,
+            username: userData.username,
+            created_at: userData.created_at,
+            updated_at: userData.updated_at,
+        }));
     }
 
-    // 设置用户配置
     setUserConfig(userId: number, key: string, value: string): UserConfig {
-        const now = Date.now();
-
-        run(
-            `
-            INSERT INTO user_configs 
-                (user_id, key, value, created_at, updated_at)
-            VALUES 
-                (?, ?, ?, ?, ?)
-            ON CONFLICT(user_id, key) DO UPDATE SET
-                value = excluded.value,
-                updated_at = excluded.updated_at
-            `,
-            [userId, key, value, now, now]
-        );
-
-        const row = get<UserConfig>(
-            "SELECT id, user_id, key, value, created_at, updated_at FROM user_configs WHERE user_id = ? AND key = ?",
-            [userId, key]
-        );
-
-        if (!row) {
-            throw new Error("Failed to set user config");
-        }
-
-        return row;
+        const configData = store.setUserConfig(userId, key, value);
+        return {
+            id: 0,
+            user_id: configData.user_id,
+            key: configData.key,
+            value: configData.value,
+            created_at: configData.created_at,
+            updated_at: configData.updated_at,
+        };
     }
 
-    // 获取用户配置
     getUserConfig(userId: number, key: string): UserConfig | null {
-        const row = get<UserConfig>(
-            "SELECT id, user_id, key, value, created_at, updated_at FROM user_configs WHERE user_id = ? AND key = ?",
-            [userId, key]
-        );
-
-        return row ?? null;
+        const configData = store.getUserConfig(userId, key);
+        if (!configData) return null;
+        return {
+            id: 0,
+            user_id: configData.user_id,
+            key: configData.key,
+            value: configData.value,
+            created_at: configData.created_at,
+            updated_at: configData.updated_at,
+        };
     }
 
-    // 获取用户所有配置
     getAllUserConfigs(userId: number): UserConfig[] {
-        return all<UserConfig>(
-            "SELECT id, user_id, key, value, created_at, updated_at FROM user_configs WHERE user_id = ?",
-            [userId]
-        );
+        return store.getAllUserConfigs(userId).map(configData => ({
+            id: 0,
+            user_id: configData.user_id,
+            key: configData.key,
+            value: configData.value,
+            created_at: configData.created_at,
+            updated_at: configData.updated_at,
+        }));
     }
 
-    // 删除用户配置
     deleteUserConfig(userId: number, key: string): boolean {
-        const result = run(
-            "DELETE FROM user_configs WHERE user_id = ? AND key = ?",
-            [userId, key]
-        );
-
-        return result.changes > 0;
+        return store.deleteUserConfig(userId, key);
     }
 
-    // 删除用户所有配置
     deleteAllUserConfigs(userId: number): number {
-        const result = run(
-            "DELETE FROM user_configs WHERE user_id = ?",
-            [userId]
-        );
-
-        return result.changes;
+        return store.deleteAllUserConfigs(userId);
     }
 }
 
