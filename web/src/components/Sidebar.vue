@@ -14,13 +14,8 @@
         <nav class="nav-menu">
             <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.status') }}</div>
             <template v-if="!isMobile">
-                <router-link
-                    v-for="item in statusMenuItems"
-                    :key="item.id"
-                    class="nav-item"
-                    active-class="active"
-                    :to="item.to"
-                >
+                <router-link v-for="item in statusMenuItems" :key="item.id" class="nav-item" active-class="active"
+                    :to="item.to">
                     <i :class="item.icon"></i>
                     <span v-if="!isCollapsed" class="nav-label">{{ t(item.labelKey) }}</span>
                     <span v-if="!isCollapsed && item.badge" class="badge">{{ item.badge }}</span>
@@ -29,11 +24,7 @@
 
             <div v-if="!isCollapsed && !isMobile" class="nav-section-title">{{ t('sidebar.features') }}</div>
             <template v-if="!isMobile">
-                <router-link
-                    class="nav-item"
-                    active-class="active"
-                    to="/settings"
-                >
+                <router-link class="nav-item" active-class="active" to="/settings">
                     <i class="fas fa-cog"></i>
                     <span v-if="!isCollapsed" class="nav-label">{{ t('sidebar.settings') }}</span>
                 </router-link>
@@ -49,35 +40,20 @@
 
         <!-- 移动端布局 -->
         <template v-else>
-            <router-link
-                class="mobile-bottom-nav"
-                :to="activeMenuItem.to"
-                @click="toggleMobileMenu"
-            >
+            <router-link class="mobile-bottom-nav" :to="activeMenuItem.to" @click="toggleMobileMenu">
                 <i :class="activeMenuItem.icon"></i>
                 <span class="nav-label">{{ t(activeMenuItem.labelKey) }}</span>
             </router-link>
             <div v-if="isMobileMenuOpen" class="mobile-menu-dropdown">
                 <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
-                <router-link
-                    v-for="item in statusMenuItems"
-                    :key="item.id"
-                    class="nav-item"
-                    active-class="active"
-                    :to="item.to"
-                    @click="selectMenuItem(item)"
-                >
+                <router-link v-for="item in statusMenuItems" :key="item.id" class="nav-item" active-class="active"
+                    :to="item.to" @click="selectMenuItem(item)">
                     <i :class="item.icon"></i>
                     <span class="nav-label">{{ t(item.labelKey) }}</span>
                     <span v-if="item.badge" class="badge">{{ item.badge }}</span>
                 </router-link>
                 <div class="mobile-menu-section">{{ t('sidebar.features') }}</div>
-                <router-link
-                    class="nav-item"
-                    active-class="active"
-                    to="/settings"
-                    @click="selectMenuItem(settingItem)"
-                >
+                <router-link class="nav-item" active-class="active" to="/settings" @click="selectMenuItem(settingItem)">
                     <i class="fas fa-cog"></i>
                     <span class="nav-label">{{ t('sidebar.settings') }}</span>
                 </router-link>
@@ -89,12 +65,8 @@
             </div>
         </template>
 
-        <ConfirmDialog
-            v-model:visible="showConfirmLogout"
-            :title="t('common.confirmLogoutTitle')"
-            :message="t('common.confirmLogoutMessage')"
-            @confirm="confirmLogout"
-        />
+        <ConfirmDialog v-model:visible="showConfirmLogout" :title="t('common.confirmLogoutTitle')"
+            :message="t('common.confirmLogoutMessage')" @confirm="confirmLogout" />
     </aside>
 </template>
 
