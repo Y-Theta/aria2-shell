@@ -81,9 +81,9 @@ const formatSpeed = (bytesPerSecond: number) => {
     gap: var(--spacing-md);
     padding: var(--spacing-md) var(--spacing-lg);
     background-color: var(--footer-bg);
-    border-top: 1px solid var(--footer-border);
+    border-top: 1px solid var(--border-gray);
     flex-wrap: wrap;
-    min-height: 54px;
+    min-height: 40pt;
 }
 
 .footer-stat {

@@ -176,6 +176,10 @@ export default {
                 label: 'Compact Mode',
                 desc: 'Reduce list spacing to show more tasks',
             },
+            showRegister: {
+                label: 'Show Registration',
+                desc: 'Show registration button on login page',
+            },
         },
         about: {
             title: 'About App',
@@ -218,5 +222,6 @@ export default {
         selectTorrentFileDesc: 'Click or drag file here',
         selectedFile: 'Selected File',
         noFileSelected: 'No file selected',
+        linkSupported: 'HTTP(S)/FTP/Magnet links are supported',
     },
 }

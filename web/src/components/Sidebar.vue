@@ -54,19 +54,21 @@
                         <div class="mobile-menu-dialog" @click.stop>
                             <div class="mobile-menu-content">
                                 <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
-                                <router-link v-for="item in statusMenuItems" :key="item.id" class="nav-item" active-class="active"
-                                    :to="item.to" @click="selectMenuItem(item)">
+                                <router-link v-for="item in statusMenuItems" :key="item.id" class="nav-item"
+                                    active-class="active" :to="item.to" @click="selectMenuItem(item)">
                                     <i :class="item.icon"></i>
                                     <span class="nav-label">{{ t(item.labelKey) }}</span>
                                     <span v-if="item.badge" class="badge">{{ item.badge }}</span>
                                 </router-link>
                                 <div class="mobile-menu-section">{{ t('sidebar.features') }}</div>
-                                <router-link class="nav-item" active-class="active" to="/settings" @click="selectMenuItem(settingItem)">
+                                <router-link class="nav-item" active-class="active" to="/settings"
+                                    @click="selectMenuItem(settingItem)">
                                     <i class="fas fa-cog"></i>
                                     <span class="nav-label">{{ t('sidebar.settings') }}</span>
                                 </router-link>
                                 <div class="mobile-menu-divider"></div>
-                                <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm" v-if="isAuthenticated">
+                                <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm"
+                                    v-if="isAuthenticated">
                                     <i class="fas fa-right-from-bracket"></i>
                                     <span class="nav-label">{{ t('common.logout') }}</span>
                                 </button>
@@ -327,7 +329,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    height: auto;
+    height: 40pt;
 }
 
 .logout-btn {
@@ -550,6 +552,11 @@ onUnmounted(() => {
         font-size: 14px;
         font-weight: 600;
         display: block;
+    }
+
+    /* 放大主要图标 */
+    .mobile-bottom-nav i:first-of-type {
+        font-size: 24px !important;
     }
 }
 </style>

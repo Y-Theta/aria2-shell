@@ -60,7 +60,7 @@
                         <div class="form-content">
                             <div v-if="activeMethod === 'single'" class="form-group">
                                 <label class="form-label">{{ t('addTask.downloadUrl') }}
-                                    <i class="fas fa-question-circle" title="HTTP(S)/FTP/Magnet links are supported"></i>
+                                    <i class="fas fa-question-circle" :title="t('addTask.linkSupported')"></i>
                                 </label>
                                 <div class="input-wrapper">
                                     <i class="fas fa-link input-icon"></i>
@@ -290,7 +290,7 @@ const removeFile = () => {
     background-color: var(--panel-bg);
     border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    max-width: 720px;
+    max-width: 840px;
     width: 100%;
     max-height: 90vh;
     overflow: hidden;
@@ -354,8 +354,9 @@ const removeFile = () => {
     position: relative;
     display: flex;
     align-items: center;
+    flex-direction: row;
     gap: var(--spacing-sm);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     border-radius: 12px;
     border: 2px solid var(--border-gray);
     background: var(--bg-gray);
@@ -655,7 +656,7 @@ const removeFile = () => {
 
     .add-task-dialog {
         max-width: 100%;
-        max-height: 85vh;
+        max-height: 90vh;
         border-radius: 18px 18px 0 0;
     }
 
@@ -689,6 +690,7 @@ const removeFile = () => {
 
     .add-method {
         padding: var(--spacing-sm);
+        flex-direction: row;
     }
 
     .add-method-icon {

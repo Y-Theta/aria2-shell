@@ -176,6 +176,10 @@ export default {
                 label: '紧凑模式',
                 desc: '减少列表间距，显示更多任务',
             },
+            showRegister: {
+                label: '显示注册入口',
+                desc: '在登录页面显示注册按钮',
+            },
         },
         about: {
             title: '关于应用',
@@ -218,5 +222,6 @@ export default {
         selectTorrentFileDesc: '点击或拖拽文件到此处',
         selectedFile: '已选择文件',
         noFileSelected: '未选择文件',
+        linkSupported: '支持 HTTP(S)/FTP/Magnet 链接',
     },
 }

@@ -8,6 +8,7 @@ import {
     SettingConfig,
     DEFAULT_SETTINGS,
 } from '../types/settings'
+import { applyTheme, ThemeMode } from './theme'
 
 // 开发模式跳过登录配置
 const SKIP_LOGIN = import.meta.env.VITE_SKIP_LOGIN === 'true'
@@ -145,11 +146,23 @@ watch(
     { deep: true }
 )
 
+// 监听主题变化，自动应用
+watch(
+    () => settings.theme,
+    (newTheme) => {
+        if (newTheme) {
+            applyTheme(newTheme as ThemeMode)
+        }
+    }
+)
+
 // 初始化（内部函数）
 async function initializeSettings(): Promise<void> {
     if (!isInitialized && !isLoading) {
         isLoading = true
         await loadSettingsFromServer()
+        // 加载完设置后立即应用主题
+        applyTheme(settings.theme as ThemeMode)
         isInitialized = true
         isLoading = false
     }
@@ -190,4 +203,9 @@ export function useSettings() {
 // 同步获取设置的方法（用于不需要响应式的场景）
 export function getSettingsSync(): SettingsState {
     return { ...settings }
+}
+
+// 暴露初始化函数，供外部调用
+export async function initSettings(): Promise<void> {
+    await initializeSettings()
 }
