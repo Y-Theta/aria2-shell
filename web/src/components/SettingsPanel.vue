@@ -278,30 +278,26 @@
             </button>
         </footer>
     </div>
+    <ConfirmDialog
+        v-model:visible="showResetDialog"
+        :title="t('settings.confirmReset.title')"
+        :message="t('settings.confirmReset.message')"
+        @confirm="confirmReset"
+    />
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSettings } from '../services/settings'
+import ConfirmDialog from './ConfirmDialog.vue'
 
-type SettingValue = string | number | boolean
+const { t } = useI18n()
+
+// 类型定义
 type SettingType = 'switch' | 'text' | 'number' | 'select' | 'path'
 type ButtonType = 'button'
 type SettingButtonVariant = 'primary' | 'secondary' | 'danger'
-type SettingKey =
-    | 'autoStart'
-    | 'minimizeToTray'
-    | 'downloadPath'
-    | 'maxActiveDownloads'
-    | 'downloadLimit'
-    | 'uploadLimit'
-    | 'keepSeeding'
-    | 'serverUrl'
-    | 'timeout'
-    | 'autoReconnect'
-    | 'theme'
-    | 'language'
-    | 'compactMode'
 
 interface SettingOption {
     labelKey: string
@@ -316,7 +312,6 @@ interface BaseSettingItem {
 }
 
 interface ValueSettingItem extends BaseSettingItem {
-    key: SettingKey
     type: SettingType
     placeholderKey?: string
     min?: number
@@ -334,11 +329,6 @@ interface ButtonSettingItem extends BaseSettingItem {
 
 type SettingItem = ValueSettingItem | ButtonSettingItem
 
-interface SettingOption {
-    labelKey: string
-    value: string | number
-}
-
 interface SettingTab {
     key: string
     labelKey: string
@@ -354,8 +344,7 @@ interface AboutInfoRow {
     type?: 'success'
 }
 
-const { t } = useI18n()
-
+// Props and emit
 const props = defineProps<{
     visible: boolean
     inline?: boolean
@@ -363,29 +352,16 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-    'update:visible': [value: boolean]
+    (e: 'update:visible', value: boolean): void
 }>()
 
+// 初始化设置服务
+const settingsService = useSettings()
+const settings = settingsService.settings
 const activeTab = ref('general')
+const showResetDialog = ref(false)
 
-const defaultSettings: Record<SettingKey, SettingValue> = {
-    autoStart: false,
-    minimizeToTray: true,
-    downloadPath: '',
-    maxActiveDownloads: 5,
-    downloadLimit: 0,
-    uploadLimit: 0,
-    keepSeeding: true,
-    serverUrl: 'http://127.0.0.1:8080',
-    timeout: 10,
-    autoReconnect: true,
-    theme: 'light',
-    language: 'zh-CN',
-    compactMode: false,
-}
-
-const settings = reactive<Record<SettingKey, SettingValue>>({ ...defaultSettings })
-
+// 标签页配置
 const tabs: SettingTab[] = [
     {
         key: 'general',
@@ -414,18 +390,7 @@ const tabs: SettingTab[] = [
                 descKey: 'settings.general.downloadPath.desc',
                 icon: 'fas fa-folder',
                 placeholderKey: 'settings.general.downloadPath.placeholder',
-            },
-            {
-                key: 'resetSettings',
-                type: 'button',
-                labelKey: 'settings.actions.resetDefault',
-                descKey: 'settings.general.reset.desc',
-                icon: 'fas fa-rotate-left',
-                buttonIcon: 'fas fa-rotate-left',
-                buttonTextKey: 'settings.actions.resetDefault',
-                variant: 'danger',
-                action: 'resetSettings',
-            },
+            }
         ],
     },
     {
@@ -536,7 +501,21 @@ const tabs: SettingTab[] = [
                 descKey: 'settings.appearance.compactMode.desc',
                 icon: 'fas fa-compress',
             },
+            {
+                key: 'showRegister',
+                type: 'switch',
+                labelKey: 'settings.appearance.showRegister.label',
+                descKey: 'settings.appearance.showRegister.desc',
+                icon: 'fas fa-user-plus',
+            },
         ],
+    },
+    {
+        key: 'about',
+        labelKey: 'settings.tabs.about',
+        titleKey: 'settings.sections.about',
+        icon: 'fas fa-circle-info',
+        items: [],
     },
 ]
 
@@ -559,22 +538,14 @@ const aboutInfoRows: AboutInfoRow[] = [
     },
 ]
 
-const configurableTabs = computed(() => tabs)
+const configurableTabs = computed(() => tabs.filter(tab => tab.key !== 'about'))
 
-watch(
-    () => props.visible,
-    value => {
-        if (value) {
-            loadSettings()
-        }
-    },
-)
-
-const isButtonItem = (item: SettingItem): item is ButtonSettingItem => {
+// 辅助函数
+function isButtonItem(item: SettingItem): item is ButtonSettingItem {
     return item.type === 'button'
 }
 
-const getButtonClass = (item: SettingItem) => {
+function getButtonClass(item: SettingItem) {
     if (!isButtonItem(item)) return ''
 
     return {
@@ -584,7 +555,11 @@ const getButtonClass = (item: SettingItem) => {
     }
 }
 
-const handleButtonClick = (item: ButtonSettingItem) => {
+function isVerticalItem(item: SettingItem) {
+    return item.type === 'path'
+}
+
+function handleButtonClick(item: ButtonSettingItem) {
     if (item.action === 'resetSettings') {
         resetSettings()
         return
@@ -600,43 +575,37 @@ const handleButtonClick = (item: ButtonSettingItem) => {
     console.warn(`No callback found for settings button action: ${item.action}`)
 }
 
-const close = () => {
+function close() {
     emit('update:visible', false)
 }
 
-const isVerticalItem = (item: SettingItem) => {
-    return item.type === 'path'
+function setSettingValue(key: string, value: any) {
+    settingsService.setSetting(key as any, value)
 }
 
-const setSettingValue = (key: SettingKey, value: SettingValue) => {
-    settings[key] = value
-}
-
-const loadSettings = () => {
-    const localValue = localStorage.getItem('app-settings')
-    if (!localValue) return
-
-    try {
-        const parsed = JSON.parse(localValue)
-        Object.assign(settings, defaultSettings, parsed)
-    } catch (error) {
-        console.error('Failed to load settings:', error)
-    }
-}
-
-const saveSettings = () => {
-    localStorage.setItem('app-settings', JSON.stringify(settings))
+function saveSettings() {
     close()
 }
 
-const resetSettings = () => {
-    console.log("reset setting");
-    Object.assign(settings, defaultSettings)
+function resetSettings() {
+    showResetDialog.value = true
 }
 
-const selectPath = (key: SettingKey) => {
+function confirmReset() {
+    settingsService.resetSettings()
+    showResetDialog.value = false
+}
+
+function selectPath(key: string) {
     console.log('select path for', key)
 }
+
+// 当面板打开时刷新设置
+watch(() => props.visible, async (visible) => {
+    if (visible) {
+        await settingsService.refreshSettings()
+    }
+})
 </script>
 
 <style scoped>
@@ -1032,7 +1001,7 @@ const selectPath = (key: SettingKey) => {
 
 .reset-in-page {
     margin-top: 4px;
-    align-self: flex-start;
+    align-self: stretch;
 }
 
 .settings-footer {
@@ -1080,7 +1049,7 @@ const selectPath = (key: SettingKey) => {
     background: var(--panel-bg);
     display: flex;
     flex-direction: row;
-    text-overflow:ellipsis;
+    text-overflow: ellipsis;
     overflow: hidden;
     min-width: 96px;
     letter-spacing: 4px;

@@ -90,6 +90,10 @@ export default {
             save: 'Save Settings',
             resetDefault: 'Reset to Default',
         },
+        confirmReset: {
+            title: 'Confirm Reset to Default',
+            message: 'This action will reset all settings to their default values. Are you sure you want to continue?',
+        },
         tabs: {
             general: 'General',
             download: 'Download',

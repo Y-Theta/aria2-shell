@@ -90,6 +90,10 @@ export default {
             save: '保存设置',
             resetDefault: '恢复默认',
         },
+        confirmReset: {
+            title: '确认恢复默认设置',
+            message: '此操作将把所有设置恢复为默认值，确定要继续吗？',
+        },
         tabs: {
             general: '常规',
             download: '下载',

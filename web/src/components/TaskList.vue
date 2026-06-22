@@ -262,11 +262,11 @@ const handleDragStart = (event: MouseEvent, index: number) => {
     document.addEventListener('mouseup', handleDragEnd)
 }
 
-const handleDragMove = (event: MouseEvent) => {
+const handleDragMove = (_event: MouseEvent) => {
     if (!isDragging.value) return
 }
 
-const handleDragOver = (event: MouseEvent, index: number) => {
+const handleDragOver = (_event: MouseEvent, index: number) => {
     if (!isDragging.value || !temporaryOrder.value) return
     if (index === draggedIndex.value) return
     
@@ -278,7 +278,7 @@ const handleDragOver = (event: MouseEvent, index: number) => {
     draggedIndex.value = index
 }
 
-const handleDrop = (event: MouseEvent, index: number) => {
+const handleDrop = (_event: MouseEvent, _index: number) => {
     if (!isDragging.value) return
     
     if (temporaryOrder.value) {

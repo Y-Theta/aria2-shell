@@ -123,7 +123,7 @@ const confirmLogout = () => {
     router.push('/login')
 }
 
-const selectMenuItem = (item: MenuItem) => {
+const selectMenuItem = (_item: MenuItem) => {
     closeMobileMenu()
 }
 

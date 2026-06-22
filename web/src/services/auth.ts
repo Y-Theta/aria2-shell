@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { API_CONFIG } from '../config/api'
 
 // 开发模式跳过登录配置
 const SKIP_LOGIN = import.meta.env.VITE_SKIP_LOGIN === 'true'
@@ -29,7 +30,7 @@ if (token.value && !user.value) {
 async function login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
     try {
         // 调用后端登录API
-        const response = await fetch('http://localhost:65004/api/auth/login', {
+        const response = await fetch(`${API_CONFIG.baseUrl}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -59,7 +60,7 @@ async function login(username: string, password: string): Promise<{ success: boo
 
 async function register(username: string, password: string): Promise<{ success: boolean; error?: string }> {
     try {
-        const response = await fetch('http://localhost:65004/api/auth/register', {
+        const response = await fetch(`${API_CONFIG.baseUrl}/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -99,21 +100,18 @@ export function useAuth() {
     }
 }
 
-export async function getAuthHeaders() {
-    if (SKIP_LOGIN) {
-        return {
-            'Content-Type': 'application/json',
-        }
-    }
-
-    if (!token.value) {
-        return {
-            'Content-Type': 'application/json',
-        }
-    }
-
-    return {
+export async function getAuthHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token.value}`,
     }
+
+    if (SKIP_LOGIN) {
+        return headers
+    }
+
+    if (token.value) {
+        headers['Authorization'] = `Bearer ${token.value}`
+    }
+
+    return headers
 }

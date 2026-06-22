@@ -5,7 +5,7 @@
             <div class="blob blob-2"></div>
             <div class="blob blob-3"></div>
         </div>
-        
+
         <div class="login-card">
             <div class="login-header">
                 <div class="app-logo">
@@ -16,7 +16,7 @@
             </div>
 
             <div class="login-form">
-                <div class="form-tabs">
+                <div v-if="showRegister" class="form-tabs">
                     <button
                         class="tab-button"
                         :class="{ active: isLoginMode }"
@@ -31,6 +31,9 @@
                     >
                         {{ t('login.register') }}
                     </button>
+                </div>
+                <div v-else class="form-title">
+                    <h2>{{ t('login.login') }}</h2>
                 </div>
 
                 <form @submit.prevent="handleSubmit">
@@ -74,7 +77,7 @@
                     >
                         <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
                         <span v-else>
-                            {{ isLoginMode ? t('login.login') : t('login.register') }}
+                            {{ (isLoginMode || !showRegister) ? t('login.login') : t('login.register') }}
                         </span>
                     </button>
                 </form>
@@ -88,14 +91,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../services/auth'
+import { useSettings } from '../services/settings'
 
 const { t } = useI18n()
 const router = useRouter()
 const { login, register, isAuthenticated } = useAuth()
+
+// 初始化设置服务
+const { settings } = useSettings()
+
+const showRegister = computed(() => {
+    return settings.showRegister as boolean
+})
 
 const isLoginMode = ref(true)
 const username = ref('')
@@ -114,7 +125,7 @@ async function handleSubmit() {
 
     try {
         let result
-        if (isLoginMode.value) {
+        if (isLoginMode.value || !showRegister.value) {
             result = await login(username.value, password.value)
         } else {
             result = await register(username.value, password.value)
@@ -291,6 +302,18 @@ async function handleSubmit() {
     overflow: hidden;
     background-color: var(--bg-gray);
     padding: 4px;
+}
+
+.form-title {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.form-title h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
 .tab-button {

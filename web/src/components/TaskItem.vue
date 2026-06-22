@@ -188,8 +188,6 @@ interface Column {
 const { t } = useI18n()
 const tooltipVisible = ref(false)
 const tooltipStyle = ref({})
-const taskNameDesktop = ref<HTMLElement>()
-const taskNameMobile = ref<HTMLElement>()
 
 const showTooltip = (event: MouseEvent) => {
     const target = event.currentTarget as HTMLElement
