@@ -25,18 +25,21 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Create release directory
+        run: mkdir -p release
+
       - name: Build Server
         run: |
           cd server
           npm install
           npm run build
           # 创建 server 发布包
-          mkdir -p release/server
-          cp -r dist release/server/
-          cp package.json release/server/
-          cp .env.example release/server/
+          mkdir -p ../release/server
+          cp -r dist ../release/server/
+          cp package.json ../release/server/
+          cp .env.example ../release/server/
           # 创建 data 目录结构
-          mkdir -p release/server/data
+          mkdir -p ../release/server/data
 
       - name: Build Web
         run: |
@@ -44,9 +47,9 @@ jobs:
           npm install
           npm run build
           # 创建 web 发布包
-          mkdir -p release/web
-          cp -r dist release/web/
-          cp package.json release/web/
+          mkdir -p ../release/web
+          cp -r dist ../release/web/
+          cp package.json ../release/web/
 
       - name: Create Zip Archives
         run: |
