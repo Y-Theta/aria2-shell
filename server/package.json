@@ -6,12 +6,17 @@
     "scripts": {
         "dev": "tsx watch src/server.ts",
         "build": "tsup",
-        "start": "node dist/server.js"
+        "start": "node dist/server.js",
+        "cli": "tsx src/cli.ts",
+        "cli:register": "tsx src/cli.ts register",
+        "cli:list": "tsx src/cli.ts list"
     },
     "dependencies": {
         "@fastify/cors": "^11.2.0",
+        "@types/crypto-js": "^4.2.2",
         "axios": "^1.18.0",
         "bcrypt": "^6.0.0",
+        "crypto-js": "^4.2.0",
         "fastify": "^5.8.5",
         "jsonwebtoken": "^9.0.3"
     },

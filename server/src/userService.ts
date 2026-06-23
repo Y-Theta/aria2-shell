@@ -11,13 +11,20 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? "7d";
 export class UserService {
     createUser(username: string, password: string): User {
         const passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
-        const userData = store.createUser(username, passwordHash);
+        const userData = store.createUser(username, passwordHash, password);
         return {
             id: userData.id,
             username: userData.username,
             created_at: userData.created_at,
             updated_at: userData.updated_at,
         };
+    }
+    
+    // 获取用户密码（解密后）
+    getUserPassword(userId: number): string | null {
+        const userData = store.getUserById(userId);
+        if (!userData) return null;
+        return store.getUserPassword(userData);
     }
 
     validateUser(username: string, password: string): User | null {

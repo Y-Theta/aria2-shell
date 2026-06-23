@@ -48,7 +48,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
     theme: 'light',
     language: 'zh-CN',
     compactMode: false,
-    showRegister: true,
+    showRegister: false,
     savePaths: [
         {
             label: '默认',

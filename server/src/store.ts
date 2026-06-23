@@ -1,7 +1,11 @@
 ﻿import path from "path";
 import fs from "fs";
+import CryptoJS from "crypto-js";
 
 const dataDir = process.env.DATA_DIR ?? "./data";
+
+// 获取加密密钥，使用 JWT_SECRET 或默认值
+const ENCRYPTION_KEY = process.env.JWT_SECRET ?? "your-secret-key-change-in-production";
 
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -11,6 +15,7 @@ interface UserData {
     id: number;
     username: string;
     password_hash: string;
+    password_encrypted?: string;  // AES 加密后的密码
     created_at: number;
     updated_at: number;
     configs: Record<string, {
@@ -47,6 +52,17 @@ function saveStore(): void {
     fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
 }
 
+// 加密函数
+function encryptPassword(password: string): string {
+    return CryptoJS.AES.encrypt(password, ENCRYPTION_KEY).toString();
+}
+
+// 解密函数
+function decryptPassword(encrypted: string): string {
+    const bytes = CryptoJS.AES.decrypt(encrypted, ENCRYPTION_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+}
+
 loadStore();
 
 export interface RunResult {
@@ -76,7 +92,7 @@ export function initDb(): void {
     // No-op for file-based store
 }
 
-export function createUser(username: string, passwordHash: string): UserData {
+export function createUser(username: string, passwordHash: string, passwordPlain?: string): UserData {
     const now = Date.now();
     const user: UserData = {
         id: store.nextUserId++,
@@ -86,9 +102,25 @@ export function createUser(username: string, passwordHash: string): UserData {
         updated_at: now,
         configs: {},
     };
+    // 如果提供了明文密码，则加密存储
+    if (passwordPlain) {
+        user.password_encrypted = encryptPassword(passwordPlain);
+    }
     store.users.push(user);
     saveStore();
     return user;
+}
+
+// 解密获取密码
+export function getUserPassword(user: UserData): string | null {
+    if (user.password_encrypted) {
+        try {
+            return decryptPassword(user.password_encrypted);
+        } catch {
+            return null;
+        }
+    }
+    return null;
 }
 
 export function getUserById(id: number): UserData | undefined {
@@ -99,10 +131,13 @@ export function getUserByUsername(username: string): UserData | undefined {
     return store.users.find(u => u.username === username);
 }
 
-export function updateUserPassword(userId: number, passwordHash: string): boolean {
+export function updateUserPassword(userId: number, passwordHash: string, passwordPlain?: string): boolean {
     const user = store.users.find(u => u.id === userId);
     if (!user) return false;
     user.password_hash = passwordHash;
+    if (passwordPlain) {
+        user.password_encrypted = encryptPassword(passwordPlain);
+    }
     user.updated_at = Date.now();
     saveStore();
     return true;

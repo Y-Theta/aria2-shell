@@ -67,8 +67,10 @@ function handleError(reply: FastifyReply, error: unknown): void {
 }
 
 const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-    // 用户注册
-    fastify.post("/register", async (request: FastifyRequest, reply: FastifyReply) => {
+    // 用户注册 - 默认隐藏，可通过环境变量 ENABLE_REGISTER=true 开启
+    const enableRegister = process.env.ENABLE_REGISTER === "true";
+    if (enableRegister) {
+        fastify.post("/register", async (request: FastifyRequest, reply: FastifyReply) => {
         try {
             const { username, password } = request.body as {
                 username?: string;
@@ -115,9 +117,10 @@ const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
                 token,
             });
         } catch (error) {
-            handleError(reply, error);
-        }
-    });
+                handleError(reply, error);
+            }
+        });
+    }
 
     // 用户登录
     fastify.post("/login", async (request: FastifyRequest, reply: FastifyReply) => {
