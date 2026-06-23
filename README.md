@@ -45,8 +45,8 @@ aria2-shell/
 ## 快速开始
 
 ### 环境要求
-- Node.js >= 20
-- npm >= 9
+- Node.js >= 20 (推荐使用 Node.js 24 LTS)
+- npm >= 9 或 pnpm >= 9
 - Aria2 服务（需预先启动）
 
 ### 配置环境变量
