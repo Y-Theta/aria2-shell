@@ -222,6 +222,20 @@ server/
 
 ## 构建和部署
 
+### GitHub Actions 自动构建
+
+项目配置了 GitHub Actions 工作流，在以下情况自动构建：
+
+- 推送到 `main` 或 `master` 分支
+- 推送 `v*` 标签（同时创建 Release
+- Pull Request
+- 手动触发
+
+构建会生成三个压缩包：
+- `aria2-server.zip - 后端服务包
+- `aria2-web.zip - 前端静态文件包
+- `aria2-full.zip - 完整包
+
 ### 后端构建
 
 ```bash
@@ -238,6 +252,30 @@ npm run build
 ```
 
 生成的文件在 `web/dist/` 目录中，可部署到任何静态 Web 服务器。
+
+### 发布包说明
+
+**Server 包 (aria2-server.zip):**
+```
+server/
+├── dist/          # 编译后的代码
+├── data/         # 数据目录（自动创建）
+├── package.json
+└── .env.example # 环境变量示例
+```
+
+**Web 包 (aria2-web.zip):**
+```
+web/
+└── dist/         # 静态文件
+```
+
+### 部署步骤
+
+1. 解压 `aria2-server.zip` 到服务器目录
+2. 复制 `.env.example` 为 `.env` 并配置
+3. 运行 `npm install && npm start`
+4. 解压 `aria2-web.zip` 并部署到 Web 服务器（如 Nginx、Apache 等）
 
 ## 配置 Aria2
 
