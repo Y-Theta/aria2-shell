@@ -152,7 +152,8 @@ watch(savePaths, (value) => {
 }, { deep: true })
 
 function addPath() {
-    savePaths.value.push({ label: '', path: '', isDefault: false })
+    const nextIndex = savePaths.value.length
+    savePaths.value.push({ label: `pos ${nextIndex}`, path: '', isDefault: false })
 }
 
 function removePath(index: number) {

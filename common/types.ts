@@ -36,7 +36,6 @@ export type SettingKey =
     | 'autoReconnect'
     | 'theme'
     | 'language'
-    | 'compactMode'
     | 'showRegister'
     | 'savePaths';
 
@@ -65,7 +64,6 @@ export const DEFAULT_SETTINGS: SettingsState = {
     autoReconnect: true,
     theme: 'light',
     language: 'zh-CN',
-    compactMode: false,
     showRegister: false,
     savePaths: [
         {

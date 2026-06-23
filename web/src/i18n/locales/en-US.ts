@@ -182,10 +182,6 @@ export default {
                 zhCN: '简体中文',
                 enUS: 'English',
             },
-            compactMode: {
-                label: 'Compact Mode',
-                desc: 'Reduce list spacing to show more tasks',
-            },
             showRegister: {
                 label: 'Show Registration',
                 desc: 'Show registration button on login page',

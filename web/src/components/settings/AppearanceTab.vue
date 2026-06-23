@@ -22,15 +22,7 @@
             />
         </SettingItem>
 
-        <SettingItem
-            :label="t('settings.appearance.compactMode.label')"
-            :description="t('settings.appearance.compactMode.desc')"
-            icon="fas fa-compress"
-        >
-            <SwitchControl
-                v-model="compactMode"
-            />
-        </SettingItem>
+
     </div>
 </template>
 
@@ -40,7 +32,6 @@ import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
 import SettingItem from './SettingItem.vue'
 import CustomSelect from '../common/CustomSelect.vue'
-import SwitchControl from '../common/SwitchControl.vue'
 
 const { t } = useI18n()
 const settingsService = useSettings()
@@ -48,7 +39,6 @@ const settings = settingsService.settings
 
 const theme = ref<string>((settings.theme as string) || 'light')
 const language = ref<string>((settings.language as string) || 'zh-CN')
-const compactMode = ref<boolean>((settings.compactMode as boolean) || false)
 
 const themeOptions = computed(() => [
     { value: 'light', label: t('settings.appearance.theme.light') },
@@ -67,10 +57,6 @@ watch(theme, (value) => {
 
 watch(language, (value) => {
     settingsService.setSetting('language', value)
-})
-
-watch(compactMode, (value) => {
-    settingsService.setSetting('compactMode', value)
 })
 </script>
 

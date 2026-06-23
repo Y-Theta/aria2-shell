@@ -182,10 +182,6 @@ export default {
                 zhCN: '简体中文',
                 enUS: 'English',
             },
-            compactMode: {
-                label: '紧凑模式',
-                desc: '减少列表间距，显示更多任务',
-            },
             showRegister: {
                 label: '显示注册入口',
                 desc: '在登录页面显示注册按钮',

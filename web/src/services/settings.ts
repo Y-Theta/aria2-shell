@@ -6,8 +6,10 @@ import {
     SettingValue,
     SettingsState,
     SettingConfig,
-    DEFAULT_SETTINGS,
 } from '../types/settings'
+import{
+    DEFAULT_SETTINGS,
+} from '../../../common/types'
 import { applyTheme, ThemeMode } from './theme'
 import { setLocale } from '../i18n'
 
