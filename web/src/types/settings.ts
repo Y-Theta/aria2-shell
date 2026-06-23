@@ -1,38 +1,18 @@
-export type SettingValue = string | number | boolean | SavePath[]
+import type {
+    SettingValue as CommonSettingValue,
+    SavePath as CommonSavePath,
+    SettingKey as CommonSettingKey,
+    SettingConfig as CommonSettingConfig,
+    SettingsState as CommonSettingsState
+} from "../../../common/types";
 
-export interface SavePath {
-    label: string
-    path: string
-    isDefault?: boolean
+export type SettingValue = CommonSettingValue;
+export interface SavePath extends CommonSavePath {}
+export type SettingKey = CommonSettingKey;
+export interface SettingConfig extends Omit<CommonSettingConfig, 'created_at'> {
+    created_at?: number;
 }
-
-export type SettingKey =
-    | 'autoStart'
-    | 'minimizeToTray'
-    | 'downloadPath'
-    | 'maxActiveDownloads'
-    | 'downloadLimit'
-    | 'uploadLimit'
-    | 'keepSeeding'
-    | 'serverUrl'
-    | 'timeout'
-    | 'autoReconnect'
-    | 'theme'
-    | 'language'
-    | 'compactMode'
-    | 'showRegister'
-    | 'savePaths'
-
-export interface SettingConfig {
-    key: SettingKey
-    value: string
-    created_at: number
-    updated_at: number
-}
-
-export interface SettingsState {
-    [key: string]: SettingValue
-}
+export interface SettingsState extends CommonSettingsState {}
 
 export const DEFAULT_SETTINGS: SettingsState = {
     autoStart: false,

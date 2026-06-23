@@ -1,4 +1,6 @@
 // userService.ts
+import type { User as CommonUser, UserConfig as CommonUserConfig } from "../../../common/types";
+
 export interface UserRow {
     id: number;
     username: string;
@@ -6,16 +8,5 @@ export interface UserRow {
     updated_at: number;
 }
 
-export interface User {
-    id: number;
-    username: string;
-    updated_at: number;
-}
-
-export interface UserConfig {
-    id: number;
-    user_id: number;
-    key: string;
-    value: string;
-    updated_at: number;
-}
+export type User = CommonUser;
+export type UserConfig = CommonUserConfig;

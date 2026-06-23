@@ -1,22 +1,11 @@
 #!/usr/bin/env node
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+import { loadEnv } from "./utils.js";
 import { initDb } from "./store.js";
 import { userService } from "./userService.js";
 import readline from "readline";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Load .env from project root
-const result = dotenv.config({
-    path: path.join(__dirname, "../../.env")
-});
-
-if (result.error) {
-    console.warn("Warning: Could not load .env file, using defaults");
-}
+loadEnv();
 
 // 初始化数据库
 initDb();

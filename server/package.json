@@ -26,10 +26,8 @@
     },
     "devDependencies": {
         "@types/bcrypt": "^6.0.0",
-        "@types/dotenv": "^8.2.3",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/node": "^24.13.2",
-        "dotenv": "^17.4.2",
         "ts-node": "^10.9.2",
         "tsup": "^8.5.1",
         "tsx": "^4.22.4",
