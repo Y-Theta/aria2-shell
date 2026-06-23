@@ -11,6 +11,7 @@ import { initDb } from "./store.js";
 import { authRoutes } from "./routes/auth.js";
 import { userRoutes } from "./routes/user.js";
 import { aria2Routes } from "./routes/aria2.js";
+import { filesystemRoutes } from "./routes/filesystem.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,6 +58,9 @@ await app.register(userRoutes, { prefix: "/api/user" });
 
 // Register Aria2 Routes with aria2 client
 await app.register(aria2Routes, { prefix: "/api/aria2", aria2 });
+
+// Register Filesystem Routes
+await app.register(filesystemRoutes, { prefix: "/api/filesystem" });
 
 const port = Number(process.env.PORT ?? 65002);
 

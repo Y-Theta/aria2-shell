@@ -95,9 +95,8 @@ export default {
             message: '此操作将把所有设置恢复为默认值，确定要继续吗？',
         },
         tabs: {
-            general: '常规',
             download: '下载',
-            connection: '连接',
+            aria2: 'Aria2',
             appearance: '外观',
             about: '关于',
         },
@@ -142,12 +141,21 @@ export default {
                 label: '任务完成后继续做种',
                 desc: 'BT 任务下载完成后继续上传分享',
             },
+            defaultSavePaths: '默认保存位置',
+            pathLabelPlaceholder: '标签',
+            pathPlaceholder: '路径',
+            addPath: '添加保存位置',
         },
-        connection: {
+        aria2: {
             serverUrl: {
                 label: '后端服务地址',
                 desc: '用于连接下载服务的 API 地址',
                 placeholder: 'http://127.0.0.1:8080',
+            },
+            secret: {
+                label: 'RPC 密钥',
+                desc: '用于连接 aria2 服务的认证密钥',
+                placeholder: '请输入密钥',
             },
             timeout: {
                 label: '连接超时时间',

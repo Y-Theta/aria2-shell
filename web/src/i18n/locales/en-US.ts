@@ -95,9 +95,8 @@ export default {
             message: 'This action will reset all settings to their default values. Are you sure you want to continue?',
         },
         tabs: {
-            general: 'General',
             download: 'Download',
-            connection: 'Connection',
+            aria2: 'Aria2',
             appearance: 'Appearance',
             about: 'About',
         },
@@ -142,12 +141,21 @@ export default {
                 label: 'Keep Seeding After Completion',
                 desc: 'Continue uploading and sharing after BT tasks are completed',
             },
+            defaultSavePaths: 'Default Save Paths',
+            pathLabelPlaceholder: 'Label',
+            pathPlaceholder: 'Path',
+            addPath: 'Add Save Path',
         },
-        connection: {
+        aria2: {
             serverUrl: {
                 label: 'Backend Service URL',
                 desc: 'The API address used to connect to the download service',
                 placeholder: 'http://127.0.0.1:8080',
+            },
+            secret: {
+                label: 'RPC Secret',
+                desc: 'Authentication secret for connecting to aria2 service',
+                placeholder: 'Enter secret',
             },
             timeout: {
                 label: 'Connection Timeout',

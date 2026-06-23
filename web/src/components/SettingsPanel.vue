@@ -1,5 +1,4 @@
 <template>
-    <!-- Drawer mode: slide-in panel -->
     <template v-if="!inline">
         <teleport to="body">
             <transition name="settings-mask-fade">
@@ -22,131 +21,38 @@
                         </button>
                     </header>
 
-                <nav class="settings-tabs">
-                    <button v-for="tab in tabs" :key="tab.key" class="settings-tab"
-                        :class="{ active: activeTab === tab.key }" type="button" @click="activeTab = tab.key">
-                        <i class="settings-tab-icon" :class="tab.icon" aria-hidden="true"></i>
-                        <span>{{ t(tab.labelKey) }}</span>
-                    </button>
-                </nav>
-
-                <main class="settings-body">
-                    <section v-for="tab in configurableTabs" v-show="activeTab === tab.key" :key="tab.key"
-                        class="settings-section">
-
-                        <div v-for="item in tab.items" :key="item.key" class="setting-item"
-                            :class="{ vertical: isVerticalItem(item), button: item.type === 'button' }">
-                            <div class="setting-info">
-                                <div class="setting-label">
-                                    <i v-if="item.icon" class="setting-label-icon" :class="item.icon"
-                                        aria-hidden="true"></i>
-                                    <span>{{ t(item.labelKey) }}</span>
-                                </div>
-
-                                <div v-if="item.descKey" class="setting-desc">
-                                    {{ t(item.descKey) }}
-                                </div>
-                            </div>
-
-                            <!-- switch -->
-                            <label v-if="item.type === 'switch'" class="switch">
-                                <input :checked="Boolean(settings[item.key])" type="checkbox"
-                                    @change="setSettingValue(item.key, ($event.target as HTMLInputElement).checked)">
-                                <span />
-                            </label>
-
-                            <!-- text -->
-                            <input v-else-if="item.type === 'text'" :value="String(settings[item.key] ?? '')"
-                                class="setting-input" type="text"
-                                :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
-                                @input="setSettingValue(item.key, ($event.target as HTMLInputElement).value)">
-
-                            <!-- number -->
-                            <input v-else-if="item.type === 'number'" :value="Number(settings[item.key] ?? 0)"
-                                class="number-input" type="number" :min="item.min" :max="item.max"
-                                :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
-                                @input="setSettingValue(item.key, Number(($event.target as HTMLInputElement).value))">
-
-                            <!-- select -->
-                            <select v-else-if="item.type === 'select'" :value="String(settings[item.key] ?? '')"
-                                class="setting-select"
-                                @change="setSettingValue(item.key, ($event.target as HTMLSelectElement).value)">
-                                <option v-for="option in item.options || []" :key="option.value" :value="option.value">
-                                    {{ t(option.labelKey) }}
-                                </option>
-                            </select>
-
-                            <!-- path -->
-                            <div v-else-if="item.type === 'path'" class="path-row">
-                                <input :value="String(settings[item.key] ?? '')" class="setting-input" type="text"
-                                    :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
-                                    @input="setSettingValue(item.key, ($event.target as HTMLInputElement).value)">
-
-                                <button class="secondary-button" type="button" @click="selectPath(item.key)">
-                                    <i class="fas fa-folder-open button-icon" aria-hidden="true"></i>
-                                    {{ t('settings.actions.select') }}
-                                </button>
-                            </div>
-
-                            <!-- button -->
-                            <button v-else-if="item.type === 'button'" class="setting-action-button"
-                                :class="getButtonClass(item)" type="button" @click="handleButtonClick(item)">
-                                <i v-if="item.buttonIcon || item.icon" class="button-icon"
-                                    :class="item.buttonIcon || item.icon" aria-hidden="true"></i>
-                                {{ t(item.buttonTextKey || item.labelKey) }}
-                            </button>
-                        </div>
-
-                    </section>
-
-                    <!-- 关于 -->
-                    <section v-show="activeTab === 'about'" class="settings-section">
-                        <h3 class="section-title">
-                            <i class="fas fa-circle-info section-title-icon" aria-hidden="true"></i>
-                            <span>{{ t('settings.about.title') }}</span>
-                        </h3>
-
-                        <div class="about-card">
-                            <div class="about-logo">
-                                <i class="fas fa-download" aria-hidden="true"></i>
-                            </div>
-                            <div>
-                                <div class="about-title">{{ t('settings.about.appName') }}</div>
-                                <div class="about-desc">{{ t('settings.about.appDesc') }}</div>
-                            </div>
-                        </div>
-
-                        <div class="info-list">
-                            <div v-for="row in aboutInfoRows" :key="row.labelKey" class="info-row">
-                                <span>
-                                    <i v-if="row.icon" class="info-row-icon" :class="row.icon" aria-hidden="true"></i>
-                                    {{ t(row.labelKey) }}
-                                </span>
-                                <strong :class="{ success: row.type === 'success' }">
-                                    {{ t(row.valueKey) }}
-                                </strong>
-                            </div>
-                        </div>
-
-                        <button class="danger-button reset-in-page" type="button" @click="resetSettings">
-                            <i class="fas fa-rotate-left button-icon" aria-hidden="true"></i>
-                            {{ t('settings.actions.resetDefault') }}
+                    <nav class="settings-tabs">
+                        <button
+                            v-for="tab in tabs"
+                            :key="tab.key"
+                            class="settings-tab"
+                            :class="{ active: activeTab === tab.key }"
+                            type="button"
+                            @click="activeTab = tab.key"
+                        >
+                            <i class="settings-tab-icon" :class="tab.icon" aria-hidden="true"></i>
+                            <span>{{ t(tab.labelKey) }}</span>
                         </button>
-                    </section>
-                </main>
+                    </nav>
 
-                <footer class="settings-footer">
-                    <button class="primary-button" type="button" @click="saveSettings">
-                        <i class="fas fa-floppy-disk button-icon" aria-hidden="true"></i>
-                        {{ t('settings.actions.save') }}
-                    </button>
-                </footer>
-            </aside>
-        </transition>
-    </teleport>
+                    <main class="settings-body">
+                        <DownloadTab v-if="activeTab === 'download'" />
+                        <Aria2Tab v-else-if="activeTab === 'aria2'" />
+                        <AppearanceTab v-else-if="activeTab === 'appearance'" />
+                        <AboutTab v-else-if="activeTab === 'about'" />
+                    </main>
+
+                    <footer class="settings-footer">
+                        <button class="primary-button" type="button" @click="saveSettings">
+                            <i class="fas fa-floppy-disk button-icon" aria-hidden="true"></i>
+                            {{ t('settings.actions.save') }}
+                        </button>
+                    </footer>
+                </aside>
+            </transition>
+        </teleport>
     </template>
 
-    <!-- Inline mode: rendered as page content -->
     <div v-else class="settings-inline">
         <header class="settings-header settings-header-inline">
             <div>
@@ -159,116 +65,24 @@
         </header>
 
         <nav class="settings-tabs">
-            <button v-for="tab in tabs" :key="tab.key" class="settings-tab"
-                :class="{ active: activeTab === tab.key }" type="button" @click="activeTab = tab.key">
+            <button
+                v-for="tab in tabs"
+                :key="tab.key"
+                class="settings-tab"
+                :class="{ active: activeTab === tab.key }"
+                type="button"
+                @click="activeTab = tab.key"
+            >
                 <i class="settings-tab-icon" :class="tab.icon" aria-hidden="true"></i>
                 <span>{{ t(tab.labelKey) }}</span>
             </button>
         </nav>
 
         <main class="settings-body">
-            <section v-for="tab in configurableTabs" v-show="activeTab === tab.key" :key="tab.key"
-                class="settings-section">
-
-                <div v-for="item in tab.items" :key="item.key" class="setting-item"
-                    :class="{ vertical: isVerticalItem(item), button: item.type === 'button' }">
-                    <div class="setting-info">
-                        <div class="setting-label">
-                            <i v-if="item.icon" class="setting-label-icon" :class="item.icon"
-                                aria-hidden="true"></i>
-                            <span>{{ t(item.labelKey) }}</span>
-                        </div>
-
-                        <div v-if="item.descKey" class="setting-desc">
-                            {{ t(item.descKey) }}
-                        </div>
-                    </div>
-
-                    <!-- switch -->
-                    <label v-if="item.type === 'switch'" class="switch">
-                        <input :checked="Boolean(settings[item.key])" type="checkbox"
-                            @change="setSettingValue(item.key, ($event.target as HTMLInputElement).checked)">
-                        <span />
-                    </label>
-
-                    <!-- text -->
-                    <input v-else-if="item.type === 'text'" :value="String(settings[item.key] ?? '')"
-                        class="setting-input" type="text"
-                        :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
-                        @input="setSettingValue(item.key, ($event.target as HTMLInputElement).value)">
-
-                    <!-- number -->
-                    <input v-else-if="item.type === 'number'" :value="Number(settings[item.key] ?? 0)"
-                        class="number-input" type="number" :min="item.min" :max="item.max"
-                        :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
-                        @input="setSettingValue(item.key, Number(($event.target as HTMLInputElement).value))">
-
-                    <!-- select -->
-                    <select v-else-if="item.type === 'select'" :value="String(settings[item.key] ?? '')"
-                        class="setting-select"
-                        @change="setSettingValue(item.key, ($event.target as HTMLSelectElement).value)">
-                        <option v-for="option in item.options || []" :key="option.value" :value="option.value">
-                            {{ t(option.labelKey) }}
-                        </option>
-                    </select>
-
-                    <!-- path -->
-                    <div v-else-if="item.type === 'path'" class="path-row">
-                        <input :value="String(settings[item.key] ?? '')" class="setting-input" type="text"
-                            :placeholder="item.placeholderKey ? t(item.placeholderKey) : ''"
-                            @input="setSettingValue(item.key, ($event.target as HTMLInputElement).value)">
-
-                        <button class="secondary-button" type="button" @click="selectPath(item.key)">
-                            <i class="fas fa-folder-open button-icon" aria-hidden="true"></i>
-                            {{ t('settings.actions.select') }}
-                        </button>
-                    </div>
-
-                    <!-- button -->
-                    <button v-else-if="item.type === 'button'" class="setting-action-button"
-                        :class="getButtonClass(item)" type="button" @click="handleButtonClick(item)">
-                        <i v-if="item.buttonIcon || item.icon" class="button-icon"
-                            :class="item.buttonIcon || item.icon" aria-hidden="true"></i>
-                        {{ t(item.buttonTextKey || item.labelKey) }}
-                    </button>
-                </div>
-
-            </section>
-
-            <!-- 关于 -->
-            <section v-show="activeTab === 'about'" class="settings-section">
-                <h3 class="section-title">
-                    <i class="fas fa-circle-info section-title-icon" aria-hidden="true"></i>
-                    <span>{{ t('settings.about.title') }}</span>
-                </h3>
-
-                <div class="about-card">
-                    <div class="about-logo">
-                        <i class="fas fa-download" aria-hidden="true"></i>
-                    </div>
-                    <div>
-                        <div class="about-title">{{ t('settings.about.appName') }}</div>
-                        <div class="about-desc">{{ t('settings.about.appDesc') }}</div>
-                    </div>
-                </div>
-
-                <div class="info-list">
-                    <div v-for="row in aboutInfoRows" :key="row.labelKey" class="info-row">
-                        <span>
-                            <i v-if="row.icon" class="info-row-icon" :class="row.icon" aria-hidden="true"></i>
-                            {{ t(row.labelKey) }}
-                        </span>
-                        <strong :class="{ success: row.type === 'success' }">
-                            {{ t(row.valueKey) }}
-                        </strong>
-                    </div>
-                </div>
-
-                <button class="danger-button reset-in-page" type="button" @click="resetSettings">
-                    <i class="fas fa-rotate-left button-icon" aria-hidden="true"></i>
-                    {{ t('settings.actions.resetDefault') }}
-                </button>
-            </section>
+            <DownloadTab v-if="activeTab === 'download'" />
+            <Aria2Tab v-else-if="activeTab === 'aria2'" />
+            <AppearanceTab v-else-if="activeTab === 'appearance'" />
+            <AboutTab v-else-if="activeTab === 'about'" />
         </main>
 
         <footer class="settings-footer">
@@ -278,6 +92,7 @@
             </button>
         </footer>
     </div>
+
     <ConfirmDialog
         v-model:visible="showResetDialog"
         :title="t('settings.confirmReset.title')"
@@ -287,308 +102,66 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../services/settings'
 import ConfirmDialog from './ConfirmDialog.vue'
+import DownloadTab from './settings/DownloadTab.vue'
+import Aria2Tab from './settings/Aria2Tab.vue'
+import AppearanceTab from './settings/AppearanceTab.vue'
+import AboutTab from './settings/AboutTab.vue'
 
 const { t } = useI18n()
+const settingsService = useSettings()
+const activeTab = ref('download')
+const showResetDialog = ref(false)
 
-// 类型定义
-type SettingType = 'switch' | 'text' | 'number' | 'select' | 'path'
-type ButtonType = 'button'
-type SettingButtonVariant = 'primary' | 'secondary' | 'danger'
-
-interface SettingOption {
-    labelKey: string
-    value: string | number
-}
-
-interface BaseSettingItem {
+interface Tab {
     key: string
     labelKey: string
-    descKey?: string
-    icon?: string
-}
-
-interface ValueSettingItem extends BaseSettingItem {
-    type: SettingType
-    placeholderKey?: string
-    min?: number
-    max?: number
-    options?: SettingOption[]
-}
-
-interface ButtonSettingItem extends BaseSettingItem {
-    type: ButtonType
-    action: string
-    buttonTextKey?: string
-    buttonIcon?: string
-    variant?: SettingButtonVariant
-}
-
-type SettingItem = ValueSettingItem | ButtonSettingItem
-
-interface SettingTab {
-    key: string
-    labelKey: string
-    titleKey: string
     icon: string
-    items: SettingItem[]
 }
 
-interface AboutInfoRow {
-    labelKey: string
-    valueKey: string
-    icon?: string
-    type?: 'success'
-}
+const tabs: Tab[] = [
+    {
+        key: 'download',
+        labelKey: 'settings.tabs.download',
+        icon: 'fas fa-download',
+    },
+    {
+        key: 'aria2',
+        labelKey: 'settings.tabs.aria2',
+        icon: 'fas fa-server',
+    },
+    {
+        key: 'appearance',
+        labelKey: 'settings.tabs.appearance',
+        icon: 'fas fa-palette',
+    },
+    {
+        key: 'about',
+        labelKey: 'settings.tabs.about',
+        icon: 'fas fa-circle-info',
+    },
+]
 
-// Props and emit
-const props = defineProps<{
+interface Props {
     visible: boolean
     inline?: boolean
-    buttonCallbacks?: Record<string, (item: ButtonSettingItem) => void>
-}>()
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
     (e: 'update:visible', value: boolean): void
 }>()
 
-// 初始化设置服务
-const settingsService = useSettings()
-const settings = settingsService.settings
-const activeTab = ref('general')
-const showResetDialog = ref(false)
-
-// 标签页配置
-const tabs: SettingTab[] = [
-    {
-        key: 'general',
-        labelKey: 'settings.tabs.general',
-        titleKey: 'settings.sections.general',
-        icon: 'fas fa-sliders',
-        items: [
-            {
-                key: 'autoStart',
-                type: 'switch',
-                labelKey: 'settings.general.autoStart.label',
-                descKey: 'settings.general.autoStart.desc',
-                icon: 'fas fa-power-off',
-            },
-            {
-                key: 'minimizeToTray',
-                type: 'switch',
-                labelKey: 'settings.general.minimizeToTray.label',
-                descKey: 'settings.general.minimizeToTray.desc',
-                icon: 'fas fa-window-minimize',
-            },
-            {
-                key: 'downloadPath',
-                type: 'path',
-                labelKey: 'settings.general.downloadPath.label',
-                descKey: 'settings.general.downloadPath.desc',
-                icon: 'fas fa-folder',
-                placeholderKey: 'settings.general.downloadPath.placeholder',
-            }
-        ],
-    },
-    {
-        key: 'download',
-        labelKey: 'settings.tabs.download',
-        titleKey: 'settings.sections.download',
-        icon: 'fas fa-download',
-        items: [
-            {
-                key: 'maxActiveDownloads',
-                type: 'number',
-                labelKey: 'settings.download.maxActiveDownloads.label',
-                descKey: 'settings.download.maxActiveDownloads.desc',
-                icon: 'fas fa-layer-group',
-                min: 1,
-                max: 20,
-            },
-            {
-                key: 'downloadLimit',
-                type: 'number',
-                labelKey: 'settings.download.downloadLimit.label',
-                descKey: 'settings.download.downloadLimit.desc',
-                icon: 'fas fa-arrow-down-wide-short',
-                min: 0,
-            },
-            {
-                key: 'uploadLimit',
-                type: 'number',
-                labelKey: 'settings.download.uploadLimit.label',
-                descKey: 'settings.download.uploadLimit.desc',
-                icon: 'fas fa-arrow-up-wide-short',
-                min: 0,
-            },
-            {
-                key: 'keepSeeding',
-                type: 'switch',
-                labelKey: 'settings.download.keepSeeding.label',
-                descKey: 'settings.download.keepSeeding.desc',
-                icon: 'fas fa-seedling',
-            },
-        ],
-    },
-    {
-        key: 'connection',
-        labelKey: 'settings.tabs.connection',
-        titleKey: 'settings.sections.connection',
-        icon: 'fas fa-plug',
-        items: [
-            {
-                key: 'serverUrl',
-                type: 'text',
-                labelKey: 'settings.connection.serverUrl.label',
-                descKey: 'settings.connection.serverUrl.desc',
-                icon: 'fas fa-server',
-                placeholderKey: 'settings.connection.serverUrl.placeholder',
-            },
-            {
-                key: 'timeout',
-                type: 'number',
-                labelKey: 'settings.connection.timeout.label',
-                descKey: 'settings.connection.timeout.desc',
-                icon: 'fas fa-stopwatch',
-                min: 1,
-                max: 120,
-            },
-            {
-                key: 'autoReconnect',
-                type: 'switch',
-                labelKey: 'settings.connection.autoReconnect.label',
-                descKey: 'settings.connection.autoReconnect.desc',
-                icon: 'fas fa-rotate-right',
-            },
-        ],
-    },
-    {
-        key: 'appearance',
-        labelKey: 'settings.tabs.appearance',
-        titleKey: 'settings.sections.appearance',
-        icon: 'fas fa-palette',
-        items: [
-            {
-                key: 'theme',
-                type: 'select',
-                labelKey: 'settings.appearance.theme.label',
-                descKey: 'settings.appearance.theme.desc',
-                icon: 'fas fa-swatchbook',
-                options: [
-                    { value: 'light', labelKey: 'settings.appearance.theme.light' },
-                    { value: 'dark', labelKey: 'settings.appearance.theme.dark' },
-                    { value: 'system', labelKey: 'settings.appearance.theme.system' },
-                ],
-            },
-            {
-                key: 'language',
-                type: 'select',
-                labelKey: 'settings.appearance.language.label',
-                descKey: 'settings.appearance.language.desc',
-                icon: 'fas fa-language',
-                options: [
-                    { value: 'zh-CN', labelKey: 'settings.appearance.language.zhCN' },
-                    { value: 'en-US', labelKey: 'settings.appearance.language.enUS' },
-                ],
-            },
-            {
-                key: 'compactMode',
-                type: 'switch',
-                labelKey: 'settings.appearance.compactMode.label',
-                descKey: 'settings.appearance.compactMode.desc',
-                icon: 'fas fa-compress',
-            },
-            {
-                key: 'showRegister',
-                type: 'switch',
-                labelKey: 'settings.appearance.showRegister.label',
-                descKey: 'settings.appearance.showRegister.desc',
-                icon: 'fas fa-user-plus',
-            },
-        ],
-    },
-    {
-        key: 'about',
-        labelKey: 'settings.tabs.about',
-        titleKey: 'settings.sections.about',
-        icon: 'fas fa-circle-info',
-        items: [],
-    },
-]
-
-const aboutInfoRows: AboutInfoRow[] = [
-    {
-        labelKey: 'settings.about.version',
-        valueKey: 'settings.about.versionValue',
-        icon: 'fas fa-tag',
-    },
-    {
-        labelKey: 'settings.about.build',
-        valueKey: 'settings.about.buildValue',
-        icon: 'fas fa-box',
-    },
-    {
-        labelKey: 'settings.about.status',
-        valueKey: 'settings.about.statusValue',
-        icon: 'fas fa-circle-check',
-        type: 'success',
-    },
-]
-
-const configurableTabs = computed(() => tabs.filter(tab => tab.key !== 'about'))
-
-// 辅助函数
-function isButtonItem(item: SettingItem): item is ButtonSettingItem {
-    return item.type === 'button'
-}
-
-function getButtonClass(item: SettingItem) {
-    if (!isButtonItem(item)) return ''
-
-    return {
-        'primary-button': item.variant === 'primary',
-        'secondary-button': !item.variant || item.variant === 'secondary',
-        'danger-button': item.variant === 'danger',
-    }
-}
-
-function isVerticalItem(item: SettingItem) {
-    return item.type === 'path'
-}
-
-function handleButtonClick(item: ButtonSettingItem) {
-    if (item.action === 'resetSettings') {
-        resetSettings()
-        return
-    }
-
-    const callback = props.buttonCallbacks?.[item.action]
-
-    if (callback) {
-        callback(item)
-        return
-    }
-
-    console.warn(`No callback found for settings button action: ${item.action}`)
-}
-
 function close() {
     emit('update:visible', false)
 }
 
-function setSettingValue(key: string, value: any) {
-    settingsService.setSetting(key as any, value)
-}
-
 function saveSettings() {
     close()
-}
-
-function resetSettings() {
-    showResetDialog.value = true
 }
 
 function confirmReset() {
@@ -596,11 +169,6 @@ function confirmReset() {
     showResetDialog.value = false
 }
 
-function selectPath(key: string) {
-    console.log('select path for', key)
-}
-
-// 当面板打开时刷新设置
 watch(() => props.visible, async (visible) => {
     if (visible) {
         await settingsService.refreshSettings()
@@ -629,17 +197,13 @@ watch(() => props.visible, async (visible) => {
     z-index: 2001;
     width: 560px;
     max-width: 100vw;
-
     height: 100vh;
     height: 100svh;
-
     display: flex;
     flex-direction: column;
-
     background: var(--panel-bg);
     color: var(--text-primary);
     box-shadow: -16px 0 40px rgba(15, 23, 42, 0.16);
-
     overflow: hidden;
     overflow-y: hidden;
 }
@@ -673,10 +237,7 @@ watch(() => props.visible, async (visible) => {
 }
 
 .settings-title-icon,
-.section-title-icon,
 .settings-tab-icon,
-.setting-label-icon,
-.info-row-icon,
 .button-icon {
     width: 1em;
     display: inline-flex;
@@ -707,7 +268,7 @@ watch(() => props.visible, async (visible) => {
 }
 
 .settings-close:hover {
-    background: #e04848;
+    background: #f87171;
 }
 
 .settings-tabs {
@@ -743,8 +304,6 @@ watch(() => props.visible, async (visible) => {
 
 .settings-tab:hover {
     color: var(--primary);
-    box-shadow: none;
-    transform: none;
 }
 
 .settings-tab::after {
@@ -767,10 +326,6 @@ watch(() => props.visible, async (visible) => {
     background: var(--primary);
 }
 
-.settings-tab-icon {
-    font-size: 15px;
-}
-
 .settings-body {
     flex: 1;
     min-height: 0;
@@ -782,226 +337,6 @@ watch(() => props.visible, async (visible) => {
     color: var(--text-primary);
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-}
-
-.settings-section {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-.section-title {
-    margin: 0 0 4px;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.section-title-icon {
-    color: var(--primary);
-}
-
-.setting-item {
-    min-height: 72px;
-    padding: 16px;
-    box-sizing: border-box;
-    background: var(--panel-bg);
-    border: 1px solid var(--border-gray);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.setting-item.vertical {
-    align-items: stretch;
-    flex-direction: column;
-}
-
-.setting-info {
-    min-width: 0;
-}
-
-.setting-label {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.setting-label-icon {
-    color: var(--primary);
-}
-
-.setting-desc {
-    margin-top: 5px;
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--text-muted);
-}
-
-.path-row {
-    display: flex;
-    gap: 10px;
-}
-
-.setting-input,
-.setting-select,
-.number-input {
-    height: 38px;
-    border: 1px solid var(--input-border);
-    border-radius: 9px;
-    padding: 0 12px;
-    box-sizing: border-box;
-    background: var(--input-bg);
-    color: var(--input-color);
-    font-size: 14px;
-    outline: none;
-}
-
-.setting-input::placeholder,
-.number-input::placeholder {
-    color: var(--input-placeholder);
-}
-
-.setting-input:focus,
-.setting-select:focus,
-.number-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--input-focus-shadow);
-}
-
-.setting-input {
-    width: 100%;
-}
-
-.number-input {
-    width: 120px;
-}
-
-.setting-select {
-    width: 150px;
-}
-
-.switch {
-    position: relative;
-    width: 46px;
-    height: 26px;
-    flex-shrink: 0;
-}
-
-.switch input {
-    display: none;
-}
-
-.switch span {
-    position: absolute;
-    inset: 0;
-    border-radius: 999px;
-    background: var(--input-border);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.switch span::before {
-    content: '';
-    position: absolute;
-    width: 22px;
-    height: 22px;
-    left: 2px;
-    top: 2px;
-    border-radius: 50%;
-    background: var(--panel-bg);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-    transition: all 0.2s;
-}
-
-:global(html[data-theme='dark']) .switch span::before,
-:global(html.dark) .switch span::before {
-    background: #ffffff;
-}
-
-.switch input:checked + span {
-    background: var(--primary);
-}
-
-.switch input:checked + span::before {
-    transform: translateX(20px);
-}
-
-.about-card {
-    padding: 18px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-    color: var(--text-inverse);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.about-logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: 800;
-}
-
-.about-title {
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.about-desc {
-    margin-top: 5px;
-    font-size: 13px;
-    opacity: 0.9;
-}
-
-.info-list {
-    background: var(--panel-bg);
-    border: 1px solid var(--border-gray);
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.info-row {
-    min-height: 52px;
-    padding: 0 16px;
-    border-bottom: 1px solid var(--border-gray);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.info-row:last-child {
-    border-bottom: none;
-}
-
-.info-row strong {
-    color: var(--text-primary);
-}
-
-.info-row .success {
-    color: var(--success-green);
-}
-
-.reset-in-page {
-    margin-top: 4px;
-    align-self: stretch;
 }
 
 .settings-footer {
@@ -1019,9 +354,7 @@ watch(() => props.visible, async (visible) => {
     gap: 12px;
 }
 
-.primary-button,
-.secondary-button,
-.danger-button {
+.primary-button {
     height: 40px;
     padding: 0 20px;
     border-radius: 9px;
@@ -1031,9 +364,6 @@ watch(() => props.visible, async (visible) => {
     align-items: center;
     justify-content: center;
     gap: 8px;
-}
-
-.primary-button {
     border: none;
     color: var(--text-inverse);
     background: var(--primary);
@@ -1041,39 +371,6 @@ watch(() => props.visible, async (visible) => {
 
 .primary-button:hover {
     background: var(--primary-hover);
-}
-
-.secondary-button {
-    border: 1px solid var(--input-border);
-    color: var(--text-secondary);
-    background: var(--panel-bg);
-    display: flex;
-    flex-direction: row;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    min-width: 96px;
-    letter-spacing: 4px;
-    padding: var(--spacing-xs);
-}
-
-.secondary-button:hover {
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-.danger-button {
-    border: none;
-    color: var(--text-inverse);
-    background: var(--danger);
-}
-
-.danger-button:hover {
-    background: #ff8787;
-}
-
-:global(html[data-theme='dark']) .danger-button:hover,
-:global(html.dark) .danger-button:hover {
-    background: #f87171;
 }
 
 .settings-mask-fade-enter-active,
@@ -1096,93 +393,9 @@ watch(() => props.visible, async (visible) => {
     transform: translateX(100%);
 }
 
-/* 按钮类型设置项：电脑端左右排布 */
-.setting-item.button {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-/* 左侧说明区域 */
-.setting-item.button .setting-info {
-    flex: 1;
-    min-width: 0;
-}
-
-/* 右侧按钮 */
-.setting-item.button .setting-action-button {
-    flex-shrink: 0;
-    width: auto;
-    min-width: 120px;
-}
-
-.setting-action-button {
-    min-width: 120px;
-    height: 36px;
-    padding: 0 16px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease,
-        border-color 0.2s ease;
-}
-
-.setting-action-button:hover {
-    transform: scale(1.03);
-}
-
-.setting-action-button.primary-button {
-    background: var(--primary);
-    color: var(--text-inverse);
-    box-shadow: 0 6px 14px var(--button-shadow);
-}
-
-.setting-action-button.primary-button:hover {
-    background: var(--primary-blue);
-}
-
-.setting-action-button.secondary-button {
-    background: var(--bg-gray);
-    color: var(--text-primary);
-    border: 1px solid var(--input-border);
-}
-
-.setting-action-button.secondary-button:hover {
-    background: var(--light-blue);
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-.setting-action-button.danger-button {
-    background: var(--danger);
-    color: var(--text-inverse);
-    box-shadow: 0 6px 14px rgba(245, 108, 108, 0.24);
-}
-
-.setting-action-button.danger-button:hover {
-    background: #dd6161;
-}
-
-:global(html[data-theme='dark']) .setting-action-button.danger-button:hover,
-:global(html.dark) .setting-action-button.danger-button:hover {
-    background: #f87171;
-}
-
 @media (max-width: 768px) {
     .settings-drawer {
-        width: 88vw;
+        width: 100vw;
     }
 
     .settings-header {
@@ -1197,40 +410,8 @@ watch(() => props.visible, async (visible) => {
         padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
     }
 
-    .setting-item.button {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-    }
-
-    .setting-item.button .setting-info {
-        width: 100%;
-    }
-
-    .setting-item.button .setting-action-button {
-        width: 100%;
-        min-width: 0;
-    }
-}
-
-@media (max-width: 768px) {
-    .settings-drawer {
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
-    }
-
-    .settings-header {
-        min-height: auto;
-        padding: 16px;
-    }
-
     .settings-title {
         font-size: 20px;
-    }
-
-    .settings-subtitle {
-        font-size: 12px;
     }
 
     .settings-tabs {
@@ -1242,42 +423,6 @@ watch(() => props.visible, async (visible) => {
         height: 42px;
         padding: 0 10px;
         font-size: 13px;
-    }
-
-    .settings-body {
-        padding: 16px 12px calc(108px + env(safe-area-inset-bottom));
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .setting-item {
-        padding: 14px;
-        border-radius: 12px;
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .setting-item:not(.vertical) {
-        gap: 12px;
-    }
-
-    .setting-item .setting-select,
-    .setting-item .number-input {
-        align-self: flex-start;
-    }
-
-    /* 针对包含switch的setting-item，保持row布局 */
-    .setting-item:has(.switch) {
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .path-row {
-        flex-direction: column;
-    }
-
-    .number-input,
-    .setting-select {
-        width: 100%;
     }
 
     .settings-footer {
@@ -1297,7 +442,6 @@ watch(() => props.visible, async (visible) => {
     }
 }
 
-/* Inline mode styles */
 .settings-inline {
     height: 100%;
     display: flex;
