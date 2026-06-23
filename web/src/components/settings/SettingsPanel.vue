@@ -104,12 +104,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useSettings } from '../services/settings'
-import ConfirmDialog from './ConfirmDialog.vue'
-import DownloadTab from './settings/DownloadTab.vue'
-import Aria2Tab from './settings/Aria2Tab.vue'
-import AppearanceTab from './settings/AppearanceTab.vue'
-import AboutTab from './settings/AboutTab.vue'
+import { useSettings } from '../../services/settings'
+import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
+import DownloadTab from './DownloadTab.vue'
+import Aria2Tab from './Aria2Tab.vue'
+import AppearanceTab from './AppearanceTab.vue'
+import AboutTab from './AboutTab.vue'
 
 const { t } = useI18n()
 const settingsService = useSettings()

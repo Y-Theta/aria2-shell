@@ -87,8 +87,8 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { getAuthHeaders } from '../services/auth'
-import { API_CONFIG } from '../config/api'
+import { getAuthHeaders } from '../../services/auth'
+import { API_CONFIG } from '../../config/api'
 
 const { t } = useI18n()
 
@@ -120,19 +120,34 @@ const selectedPath = ref('')
 const expandedDirs = ref<Set<string>>(new Set())
 const pathHistory = ref<string[]>([])
 
-const canGoUp = computed(() => pathHistory.value.length > 0)
+const canGoUp = computed(() => {
+    // 只要当前路径不是空字符串或根路径就允许向上
+    return currentPath.value !== '' && currentPath.value !== '/' && currentPath.value !== '\\'
+})
 
 function navigateUp() {
-    if (pathHistory.value.length > 0) {
-        pathHistory.value.pop()
+    // 获取当前路径的父路径
+    const path = currentPath.value
+    let parentPath = ''
+    
+    // 处理Windows路径（如 C:\Users\Name）
+    if (path.includes('\\')) {
+        const parts = path.split('\\').filter(p => p)
+        if (parts.length > 1) {
+            parts.pop()
+            parentPath = parts.join('\\') + '\\'
+        }
+    } 
+    // 处理Unix/Linux路径（如 /home/user）
+    else if (path.includes('/')) {
+        const parts = path.split('/').filter(p => p)
+        if (parts.length > 0) {
+            parts.pop()
+            parentPath = '/' + parts.join('/')
+        }
     }
-    if (pathHistory.value.length === 0) {
-        const defaultPath = getDefaultPath()
-        loadDirectory(defaultPath, false)
-    } else {
-        const parentPath = pathHistory.value[pathHistory.value.length - 1]
-        loadDirectory(parentPath, false)
-    }
+    
+    loadDirectory(parentPath, false)
 }
 
 function refresh() {
@@ -168,7 +183,8 @@ async function loadDirectory(dirPath: string, addToHistory: boolean = true) {
         if (response.ok) {
             const result = await response.json()
             if (result.success) {
-                fileItems.value = result.items
+                // 只显示目录，过滤掉文件
+                fileItems.value = result.items.filter((item: FileSystemItem) => item.type === 'directory')
                 currentPath.value = result.path
 
                 if (addToHistory) {
@@ -192,17 +208,12 @@ async function loadDirectory(dirPath: string, addToHistory: boolean = true) {
 }
 
 function handleItemClick(item: FileSystemItem) {
-    if (item.type === 'directory') {
-        if (expandedDirs.value.has(item.path)) {
-            // 已经展开，点击进入该目录
-            loadDirectory(item.path)
-        } else {
-            // 未展开，先加载子节点
-            expandedDirs.value.add(item.path)
-            loadChildren(item)
-        }
+    // 如果点击的是已经选中的目录，则进入该目录
+    if (item.type === 'directory' && selectedPath.value === item.path) {
+        loadDirectory(item.path)
+        return
     }
-    // 不管是文件还是目录，都可以被选中
+    // 否则只选中该目录
     selectedPath.value = item.path
 }
 

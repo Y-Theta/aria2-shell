@@ -88,8 +88,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '../services/auth'
-import ConfirmDialog from './ConfirmDialog.vue'
+import { useAuth } from '../../services/auth.ts'
+import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
 
 interface MenuItem {
     id: string

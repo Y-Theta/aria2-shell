@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import TaskPage from '../components/TaskPage.vue'
+import TaskPage from './TaskPage.vue'
 
 interface TorrentFile {
     id: string

@@ -6,7 +6,7 @@
                 <i class="fas fa-chevron-down" aria-hidden="true"></i>
             </span>
         </div>
-        <div v-if="isOpen" class="custom-select-dropdown" @click.stop>
+        <div v-if="isOpen" class="custom-select-dropdown" :style="dropdownStyle" @click.stop>
             <div
                 v-for="option in options"
                 :key="option.value"
@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 
 interface Option {
     label: string
@@ -41,12 +41,24 @@ const emit = defineEmits<{
 
 const isOpen = ref(false)
 const wrapper = ref<HTMLElement>()
+const dropdownStyle = reactive({
+    top: '0px',
+    left: '0px',
+    width: '0px'
+})
+
 const selectedLabel = computed(() => {
     const selected = props.options.find(o => o.value === props.modelValue)
     return selected?.label || ''
 })
 
 function toggleDropdown() {
+    if (wrapper.value) {
+        const rect = wrapper.value.getBoundingClientRect()
+        dropdownStyle.top = `${rect.bottom + 6}px`
+        dropdownStyle.left = `${rect.left}px`
+        dropdownStyle.width = `${rect.width}px`
+    }
     isOpen.value = !isOpen.value
 }
 
@@ -126,17 +138,16 @@ onUnmounted(() => {
 }
 
 .custom-select-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
+    position: fixed;
     background: var(--panel-bg);
     border: 1px solid var(--border-gray);
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
-    z-index: 1000;
+    z-index: 10000;
     overflow: hidden;
     animation: dropdownOpen 0.2s ease;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 @keyframes dropdownOpen {

@@ -37,10 +37,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import TaskToolbar from './TaskToolbar.vue'
-import TaskList from './TaskList.vue'
-import TaskFooter from './TaskFooter.vue'
-import AddTaskDialog from './AddTaskDialog.vue'
+import TaskToolbar from '../components/task/TaskToolbar.vue'
+import TaskList from '../components/task/TaskList.vue'
+import TaskFooter from '../components/task/TaskFooter.vue'
+import AddTaskDialog from '../components/dialogs/AddTaskDialog.vue'
 
 interface Task {
     id: string

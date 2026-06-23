@@ -90,8 +90,8 @@ import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
 import SettingItem from './SettingItem.vue'
-import NumberControl from './NumberControl.vue'
-import FileSelectorDialog from '../FileSelectorDialog.vue'
+import NumberControl from '../common/NumberControl.vue'
+import FileSelectorDialog from '../dialogs/FileSelectorDialog.vue'
 import type { SavePath } from '../../types/settings'
 
 const { t } = useI18n()

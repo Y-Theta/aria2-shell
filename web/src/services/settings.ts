@@ -9,6 +9,7 @@ import {
     DEFAULT_SETTINGS,
 } from '../types/settings'
 import { applyTheme, ThemeMode } from './theme'
+import { setLocale } from '../i18n'
 
 // 开发模式跳过登录配置
 const SKIP_LOGIN = import.meta.env.VITE_SKIP_LOGIN === 'true'
@@ -165,6 +166,16 @@ watch(
     }
 )
 
+// 监听语言变化，自动应用
+watch(
+    () => settings.language,
+    (newLanguage) => {
+        if (newLanguage) {
+            setLocale(newLanguage as string)
+        }
+    }
+)
+
 // 初始化（内部函数）
 async function initializeSettings(): Promise<void> {
     if (!isInitialized && !isLoading) {
@@ -172,6 +183,10 @@ async function initializeSettings(): Promise<void> {
         await loadSettingsFromServer()
         // 加载完设置后立即应用主题
         applyTheme(settings.theme as ThemeMode)
+        // 加载完设置后立即应用语言
+        if (settings.language) {
+            setLocale(settings.language as string)
+        }
         isInitialized = true
         isLoading = false
     }

@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
-import ConfirmDialog from '../ConfirmDialog.vue'
+import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
 import { ref } from 'vue'
 
 const { t } = useI18n()

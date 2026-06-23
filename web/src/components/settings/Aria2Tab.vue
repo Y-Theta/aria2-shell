@@ -52,9 +52,9 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
 import SettingItem from './SettingItem.vue'
-import TextControl from './TextControl.vue'
-import NumberControl from './NumberControl.vue'
-import SwitchControl from './SwitchControl.vue'
+import TextControl from '../common/TextControl.vue'
+import NumberControl from '../common/NumberControl.vue'
+import SwitchControl from '../common/SwitchControl.vue'
 
 const { t } = useI18n()
 const settingsService = useSettings()

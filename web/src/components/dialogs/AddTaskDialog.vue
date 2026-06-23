@@ -184,10 +184,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useSettings } from '../services/settings'
-import CustomSelect from './settings/CustomSelect.vue'
+import { useSettings } from '../../services/settings.ts'
+import CustomSelect from '../common/CustomSelect.vue'
 import FileSelectorDialog from './FileSelectorDialog.vue'
-import type { SavePath } from '../types/settings'
+import type { SavePath } from '../../types/settings.ts'
 
 const { t } = useI18n()
 const settingsService = useSettings()
@@ -230,6 +230,28 @@ const savePathOptions = computed(() => {
     })
     return options
 })
+
+// 监听设置中保存路径的变化，确保当前选择仍然有效
+watch(
+    () => settingsService.settings.savePaths,
+    (newSavePaths) => {
+        const paths = (newSavePaths as SavePath[]) || []
+        // 检查当前选择的标签是否还存在
+        if (selectedPathLabel.value && selectedPathLabel.value !== CUSTOM_PATH_VALUE) {
+            const exists = paths.some(p => p.label === selectedPathLabel.value)
+            if (!exists) {
+                // 当前选择的标签不存在了，切换到第一个或自定义
+                if (paths.length > 0) {
+                    selectedPathLabel.value = paths[0].label
+                    savePath.value = paths[0].path
+                } else {
+                    selectedPathLabel.value = CUSTOM_PATH_VALUE
+                }
+            }
+        }
+    },
+    { deep: true }
+)
 
 watch(selectedPathLabel, (label) => {
     if (label === CUSTOM_PATH_VALUE) {
@@ -323,13 +345,28 @@ const handlePathSelect = (path: string) => {
     savePath.value = path
 }
 
-onMounted(() => {
-    const savePaths = (settingsService.settings.savePaths as SavePath[]) || []
-    if (savePaths.length > 0) {
-        selectedPathLabel.value = savePaths[0].label
-        savePath.value = savePaths[0].path
-    }
-})
+// 当弹窗显示时，初始化路径选择
+watch(
+    () => props.visible,
+    (visible) => {
+        if (visible) {
+            const savePaths = (settingsService.settings.savePaths as SavePath[]) || []
+            if (savePaths.length > 0) {
+                // 优先选择标记为默认的路径
+                const defaultPath = savePaths.find(p => p.isDefault)
+                if (defaultPath) {
+                    selectedPathLabel.value = defaultPath.label
+                    savePath.value = defaultPath.path
+                } else {
+                    // 如果没有标记为默认的，选择第一个
+                    selectedPathLabel.value = savePaths[0].label
+                    savePath.value = savePaths[0].path
+                }
+            }
+        }
+    },
+    { immediate: true }
+)
 </script>
 
 <style scoped>
