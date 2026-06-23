@@ -43,6 +43,11 @@ defineProps<Props>()
     flex-direction: column;
 }
 
+.setting-item:has(.textarea-input) {
+    align-items: stretch;
+    flex-direction: column;
+}
+
 .setting-info {
     min-width: 0;
 }

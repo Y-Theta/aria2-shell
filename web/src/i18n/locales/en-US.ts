@@ -151,7 +151,7 @@ export default {
         aria2: {
             serverUrl: {
                 label: 'Backend Service URL',
-                desc: 'The API address used to connect to the download service',
+                desc: 'API address for connecting to download service',
                 placeholder: 'http://127.0.0.1:8080',
             },
             secret: {
@@ -166,6 +166,45 @@ export default {
             autoReconnect: {
                 label: 'Auto Reconnect',
                 desc: 'Automatically attempt to reconnect after the connection is lost',
+            },
+            btSection: 'BT Settings',
+            btTrackerUrl: {
+                label: 'BT Tracker URL',
+                desc: 'Optional, custom BT Tracker server address, one address per line',
+                placeholder: 'e.g.: udp://tracker.example.com:6969/announce',
+            },
+            btMaxUploadSpeed: {
+                label: 'BT Max Upload Speed',
+                desc: 'BT task maximum upload speed limit, 0 means unlimited, unit KB/s',
+            },
+            btMinSeedRatio: {
+                label: 'Minimum Seed Ratio',
+                desc: 'BT task can stop seeding after reaching this ratio',
+            },
+            btMinSeedTime: {
+                label: 'Minimum Seed Time',
+                desc: 'BT task minimum seeding time, unit minutes',
+            },
+            httpProxySection: 'HTTP Proxy Settings',
+            httpProxyUrl: {
+                label: 'Proxy URL',
+                desc: 'HTTP proxy server address',
+                placeholder: 'e.g.: http://127.0.0.1:7890',
+            },
+            httpProxyUser: {
+                label: 'Proxy Username',
+                desc: 'Proxy authentication username (optional)',
+                placeholder: 'Enter username',
+            },
+            httpProxyPassword: {
+                label: 'Proxy Password',
+                desc: 'Proxy authentication password (optional)',
+                placeholder: 'Enter password',
+            },
+            testProxyConnection: {
+                label: 'Test Proxy',
+                desc: 'Test if proxy connection works',
+                buttonText: 'Test Connection',
             },
         },
         appearance: {
@@ -249,6 +288,7 @@ export default {
         selectedFile: 'Selected File',
         noFileSelected: 'No file selected',
         linkSupported: 'HTTP(S)/FTP/Magnet links are supported',
+        useProxy: 'Use Proxy',
     },
     fileSelector: {
         title: 'Select Path',

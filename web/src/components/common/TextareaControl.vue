@@ -1,56 +1,54 @@
 <template>
-    <input
-        type="number"
-        class="number-input"
+    <textarea
+        class="textarea-input"
         :value="modelValue"
-        :min="min"
-        :max="max"
-        :step="step"
         :placeholder="placeholder"
+        :rows="rows"
         @input="handleInput"
     />
 </template>
 
 <script setup lang="ts">
 interface Props {
-    modelValue: number
-    min?: number
-    max?: number
-    step?: number
+    modelValue: string
     placeholder?: string
+    rows?: number
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: number): void
+    (e: 'update:modelValue', value: string): void
 }>()
 
 function handleInput(event: Event) {
-    const target = event.target as HTMLInputElement
-    emit('update:modelValue', Number(target.value))
+    const target = event.target as HTMLTextAreaElement
+    emit('update:modelValue', target.value)
 }
 </script>
 
 <style scoped>
-.number-input {
-    height: 38px;
+.textarea-input {
+    min-height: 80px;
+    padding: 10px 12px;
+    box-sizing: border-box;
     border: 1px solid var(--input-border);
     border-radius: 9px;
-    padding: 0 12px;
-    box-sizing: border-box;
     background: var(--input-bg);
     color: var(--input-color);
     font-size: 14px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
     outline: none;
-    width: 120px;
+    width: 100%;
 }
 
-.number-input::placeholder {
+.textarea-input::placeholder {
     color: var(--input-placeholder);
 }
 
-.number-input:focus {
+.textarea-input:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--input-focus-shadow);
 }

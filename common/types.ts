@@ -37,7 +37,14 @@ export type SettingKey =
     | 'theme'
     | 'language'
     | 'showRegister'
-    | 'savePaths';
+    | 'savePaths'
+    | 'btTrackerUrl'
+    | 'btMaxUploadSpeed'
+    | 'btMinSeedRatio'
+    | 'btMinSeedTime'
+    | 'httpProxyUrl'
+    | 'httpProxyUser'
+    | 'httpProxyPassword';
 
 export interface SettingConfig {
     key: SettingKey;
@@ -72,6 +79,13 @@ export const DEFAULT_SETTINGS: SettingsState = {
             isDefault: true
         }
     ],
+    btTrackerUrl: '',
+    btMaxUploadSpeed: 0,
+    btMinSeedRatio: 1.0,
+    btMinSeedTime: 60,
+    httpProxyUrl: '',
+    httpProxyUser: '',
+    httpProxyPassword: '',
 };
 
 // API 响应相关接口

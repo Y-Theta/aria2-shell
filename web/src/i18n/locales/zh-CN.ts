@@ -167,6 +167,45 @@ export default {
                 label: '自动重连',
                 desc: '连接断开后自动尝试重新连接',
             },
+            btSection: 'BT 设置',
+            btTrackerUrl: {
+                label: 'BT Tracker 地址',
+                desc: '可选，自定义 BT Tracker 服务器地址，每个地址一行',
+                placeholder: '例如：udp://tracker.example.com:6969/announce',
+            },
+            btMaxUploadSpeed: {
+                label: 'BT 最大上传速度',
+                desc: 'BT 任务最大上传速度限制，0 表示不限速，单位 KB/s',
+            },
+            btMinSeedRatio: {
+                label: '最小分享率',
+                desc: 'BT 任务达到该分享率后可停止做种',
+            },
+            btMinSeedTime: {
+                label: '最小做种时间',
+                desc: 'BT 任务最少做种时间，单位分钟',
+            },
+            httpProxySection: 'HTTP 代理设置',
+            httpProxyUrl: {
+                label: '代理地址',
+                desc: 'HTTP 代理服务器地址',
+                placeholder: '例如：http://127.0.0.1:7890',
+            },
+            httpProxyUser: {
+                label: '代理用户名',
+                desc: '代理验证用户名（可选）',
+                placeholder: '请输入用户名',
+            },
+            httpProxyPassword: {
+                label: '代理密码',
+                desc: '代理验证密码（可选）',
+                placeholder: '请输入密码',
+            },
+            testProxyConnection: {
+                label: '测试代理',
+                desc: '测试代理连接是否正常',
+                buttonText: '测试连接',
+            },
         },
         appearance: {
             theme: {
@@ -249,6 +288,7 @@ export default {
         selectedFile: '已选择文件',
         noFileSelected: '未选择文件',
         linkSupported: '支持 HTTP(S)/FTP/Magnet 链接',
+        useProxy: '使用代理',
     },
     fileSelector: {
         title: '选择路径',

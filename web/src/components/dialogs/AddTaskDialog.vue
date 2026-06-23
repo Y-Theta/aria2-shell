@@ -123,6 +123,18 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <div v-if="showProxyOption" class="form-group">
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <div class="setting-label">
+                                            <i class="fas fa-network-wired setting-label-icon"></i>
+                                            <span>{{ t('addTask.useProxy') }}</span>
+                                        </div>
+                                    </div>
+                                    <SwitchControl v-model="useProxy" />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -153,6 +165,7 @@ import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings.ts'
 import CustomSelect from '../common/CustomSelect.vue'
 import FileSelectorDialog from './FileSelectorDialog.vue'
+import SwitchControl from '../common/SwitchControl.vue'
 import type { SavePath } from '../../types/settings.ts'
 
 const { t } = useI18n()
@@ -174,8 +187,13 @@ const selectedFile = ref<File | null>(null)
 const savePath = ref('')
 const selectedPathLabel = ref('')
 const fileSelectorVisible = ref(false)
+const useProxy = ref(false)
 
 const torrentFileInput = ref<HTMLInputElement | null>(null)
+
+const showProxyOption = computed(() => {
+    return !!(settingsService.settings.httpProxyUrl as string)?.trim()
+})
 
 const CUSTOM_PATH_VALUE = 'custom'
 
@@ -238,6 +256,7 @@ const confirm = () => {
     const data: any = {
         method: activeMethod.value,
         savePath: savePath.value,
+        useProxy: useProxy.value,
     }
 
     switch (activeMethod.value) {
@@ -264,6 +283,7 @@ const resetForm = () => {
     if (torrentFileInput.value) {
         torrentFileInput.value.value = ''
     }
+    useProxy.value = false
 }
 
 const triggerFileInput = () => {
@@ -321,6 +341,8 @@ watch(
                     savePath.value = savePaths[0].path
                 }
             }
+            // 初始化 useProxy：如果代理地址不为空，默认勾选
+            useProxy.value = !!(settingsService.settings.httpProxyUrl as string)?.trim()
         }
     },
     { immediate: true }
@@ -735,6 +757,36 @@ watch(
 .remove-file-btn:hover {
     background: rgba(218, 54, 51, 0.1);
     color: var(--error-red);
+}
+
+.setting-item {
+    min-height: 72px;
+    padding: 16px;
+    box-sizing: border-box;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-gray);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.setting-info {
+    min-width: 0;
+}
+
+.setting-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.setting-label-icon {
+    color: var(--primary);
 }
 
 .add-task-footer {
