@@ -87,6 +87,7 @@ async function loadSettingsFromServer(): Promise<void> {
 }
 
 // 保存单个设置到后端
+// @ts-ignore
 async function saveSettingToServer(key: SettingKey, value: SettingValue): Promise<void> {
     if (SKIP_LOGIN) {
         // 跳过登录模式，保存到本地
