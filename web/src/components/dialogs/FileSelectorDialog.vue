@@ -89,16 +89,9 @@ import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getAuthHeaders } from '../../services/auth'
 import { API_CONFIG } from '../../config/api'
+import type { FileSystemItem } from '../../types/components'
 
 const { t } = useI18n()
-
-interface FileSystemItem {
-    name: string
-    path: string
-    type: 'file' | 'directory'
-    size?: number
-    children?: FileSystemItem[]
-}
 
 interface Props {
     visible: boolean
@@ -215,42 +208,6 @@ function handleItemClick(item: FileSystemItem) {
     }
     // 否则只选中该目录
     selectedPath.value = item.path
-}
-
-async function loadChildren(item: FileSystemItem) {
-    try {
-        const headers = await getAuthHeaders()
-        const params = new URLSearchParams()
-        params.append('path', item.path)
-        params.append('recursive', 'false')
-
-        const response = await fetch(`${API_CONFIG.baseUrl}/filesystem/list?${params.toString()}`, {
-            method: 'GET',
-            headers,
-        })
-
-        if (response.ok) {
-            const result = await response.json()
-            if (result.success) {
-                // 更新item的children
-                const findAndUpdate = (items: FileSystemItem[]) => {
-                    for (const i of items) {
-                        if (i.path === item.path) {
-                            i.children = result.items
-                            return true
-                        }
-                        if (i.children && findAndUpdate(i.children)) {
-                            return true
-                        }
-                    }
-                    return false
-                }
-                findAndUpdate(fileItems.value)
-            }
-        }
-    } catch (err) {
-        console.error('Failed to load children:', err)
-    }
 }
 
 function close() {

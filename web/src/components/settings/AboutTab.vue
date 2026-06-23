@@ -38,6 +38,13 @@
             <i class="fas fa-rotate-left button-icon" aria-hidden="true"></i>
             {{ t('settings.actions.resetDefault') }}
         </button>
+
+        <ConfirmDialog
+            v-model:visible="showResetDialog"
+            :title="t('settings.confirmReset.title')"
+            :message="t('settings.confirmReset.message')"
+            @confirm="confirmReset"
+        />
     </div>
 </template>
 

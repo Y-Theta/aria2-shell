@@ -7,14 +7,11 @@
 </template>
 
 <script setup lang="ts">
-interface Option {
-    label: string
-    value: string | number
-}
+import type { SelectOption } from '../../types/components'
 
 interface Props {
     modelValue: string | number
-    options: Option[]
+    options: SelectOption[]
 }
 
 const props = defineProps<Props>()

@@ -105,6 +105,7 @@
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
+import type { SettingsTab } from '../../types/components'
 import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
 import DownloadTab from './DownloadTab.vue'
 import Aria2Tab from './Aria2Tab.vue'
@@ -116,13 +117,7 @@ const settingsService = useSettings()
 const activeTab = ref('download')
 const showResetDialog = ref(false)
 
-interface Tab {
-    key: string
-    labelKey: string
-    icon: string
-}
-
-const tabs: Tab[] = [
+const tabs: SettingsTab[] = [
     {
         key: 'download',
         labelKey: 'settings.tabs.download',

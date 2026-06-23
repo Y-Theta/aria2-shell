@@ -2,6 +2,8 @@ import { createI18n } from 'vue-i18n'
 import zhCN from './locales/zh-CN'
 import enUS from './locales/en-US'
 
+type Locale = 'zh-CN' | 'en-US'
+
 export const i18n = createI18n({
   legacy: false,
   locale: 'zh-CN',
@@ -13,8 +15,8 @@ export const i18n = createI18n({
 })
 
 // 更新语言的函数
-export function setLocale(locale: string) {
-  i18n.global.locale.value = locale
+export function setLocale(locale: Locale | string) {
+  i18n.global.locale.value = locale as Locale
   localStorage.setItem('locale', locale)
 }
 

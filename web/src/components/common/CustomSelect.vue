@@ -22,15 +22,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
-
-interface Option {
-    label: string
-    value: string | number
-}
+import type { SelectOption } from '../../types/components'
 
 interface Props {
     modelValue: string | number
-    options: Option[]
+    options: SelectOption[]
 }
 
 const props = defineProps<Props>()
@@ -62,7 +58,7 @@ function toggleDropdown() {
     isOpen.value = !isOpen.value
 }
 
-function selectOption(option: Option) {
+function selectOption(option: SelectOption) {
     emit('update:modelValue', option.value)
     isOpen.value = false
 }
