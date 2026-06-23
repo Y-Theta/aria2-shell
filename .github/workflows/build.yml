@@ -25,30 +25,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
       - name: Build Server
         run: |
           cd server
-          pnpm install
-          pnpm run build
+          npm install
+          npm run build
           # 创建 server 发布包
           mkdir -p release/server
           cp -r dist release/server/
@@ -60,8 +41,8 @@ jobs:
       - name: Build Web
         run: |
           cd web
-          pnpm install
-          pnpm run build
+          npm install
+          npm run build
           # 创建 web 发布包
           mkdir -p release/web
           cp -r dist release/web/
