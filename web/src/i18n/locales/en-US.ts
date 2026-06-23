@@ -232,4 +232,12 @@ export default {
         noFileSelected: 'No file selected',
         linkSupported: 'HTTP(S)/FTP/Magnet links are supported',
     },
+    fileSelector: {
+        title: 'Select Path',
+        subtitle: 'Choose a save location from the file system',
+        loading: 'Loading...',
+        error: 'Failed to load, please try again',
+        empty: 'Directory is empty',
+        confirm: 'Select',
+    },
 }

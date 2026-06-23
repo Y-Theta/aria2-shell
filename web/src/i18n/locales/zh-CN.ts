@@ -232,4 +232,12 @@ export default {
         noFileSelected: '未选择文件',
         linkSupported: '支持 HTTP(S)/FTP/Magnet 链接',
     },
+    fileSelector: {
+        title: '选择路径',
+        subtitle: '从文件系统中选择保存位置',
+        loading: '加载中...',
+        error: '加载失败，请重试',
+        empty: '目录为空',
+        confirm: '选择',
+    },
 }

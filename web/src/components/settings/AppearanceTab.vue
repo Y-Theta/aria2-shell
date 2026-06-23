@@ -5,7 +5,7 @@
             :description="t('settings.appearance.theme.desc')"
             icon="fas fa-swatchbook"
         >
-            <SelectControl
+            <CustomSelect
                 v-model="theme"
                 :options="themeOptions"
             />
@@ -16,7 +16,7 @@
             :description="t('settings.appearance.language.desc')"
             icon="fas fa-language"
         >
-            <SelectControl
+            <CustomSelect
                 v-model="language"
                 :options="languageOptions"
             />
@@ -39,7 +39,7 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
 import SettingItem from './SettingItem.vue'
-import SelectControl from './SelectControl.vue'
+import CustomSelect from './CustomSelect.vue'
 import SwitchControl from './SwitchControl.vue'
 
 const { t } = useI18n()

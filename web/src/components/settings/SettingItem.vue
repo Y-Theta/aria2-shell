@@ -76,7 +76,7 @@ defineProps<Props>()
         gap: 12px;
     }
 
-    .setting-item:has(.select-control) {
+    .setting-item:has(.custom-select-wrapper) {
         flex-direction: row;
         align-items: center;
     }

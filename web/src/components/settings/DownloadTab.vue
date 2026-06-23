@@ -55,9 +55,14 @@
                         :placeholder="t('settings.download.pathPlaceholder')"
                     />
                 </div>
-                <button class="remove-path-btn" type="button" @click="removePath(index)">
-                    <i class="fas fa-trash" aria-hidden="true"></i>
-                </button>
+                <div class="path-buttons">
+                    <button class="browse-btn" type="button" @click="openFileSelector(index)">
+                        <i class="fas fa-folder-open" aria-hidden="true"></i>
+                    </button>
+                    <button class="remove-path-btn" type="button" @click="removePath(index)">
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -65,6 +70,12 @@
             <i class="fas fa-plus button-icon" aria-hidden="true"></i>
             {{ t('settings.download.addPath') }}
         </button>
+
+        <FileSelectorDialog
+            v-model:visible="fileSelectorVisible"
+            :initial-path="savePaths[selectedPathIndex]?.path"
+            @select="handlePathSelect"
+        />
     </div>
 </template>
 
@@ -74,6 +85,7 @@ import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
 import SettingItem from './SettingItem.vue'
 import NumberControl from './NumberControl.vue'
+import FileSelectorDialog from '../FileSelectorDialog.vue'
 
 const { t } = useI18n()
 const settingsService = useSettings()
@@ -90,6 +102,8 @@ const uploadLimit = ref<number>(settings.uploadLimit as number)
 const savePaths = ref<SavePath[]>([
     { label: '默认', path: '' }
 ])
+const fileSelectorVisible = ref(false)
+const selectedPathIndex = ref(0)
 
 watch(maxActiveDownloads, (value) => {
     settingsService.setSetting('maxActiveDownloads', value)
@@ -110,6 +124,17 @@ function addPath() {
 function removePath(index: number) {
     if (savePaths.value.length > 1) {
         savePaths.value.splice(index, 1)
+    }
+}
+
+function openFileSelector(index: number) {
+    selectedPathIndex.value = index
+    fileSelectorVisible.value = true
+}
+
+function handlePathSelect(selectedPath: string) {
+    if (selectedPathIndex.value >= 0 && selectedPathIndex.value < savePaths.value.length) {
+        savePaths.value[selectedPathIndex.value].path = selectedPath
     }
 }
 </script>
@@ -189,6 +214,31 @@ function removePath(index: number) {
     box-shadow: 0 0 0 3px var(--input-focus-shadow);
 }
 
+.path-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.browse-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    background: var(--panel-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.browse-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
 .remove-path-btn {
     width: 36px;
     height: 36px;
@@ -209,7 +259,7 @@ function removePath(index: number) {
 
 .add-path-btn {
     height: 40px;
-    border: 1px dashed var(--input-border);
+    border: 1px dashed var(--border-gray);
     border-radius: 10px;
     background: transparent;
     color: var(--text-secondary);
@@ -248,8 +298,17 @@ function removePath(index: number) {
         width: 100%;
     }
 
-    .remove-path-btn {
+    .path-value-input{
+        flex-basis: auto;
+    }
+
+    .path-buttons {
         width: 100%;
+    }
+
+    .browse-btn,
+    .remove-path-btn {
+        flex: 1;
     }
 }
 </style>
