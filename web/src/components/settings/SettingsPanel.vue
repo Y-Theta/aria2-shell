@@ -39,6 +39,7 @@
                         <DownloadTab v-if="activeTab === 'download'" />
                         <Aria2Tab v-else-if="activeTab === 'aria2'" />
                         <AppearanceTab v-else-if="activeTab === 'appearance'" />
+                        <UserTab v-else-if="activeTab === 'user'" @password-changed="handlePasswordChanged" />
                         <AboutTab v-else-if="activeTab === 'about'" />
                     </main>
 
@@ -82,6 +83,7 @@
             <DownloadTab v-if="activeTab === 'download'" />
             <Aria2Tab v-else-if="activeTab === 'aria2'" />
             <AppearanceTab v-else-if="activeTab === 'appearance'" />
+            <UserTab v-else-if="activeTab === 'user'" @password-changed="handlePasswordChanged" />
             <AboutTab v-else-if="activeTab === 'about'" />
         </main>
 
@@ -105,15 +107,18 @@
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
+import { useAuth } from '../../services/auth'
 import type { SettingsTab } from '../../types/components'
 import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
 import DownloadTab from './DownloadTab.vue'
 import Aria2Tab from './Aria2Tab.vue'
 import AppearanceTab from './AppearanceTab.vue'
+import UserTab from './UserTab.vue'
 import AboutTab from './AboutTab.vue'
 
 const { t } = useI18n()
 const settingsService = useSettings()
+const authService = useAuth()
 const activeTab = ref('download')
 const showResetDialog = ref(false)
 const isSaving = ref(false)
@@ -133,6 +138,11 @@ const tabs: SettingsTab[] = [
         key: 'appearance',
         labelKey: 'settings.tabs.appearance',
         icon: 'fas fa-palette',
+    },
+    {
+        key: 'user',
+        labelKey: 'settings.tabs.user',
+        icon: 'fas fa-user',
     },
     {
         key: 'about',
@@ -168,6 +178,11 @@ async function saveSettings() {
 function confirmReset() {
     settingsService.resetSettings()
     showResetDialog.value = false
+}
+
+function handlePasswordChanged() {
+    close()
+    authService.logout()
 }
 
 watch(() => props.visible, async (visible) => {

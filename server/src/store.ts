@@ -158,11 +158,22 @@ export function setUserConfig(userId: number, key: string, value: string): {
     value: string;
     updated_at: number;
 } {
-    const now = Date.now();
     const user = store.users.find(u => u.id === userId);
     if (!user) {
         throw new Error("User not found");
     }
+    const existingConfig = user.configs[key];
+    if (existingConfig && existingConfig.value === value) {
+        // 值相同，不更新
+        return {
+            user_id: userId,
+            key,
+            value,
+            updated_at: existingConfig.updated_at,
+        };
+    }
+    // 值不同，进行更新
+    const now = Date.now();
     user.configs[key] = {
         value,
         updated_at: now,
@@ -181,13 +192,26 @@ export function setUserConfigs(userId: number, configs: { key: string; value: st
     user_id: number;
     configs: { key: string; value: string; updated_at: number }[];
 } {
-    const now = Date.now();
     const user = store.users.find(u => u.id === userId);
     if (!user) {
         throw new Error("User not found");
     }
+    const now = Date.now();
     const updatedConfigs: { key: string; value: string; updated_at: number }[] = [];
+    let hasChanges = false;
+    
     for (const config of configs) {
+        const existingConfig = user.configs[config.key];
+        if (existingConfig && existingConfig.value === config.value) {
+            // 值相同，保留原有时间
+            updatedConfigs.push({
+                key: config.key,
+                value: config.value,
+                updated_at: existingConfig.updated_at,
+            });
+            continue;
+        }
+        // 值不同，进行更新
         user.configs[config.key] = {
             value: config.value,
             updated_at: now,
@@ -197,9 +221,14 @@ export function setUserConfigs(userId: number, configs: { key: string; value: st
             value: config.value,
             updated_at: now,
         });
+        hasChanges = true;
     }
-    user.updated_at = now;
-    saveStore();
+    
+    if (hasChanges) {
+        user.updated_at = now;
+        saveStore();
+    }
+    
     return {
         user_id: userId,
         configs: updatedConfigs,

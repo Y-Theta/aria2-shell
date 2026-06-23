@@ -180,6 +180,70 @@ const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             handleError(reply, error);
         }
     });
+
+    // 修改用户密码
+    fastify.post("/change-password", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const req = request as any;
+            const { oldPassword, newPassword } = request.body as {
+                oldPassword?: string;
+                newPassword?: string;
+            };
+
+            if (!oldPassword || typeof oldPassword !== "string" || oldPassword.trim().length === 0) {
+                reply.code(400).send({
+                    success: false,
+                    message: "旧密码不能为空",
+                });
+                return;
+            }
+
+            if (!newPassword || typeof newPassword !== "string" || newPassword.trim().length < 6) {
+                reply.code(400).send({
+                    success: false,
+                    message: "新密码至少需要6位",
+                });
+                return;
+            }
+
+            // 验证旧密码
+            const userData = userService.getUserById(req.user.id);
+            if (!userData) {
+                reply.code(404).send({
+                    success: false,
+                    message: "用户不存在",
+                });
+                return;
+            }
+
+            // 验证旧密码是否正确
+            const isOldPasswordValid = userService.validateUser(userData.username, oldPassword);
+            if (!isOldPasswordValid) {
+                reply.code(400).send({
+                    success: false,
+                    message: "旧密码不正确",
+                });
+                return;
+            }
+
+            // 更新密码
+            const updated = userService.updatePassword(req.user.id, newPassword);
+            if (!updated) {
+                reply.code(500).send({
+                    success: false,
+                    message: "密码更新失败",
+                });
+                return;
+            }
+
+            reply.send({
+                success: true,
+                message: "密码修改成功，请重新登录",
+            });
+        } catch (error) {
+            handleError(reply, error);
+        }
+    });
 };
 
 export { userRoutes };

@@ -104,17 +104,34 @@ const uploadLimit = ref<number>(settings.uploadLimit as number)
 const savePaths = ref<SavePath[]>([])
 const fileSelectorVisible = ref(false)
 const selectedPathIndex = ref(0)
+let isUpdatingFromSettings = false
+
+function loadSavePaths() {
+    isUpdatingFromSettings = true
+    try {
+        // 从设置中加载保存路径
+        if (Array.isArray(settings.savePaths) && settings.savePaths.length > 0) {
+            savePaths.value = [...settings.savePaths]
+        } else {
+            savePaths.value = [
+                { label: t('settings.download.defaultPathLabel'), path: '', isDefault: true }
+            ]
+        }
+    } finally {
+        setTimeout(() => {
+            isUpdatingFromSettings = false
+        }, 0)
+    }
+}
 
 onMounted(() => {
-    // 从设置中加载保存路径
-    if (Array.isArray(settings.savePaths) && settings.savePaths.length > 0) {
-        savePaths.value = [...settings.savePaths]
-    } else {
-        savePaths.value = [
-            { label: t('settings.download.defaultPathLabel'), path: '', isDefault: true }
-        ]
-    }
+    loadSavePaths()
 })
+
+// 监听设置中 savePaths 的变化，当从服务器加载完成后更新
+watch(() => settings.savePaths, () => {
+    loadSavePaths()
+}, { deep: true })
 
 watch(maxActiveDownloads, (value) => {
     settingsService.setSetting('maxActiveDownloads', value)
@@ -129,7 +146,9 @@ watch(uploadLimit, (value) => {
 })
 
 watch(savePaths, (value) => {
-    settingsService.setSetting('savePaths', value)
+    if (!isUpdatingFromSettings) {
+        settingsService.setSetting('savePaths', value)
+    }
 }, { deep: true })
 
 function addPath() {
