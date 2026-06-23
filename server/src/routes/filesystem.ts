@@ -83,6 +83,32 @@ const filesystemRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =>
       handleError(reply, error);
     }
   });
+
+  fastify.post("/mkdir", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = request.body as { path: string; recursive?: boolean };
+      const targetPath = body.path;
+      const recursive = body.recursive !== false;
+
+      if (!targetPath) {
+        reply.code(400).send({
+          success: false,
+          message: "Path is required",
+        });
+        return;
+      }
+
+      await fs.mkdir(targetPath, { recursive });
+
+      reply.send({
+        success: true,
+        message: "Directory created successfully",
+        path: targetPath,
+      });
+    } catch (error) {
+      handleError(reply, error);
+    }
+  });
 };
 
 export { filesystemRoutes };

@@ -242,5 +242,8 @@ export default {
         error: '加载失败，请重试',
         empty: '目录为空',
         confirm: '选择',
+        createFolder: '新建文件夹',
+        createFolderTitle: '新建文件夹',
+        folderName: '文件夹名称',
     },
 }

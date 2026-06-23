@@ -71,13 +71,45 @@
                 </div>
 
                 <div class="file-selector-footer">
-                    <button class="secondary-button" type="button" @click="close">
-                        {{ t('common.cancel') }}
+                    <button class="secondary-button" type="button" @click="showCreateFolderDialog">
+                        <i class="fas fa-folder-plus" aria-hidden="true"></i>
+                        {{ t('fileSelector.createFolder') }}
                     </button>
-                    <button class="primary-button" type="button" @click="confirmSelection" :disabled="!selectedPath">
-                        <i class="fas fa-check" aria-hidden="true"></i>
-                        {{ t('fileSelector.confirm') }}
-                    </button>
+                    <div class="file-selector-footer-right">
+                        <button class="secondary-button" type="button" @click="close">
+                            {{ t('common.cancel') }}
+                        </button>
+                        <button class="primary-button" type="button" @click="confirmSelection" :disabled="!selectedPath">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                            {{ t('fileSelector.confirm') }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 新建文件夹弹窗 -->
+                <div v-if="createFolderDialogVisible" class="create-folder-dialog">
+                    <div class="create-folder-content">
+                        <div class="create-folder-header">
+                            <h3>{{ t('fileSelector.createFolderTitle') }}</h3>
+                        </div>
+                        <div class="create-folder-form">
+                            <label>{{ t('fileSelector.folderName') }}</label>
+                            <input
+                                ref="folderNameInput"
+                                v-model="newFolderName"
+                                type="text"
+                                @keyup.enter="createFolder"
+                            />
+                        </div>
+                        <div class="create-folder-actions">
+                            <button class="secondary-button" @click="hideCreateFolderDialog">
+                                {{ t('common.cancel') }}
+                            </button>
+                            <button class="primary-button" @click="createFolder" :disabled="!newFolderName.trim()">
+                                {{ t('common.confirm') }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </transition>
@@ -85,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getAuthHeaders } from '../../services/auth'
 import { API_CONFIG } from '../../config/api'
@@ -112,6 +144,10 @@ const currentPath = ref('')
 const selectedPath = ref('')
 const expandedDirs = ref<Set<string>>(new Set())
 const pathHistory = ref<string[]>([])
+
+const createFolderDialogVisible = ref(false)
+const newFolderName = ref('')
+const folderNameInput = ref<HTMLInputElement | null>(null)
 
 const canGoUp = computed(() => {
     // 只要当前路径不是空字符串或根路径就允许向上
@@ -234,6 +270,62 @@ watch(() => props.visible, async (visible) => {
         loadDirectory(initialPath, false)
     }
 })
+
+function showCreateFolderDialog() {
+    newFolderName.value = ''
+    createFolderDialogVisible.value = true
+    nextTick(() => {
+        folderNameInput.value?.focus()
+    })
+}
+
+function hideCreateFolderDialog() {
+    createFolderDialogVisible.value = false
+    newFolderName.value = ''
+}
+
+async function createFolder() {
+    const folderName = newFolderName.value.trim()
+    if (!folderName || !currentPath.value) {
+        return
+    }
+
+    try {
+        const headers = await getAuthHeaders()
+        const fullPath = currentPath.value + (currentPath.value.endsWith('/') || currentPath.value.endsWith('\\') ? '' : '/') + folderName
+        
+        const response = await fetch(`${API_CONFIG.baseUrl}/filesystem/mkdir`, {
+            method: 'POST',
+            headers: {
+                ...headers,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                path: fullPath,
+                recursive: true,
+            }),
+        })
+
+        if (response.ok) {
+            const result = await response.json()
+            if (result.success) {
+                // 刷新目录
+                await loadDirectory(currentPath.value, false)
+                // 选中新创建的文件夹
+                selectedPath.value = result.path
+                // 关闭弹窗
+                hideCreateFolderDialog()
+            } else {
+                error.value = result.message || t('fileSelector.error')
+            }
+        } else {
+            error.value = t('fileSelector.error')
+        }
+    } catch (err) {
+        console.error('Failed to create folder:', err)
+        error.value = t('fileSelector.error')
+    }
+}
 </script>
 
 <style scoped>
@@ -243,6 +335,80 @@ watch(() => props.visible, async (visible) => {
     z-index: 10002;
     background: rgba(15, 23, 42, 0.36);
     backdrop-filter: blur(2px);
+}
+
+.file-selector-footer {
+    justify-content: space-between !important;
+}
+
+.file-selector-footer-right {
+    display: flex;
+    gap: 10px;
+}
+
+.create-folder-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 10004;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.create-folder-content {
+    background: var(--panel-bg);
+    padding: 24px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+}
+
+.create-folder-header {
+    margin-bottom: 20px;
+}
+
+.create-folder-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.create-folder-form {
+    margin-bottom: 20px;
+}
+
+.create-folder-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.create-folder-form input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    background: var(--panel-bg);
+    color: var(--text-primary);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.create-folder-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.create-folder-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 :global(html[data-theme='dark']) .file-selector-mask,

@@ -242,5 +242,8 @@ export default {
         error: 'Failed to load, please try again',
         empty: 'Directory is empty',
         confirm: 'Select',
+        createFolder: 'New Folder',
+        createFolderTitle: 'New Folder',
+        folderName: 'Folder Name',
     },
 }
