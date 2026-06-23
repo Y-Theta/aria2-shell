@@ -16,11 +16,9 @@ interface UserData {
     username: string;
     password_hash: string;
     password_encrypted?: string;  // AES 加密后的密码
-    created_at: number;
     updated_at: number;
     configs: Record<string, {
         value: string;
-        created_at: number;
         updated_at: number;
     }>;
 }
@@ -98,7 +96,6 @@ export function createUser(username: string, passwordHash: string, passwordPlain
         id: store.nextUserId++,
         username,
         password_hash: passwordHash,
-        created_at: now,
         updated_at: now,
         configs: {},
     };
@@ -159,7 +156,6 @@ export function setUserConfig(userId: number, key: string, value: string): {
     user_id: number;
     key: string;
     value: string;
-    created_at: number;
     updated_at: number;
 } {
     const now = Date.now();
@@ -167,23 +163,16 @@ export function setUserConfig(userId: number, key: string, value: string): {
     if (!user) {
         throw new Error("User not found");
     }
-    if (user.configs[key]) {
-        user.configs[key].value = value;
-        user.configs[key].updated_at = now;
-    } else {
-        user.configs[key] = {
-            value,
-            created_at: now,
-            updated_at: now,
-        };
-    }
+    user.configs[key] = {
+        value,
+        updated_at: now,
+    };
     user.updated_at = now;
     saveStore();
     return {
         user_id: userId,
         key,
         value,
-        created_at: user.configs[key].created_at,
         updated_at: user.configs[key].updated_at,
     };
 }
@@ -192,7 +181,6 @@ export function getUserConfig(userId: number, key: string): {
     user_id: number;
     key: string;
     value: string;
-    created_at: number;
     updated_at: number;
 } | undefined {
     const user = store.users.find(u => u.id === userId);
@@ -201,7 +189,6 @@ export function getUserConfig(userId: number, key: string): {
         user_id: userId,
         key,
         value: user.configs[key].value,
-        created_at: user.configs[key].created_at,
         updated_at: user.configs[key].updated_at,
     };
 }
@@ -210,7 +197,6 @@ export function getAllUserConfigs(userId: number): {
     user_id: number;
     key: string;
     value: string;
-    created_at: number;
     updated_at: number;
 }[] {
     const user = store.users.find(u => u.id === userId);
@@ -219,7 +205,6 @@ export function getAllUserConfigs(userId: number): {
         user_id: userId,
         key,
         value: config.value,
-        created_at: config.created_at,
         updated_at: config.updated_at,
     }));
 }

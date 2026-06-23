@@ -15,7 +15,6 @@ export class UserService {
         return {
             id: userData.id,
             username: userData.username,
-            created_at: userData.created_at,
             updated_at: userData.updated_at,
         };
     }
@@ -41,7 +40,6 @@ export class UserService {
         return {
             id: userData.id,
             username: userData.username,
-            created_at: userData.created_at,
             updated_at: userData.updated_at,
         };
     }
@@ -79,7 +77,6 @@ export class UserService {
         return {
             id: userData.id,
             username: userData.username,
-            created_at: userData.created_at,
             updated_at: userData.updated_at,
         };
     }
@@ -90,7 +87,6 @@ export class UserService {
         return {
             id: userData.id,
             username: userData.username,
-            created_at: userData.created_at,
             updated_at: userData.updated_at,
         };
     }
@@ -108,7 +104,6 @@ export class UserService {
         return store.getAllUsers().map(userData => ({
             id: userData.id,
             username: userData.username,
-            created_at: userData.created_at,
             updated_at: userData.updated_at,
         }));
     }
@@ -120,7 +115,6 @@ export class UserService {
             user_id: configData.user_id,
             key: configData.key,
             value: configData.value,
-            created_at: configData.created_at,
             updated_at: configData.updated_at,
         };
     }
@@ -133,7 +127,6 @@ export class UserService {
             user_id: configData.user_id,
             key: configData.key,
             value: configData.value,
-            created_at: configData.created_at,
             updated_at: configData.updated_at,
         };
     }
@@ -144,7 +137,6 @@ export class UserService {
             user_id: configData.user_id,
             key: configData.key,
             value: configData.value,
-            created_at: configData.created_at,
             updated_at: configData.updated_at,
         }));
     }

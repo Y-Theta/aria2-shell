@@ -35,7 +35,6 @@ const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
                 config: {
                     key: config.key,
                     value: config.value,
-                    created_at: config.created_at,
                     updated_at: config.updated_at,
                 },
             });
@@ -65,7 +64,6 @@ const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
                 config: {
                     key: config.key,
                     value: config.value,
-                    created_at: config.created_at,
                     updated_at: config.updated_at,
                 },
             });
@@ -85,7 +83,6 @@ const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
                 configs: configs.map((c: any) => ({
                     key: c.key,
                     value: c.value,
-                    created_at: c.created_at,
                     updated_at: c.updated_at,
                 })),
             });

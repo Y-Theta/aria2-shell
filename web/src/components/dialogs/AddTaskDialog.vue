@@ -35,16 +35,6 @@
                                     <div class="add-method-desc">{{ t('addTask.batchUrlDesc') }}</div>
                                 </div>
                             </label>
-                            <label class="add-method" :class="{ active: activeMethod === 'regex' }">
-                                <input type="radio" v-model="activeMethod" value="regex" />
-                                <div class="add-method-icon">
-                                    <i class="fas fa-star-of-life"></i>
-                                </div>
-                                <div class="add-method-content">
-                                    <div class="add-method-title">{{ t('addTask.regexAdd') }}</div>
-                                    <div class="add-method-desc">{{ t('addTask.regexAddDesc') }}</div>
-                                </div>
-                            </label>
                             <label class="add-method" :class="{ active: activeMethod === 'torrent' }">
                                 <input type="radio" v-model="activeMethod" value="torrent" />
                                 <div class="add-method-icon">
@@ -81,30 +71,6 @@
                                         :placeholder="t('addTask.batchUrlsPlaceholder')"
                                         rows="5"
                                     ></textarea>
-                                </div>
-                            </div>
-
-                            <div v-if="activeMethod === 'regex'" class="form-group">
-                                <label class="form-label">{{ t('addTask.regexPattern') }}</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-star-of-life input-icon"></i>
-                                    <input
-                                        v-model="regexPattern"
-                                        type="text"
-                                        :placeholder="t('addTask.regexPatternPlaceholder')"
-                                    />
-                                </div>
-                            </div>
-
-                            <div v-if="activeMethod === 'regex'" class="form-group">
-                                <label class="form-label">{{ t('addTask.regexUrlTemplate') }}</label>
-                                <div class="input-wrapper">
-                                    <i class="fas fa-code input-icon"></i>
-                                    <input
-                                        v-model="regexTemplate"
-                                        type="text"
-                                        :placeholder="t('addTask.regexUrlTemplatePlaceholder')"
-                                    />
                                 </div>
                             </div>
 
@@ -204,8 +170,6 @@ const emit = defineEmits<{
 const activeMethod = ref('single')
 const singleUrl = ref('')
 const batchUrls = ref('')
-const regexPattern = ref('')
-const regexTemplate = ref('')
 const selectedFile = ref<File | null>(null)
 const savePath = ref('')
 const selectedPathLabel = ref('')
@@ -283,10 +247,6 @@ const confirm = () => {
         case 'batch':
             data.urls = batchUrls.value.split('\n').filter(u => u.trim())
             break
-        case 'regex':
-            data.pattern = regexPattern.value
-            data.template = regexTemplate.value
-            break
         case 'torrent':
             data.file = selectedFile.value
             break
@@ -300,8 +260,6 @@ const resetForm = () => {
     activeMethod.value = 'single'
     singleUrl.value = ''
     batchUrls.value = ''
-    regexPattern.value = ''
-    regexTemplate.value = ''
     selectedFile.value = null
     if (torrentFileInput.value) {
         torrentFileInput.value.value = ''
@@ -466,7 +424,7 @@ watch(
 
 .add-methods {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-xl);
 }
