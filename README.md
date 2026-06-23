@@ -1,65 +1,88 @@
-# BitStream - Web UI
+# BitStream - Aria2 下载管理器
 
-一个使用 Vue3 + Vite + TypeScript 构建的现代化下载管理器 Web UI，支持 aria2 RPC 集成。
+一个现代化的 Aria2 下载管理器，包含完整的 Web UI 和后端 API，支持任务管理、用户认证、设置配置等功能。
 
 ## 项目架构
 
 ```
 aria2-shell/
 ├── web/              # 前端 Vue3 + Vite 项目
-├── mock-server/      # 独立的 Mock API 服务器
-└── start-dev.sh      # 快速启动脚本
+├── server/           # 后端 Fastify + TypeScript 服务器
+└── .env              # 环境变量配置
 ```
 
 ## 核心特性
 
-✨ **组件化架构**
-- 18+ Vue3 独立组件
-- 每个组件独立维护自身样式
-- 全局设计令牌统一管理
+✨ **下载管理**
+- 完整的任务列表（活跃、暂停、已完成）
+- 添加、暂停、恢复、删除任务
+- 实时速度和进度显示
+- 支持 HTTP(S)/FTP/Magnet 链接
 
-🎨 **样式系统**
-- 全局 CSS 变量管理
-- 每个组件使用 scoped CSS
-- 响应式布局支持
+🎨 **UI/UX 设计**
+- Vue3 + TypeScript 构建
+- 响应式布局，支持移动端
+- 深色/浅色主题切换
+- 国际化支持（中文/英文）
 - FontAwesome 图标库
 
-🔌 **API 架构**
-- Mock API 独立项目
-- 支持真实 aria2 RPC 集成（预留）
-- 本地配置存储支持
+🔐 **用户认证**
+- 用户注册和登录
+- JWT Token 认证
+- 用户设置持久化
 
-⚡ **开发体验**
-- 快速热重载 (HMR)
-- TypeScript 完全支持
-- 简单的启动流程
+⚙️ **丰富的设置**
+- 下载设置（最大任务数、速度限制）
+- Aria2 连接配置
+- 外观设置（主题、语言）
+- 可配置的保存路径列表
+
+📁 **文件系统浏览**
+- 树状文件系统浏览
+- 目录导航
+- 路径选择功能
 
 ## 快速开始
 
-### 方式 1: 使用启动脚本（推荐）
+### 环境要求
+- Node.js >= 20
+- npm >= 9
+- Aria2 服务（需预先启动）
 
-```bash
-./start-dev.sh
+### 配置环境变量
+
+在项目根目录创建 `.env` 文件：
+
+```env
+# Server
+PORT=65002
+
+# Aria2
+ARIA2_RPC_URL=http://localhost:6800/jsonrpc
+ARIA2_RPC_SECRET=
+
+# App
+NODE_ENV=development
 ```
 
-这将同时启动 Mock API 服务器和 Web 开发服务器。
+### 启动后端服务器
 
-### 方式 2: 手动启动
-
-**启动 Mock API 服务器：**
 ```bash
-cd mock-server
+cd server
 npm install
 npm run dev
 ```
-Mock API 运行在 `http://localhost:3001`
 
-**启动 Web 开发服务器（新终端）：**
+后端 API 运行在 `http://localhost:65002`
+
+### 启动 Web 开发服务器
+
 ```bash
 cd web
 npm install
 npm run dev
 ```
+
 Web UI 运行在 `http://localhost:5173`
 
 ## 项目结构详解
@@ -70,20 +93,50 @@ Web UI 运行在 `http://localhost:5173`
 web/
 ├── src/
 │   ├── components/          # Vue 组件库
-│   │   ├── Sidebar.vue      # 左侧导航栏
-│   │   ├── TopBar.vue       # 顶部操作栏
-│   │   ├── TaskList.vue     # 任务列表容器
-│   │   ├── TaskRow.vue      # 单个任务行
-│   │   ├── ProgressBar.vue  # 进度条
-│   │   ├── StatusBadge.vue  # 状态徽章
-│   │   ├── ActionButtons.vue# 操作按钮
-│   │   └── BottomStats.vue  # 底部统计
-│   ├── api/
-│   │   └── client.ts        # API 客户端 (axios)
-│   ├── types/
-│   │   └── index.ts         # TypeScript 类型定义
-│   ├── styles/
-│   │   └── main.css         # 全局样式和设计令牌
+│   │   ├── settings/        # 设置相关组件
+│   │   │   ├── SwitchControl.vue
+│   │   │   ├── TextControl.vue
+│   │   │   ├── NumberControl.vue
+│   │   │   ├── CustomSelect.vue
+│   │   │   ├── SettingItem.vue
+│   │   │   ├── DownloadTab.vue
+│   │   │   ├── Aria2Tab.vue
+│   │   │   ├── AppearanceTab.vue
+│   │   │   └── AboutTab.vue
+│   │   ├── FileSelectorDialog.vue  # 文件选择对话框
+│   │   ├── SettingsPanel.vue        # 设置面板
+│   │   ├── Sidebar.vue              # 侧边栏
+│   │   ├── TaskList.vue             # 任务列表
+│   │   ├── TaskItem.vue             # 任务项
+│   │   ├── TaskToolbar.vue          # 任务工具栏
+│   │   ├── TaskFooter.vue           # 底部统计
+│   │   ├── AddTaskDialog.vue        # 添加任务对话框
+│   │   └── ConfirmDialog.vue        # 确认对话框
+│   ├── views/               # 页面组件
+│   │   ├── LoginPage.vue
+│   │   ├── SettingsPage.vue
+│   │   ├── ActiveTasks.vue
+│   │   ├── PausedTasks.vue
+│   │   ├── CompletedTasks.vue
+│   │   └── Torrents.vue
+│   ├── services/            # 业务服务
+│   │   ├── settings.ts
+│   │   ├── theme.ts
+│   │   └── auth.ts
+│   ├── i18n/                # 国际化
+│   │   ├── index.ts
+│   │   └── locales/
+│   │       ├── zh-CN.ts
+│   │       └── en-US.ts
+│   ├── config/              # 配置
+│   │   └── api.ts
+│   ├── types/               # TypeScript 类型定义
+│   │   ├── settings.ts
+│   │   └── aria2.d.ts
+│   ├── styles/              # 全局样式
+│   │   └── main.css
+│   ├── router/              # 路由
+│   │   └── index.ts
 │   ├── App.vue              # 根组件
 │   └── main.ts              # 应用入口
 ├── vite.config.ts           # Vite 配置
@@ -91,161 +144,160 @@ web/
 └── package.json
 ```
 
-### Mock API 项目 (`mock-server/`)
+### Server 项目 (`server/`)
 
 ```
-mock-server/
+server/
 ├── src/
-│   ├── server.ts            # Express 服务器
-│   ├── data.ts              # Mock 数据定义
-│   └── types.ts             # TypeScript 类型
+│   ├── server.ts            # Fastify 服务器入口
+│   ├── routes/              # API 路由
+│   │   ├── auth.ts          # 认证路由（登录/注册）
+│   │   ├── user.ts          # 用户路由（配置管理）
+│   │   ├── aria2.ts         # Aria2 代理路由
+│   │   └── filesystem.ts    # 文件系统路由
+│   ├── aria2Client.ts       # Aria2 RPC 客户端
+│   ├── store.ts             # 数据存储
+│   ├── userService.ts       # 用户服务
+│   └── types/               # 类型定义
+│       ├── user.d.ts
+│       └── aria2.d.ts
+├── data/                    # 数据目录
+│   └── store.json
+├── dist/                    # 编译输出
 ├── tsconfig.json            # TypeScript 配置
+├── tsup.config.ts           # TSUP 打包配置
 └── package.json
 ```
 
 ## API 端点
 
-Mock API 提供以下端点：
+### 认证
+- `POST /api/auth/login` - 用户登录
+- `POST /api/auth/register` - 用户注册
 
-### 任务管理
-- `GET /api/tasks` - 获取所有任务
-- `GET /api/tasks/:id` - 获取单个任务
-- `POST /api/tasks` - 创建新任务
-- `PUT /api/tasks/:id` - 更新任务
-- `DELETE /api/tasks/:id` - 删除任务
+### 用户配置
+- `GET /api/user/configs` - 获取所有配置
+- `POST /api/user/config` - 更新单个配置
+- `POST /api/user/reset-configs` - 重置所有配置
 
-### 统计数据
-- `GET /api/stats` - 获取统计信息
+### Aria2
+- `POST /api/aria2/call` - 直接调用 Aria2 RPC
+- `POST /api/aria2/add-uri` - 添加 URI 下载
+- `GET /api/aria2/status/:gid` - 获取任务状态
+- `GET /api/aria2/active` - 获取活跃任务
+- `GET /api/aria2/waiting` - 获取等待任务
+- `GET /api/aria2/stopped` - 获取已停止任务
+- `POST /api/aria2/pause/:gid` - 暂停任务
+- `POST /api/aria2/unpause/:gid` - 恢复任务
+- `DELETE /api/aria2/remove/:gid` - 删除任务
+- `DELETE /api/aria2/force-remove/:gid` - 强制删除任务
+- `GET /api/aria2/global-stat` - 获取全局状态
+- `GET /api/aria2/version` - 获取 Aria2 版本
 
-### 配置管理
-- `GET /api/config` - 获取配置
-- `PUT /api/config` - 更新配置
-
-### 健康检查
-- `GET /health` - 服务器健康状态
-
-## 设计令牌
-
-全局样式中定义的 CSS 变量（`src/styles/main.css`）：
-
-### 颜色
-```css
---primary-blue: #1f6feb           /* 主色 */
---success-green: #2da44e          /* 成功/播种 */
---warning-orange: #fb8500         /* 警告 */
---error-red: #da3633              /* 错误 */
---neutral-gray: #6e7681           /* 中性灰 */
-```
-
-### 状态颜色
-```css
---status-downloading: #1f6feb     /* 下载中 */
---status-seeding: #2da44e         /* 播种中 */
---status-paused: #6e7681          /* 暂停 */
---status-completed: #2da44e       /* 已完成 */
---status-error: #da3633           /* 错误 */
-```
-
-### 间距
-```css
---spacing-xs: 4px
---spacing-sm: 8px
---spacing-md: 12px
---spacing-lg: 16px
---spacing-xl: 24px
---spacing-2xl: 32px
-```
+### 文件系统
+- `GET /api/filesystem/list` - 获取目录结构
 
 ## 开发指南
 
 ### 添加新组件
 
-1. 在 `src/components/` 下创建新的 `.vue` 文件
+1. 在 `web/src/components/` 下创建新的 `.vue` 文件
 2. 使用 `<style scoped>` 编写组件样式
-3. 使用全局 CSS 变量 (如 `var(--primary-blue)`)
+3. 使用全局 CSS 变量保持设计一致性
 4. 在需要的地方导入并使用
 
-示例组件结构：
-```vue
-<template>
-  <div class="my-component">
-    <!-- Content -->
-  </div>
-</template>
+### 添加新的设置选项
 
-<script setup lang="ts">
-// Your component logic
-</script>
+1. 在 `web/src/types/settings.ts` 中添加类型定义
+2. 在 `web/src/services/settings.ts` 中添加默认值
+3. 在对应设置 Tab 组件中添加 UI
+4. 更新 i18n 翻译文件
 
-<style scoped>
-.my-component {
-  background-color: var(--bg-gray);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-md);
-}
-</style>
-```
+### 添加后端 API
 
-### 调用 API
-
-使用 `src/api/client.ts` 中的 API 客户端：
-
-```typescript
-import apiClient from '../api/client';
-
-// 获取任务
-const tasks = await apiClient.getTasks();
-
-// 暂停任务
-await apiClient.pauseTask(taskId);
-
-// 获取配置
-const config = await apiClient.getConfig();
-```
-
-### 生成类型定义
-
-所有 API 响应类型在 `src/types/index.ts` 中定义，提供完整的 TypeScript 支持。
+1. 在 `server/src/routes/` 中创建或更新路由文件
+2. 在 `server/src/server.ts` 中注册路由
+3. 在 `web/src/config/api.ts` 中配置 API 基础 URL
+4. 在前端创建服务函数调用 API
 
 ## 构建和部署
 
-### 生产构建
+### 后端构建
+
+```bash
+cd server
+npm run build
+npm start
+```
+
+### 前端构建
 
 ```bash
 cd web
 npm run build
 ```
 
-生成的文件在 `web/dist/` 目录中。
+生成的文件在 `web/dist/` 目录中，可部署到任何静态 Web 服务器。
 
-## 与 aria2 集成
+## 配置 Aria2
 
-当前使用 Mock API 开发。要连接真实的 aria2 实例：
+确保 Aria2 已启动并启用 RPC 功能：
 
-1. 在 `web/src/api/client.ts` 中修改 API 基础 URL
-2. 或在 `web/vite.config.ts` 中配置代理指向 aria2 RPC 端点
-3. 服务器端配置本地存储实现
+```bash
+aria2c --enable-rpc --rpc-listen-all --rpc-secret=your_secret
+```
 
-## 日志
+更新 `.env` 文件中的 `ARIA2_RPC_URL` 和 `ARIA2_RPC_SECRET` 配置。
 
-- Mock API 日志: `mock-server.log`
-- Web Dev 日志: `web-dev.log`
+## 设计系统
 
-## 环境要求
+### 颜色变量
+```css
+--primary: #3b82f6               /* 主色 */
+--primary-hover: #2563eb         /* 主色 Hover */
+--danger: #ef4444                /* 危险色 */
+--success-green: #22c55e         /* 成功/播种 */
+--text-primary: #1f2937          /* 主文字 */
+--text-secondary: #6b7280        /* 次要文字 */
+--text-muted: #9ca3af            /* 弱化文字 */
+--panel-bg: #ffffff              /* 面板背景 */
+--bg-gray: #f9fafb               /* 浅灰背景 */
+--border-gray: #e5e7eb           /* 边框色 */
+--input-bg: #ffffff              /* 输入框背景 */
+--input-border: #d1d5db          /* 输入框边框 */
+--input-color: #1f2937           /* 输入框文字 */
+--input-placeholder: #9ca3af     /* 输入框占位符 */
+--input-focus-shadow: rgba(59, 130, 246, 0.1)
+```
 
-- Node.js >= 16
-- npm >= 8
+### 深色主题
+```css
+html[data-theme="dark"] {
+  --panel-bg: #1f2937
+  --bg-gray: #111827
+  --border-gray: #374151
+  --text-primary: #f9fafb
+  --text-secondary: #d1d5db
+  --text-muted: #9ca3af
+  --input-bg: #374151
+  --input-border: #4b5563
+  --input-color: #f9fafb
+}
+```
 
 ## 常见问题
 
 **Q: 启动时出现端口被占用错误**
-A: 修改相应项目的 `vite.config.ts` 或 `package.json` 中的端口配置
+A: 修改 `.env` 文件中的 `PORT` 配置
 
-**Q: Mock API 无法连接**
-A: 确保 Mock API 服务器已启动，检查 `mock-server.log` 文件
+**Q: Aria2 连接失败**
+A: 确保 Aria2 RPC 服务已启动，检查 `.env` 文件中的连接配置
 
-**Q: TypeScript 类型错误**
-A: 运行 `npm install` 确保所有依赖已安装
+**Q: 如何重置所有设置**
+A: 在设置面板的 "关于" 标签页中点击 "恢复默认"
+
+**Q: 如何添加新的语言**
+A: 在 `web/src/i18n/locales/` 中添加新的语言文件，并在 `web/src/i18n/index.ts` 中注册
 
 ## 许可证
 
