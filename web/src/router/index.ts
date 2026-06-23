@@ -54,17 +54,15 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
     const { isAuthenticated } = useAuth()
 
     if (to.meta.requiresAuth && !isAuthenticated.value) {
         // 需要认证但未登录，跳转到登录页
-        next('/login')
+        return '/login'
     } else if (to.path === '/login' && isAuthenticated.value) {
         // 已登录但访问登录页，跳转到首页
-        next('/')
-    } else {
-        next()
+        return '/'
     }
 })
 
