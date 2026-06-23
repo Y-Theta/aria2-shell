@@ -22,14 +22,8 @@
                     </header>
 
                     <nav class="settings-tabs">
-                        <button
-                            v-for="tab in tabs"
-                            :key="tab.key"
-                            class="settings-tab"
-                            :class="{ active: activeTab === tab.key }"
-                            type="button"
-                            @click="activeTab = tab.key"
-                        >
+                        <button v-for="tab in tabs" :key="tab.key" class="settings-tab"
+                            :class="{ active: activeTab === tab.key }" type="button" @click="activeTab = tab.key">
                             <i class="settings-tab-icon" :class="tab.icon" aria-hidden="true"></i>
                             <span>{{ t(tab.labelKey) }}</span>
                         </button>
@@ -45,7 +39,8 @@
 
                     <footer class="settings-footer">
                         <button class="primary-button" type="button" @click="saveSettings" :disabled="isSaving">
-                            <i :class="isSaving ? 'fas fa-spinner fa-spin button-icon' : 'fas fa-floppy-disk button-icon'" aria-hidden="true"></i>
+                            <i :class="isSaving ? 'fas fa-spinner fa-spin button-icon' : 'fas fa-floppy-disk button-icon'"
+                                aria-hidden="true"></i>
                             {{ t('settings.actions.save') }}
                         </button>
                     </footer>
@@ -56,24 +51,16 @@
 
     <div v-else class="settings-inline">
         <header class="settings-header settings-header-inline">
-            <div>
-                <h2 class="settings-title">
-                    <i class="fas fa-gear settings-title-icon" aria-hidden="true"></i>
-                    <span>{{ t('settings.title') }}</span>
-                </h2>
-                <p class="settings-subtitle">{{ t('settings.subtitle') }}</p>
-            </div>
+            <h2 class="settings-title">
+                <i class="fas fa-gear settings-title-icon" aria-hidden="true"></i>
+                <span>{{ t('settings.title') }}</span>
+            </h2>
+            <p class="settings-subtitle">{{ t('settings.subtitle') }}</p>
         </header>
 
         <nav class="settings-tabs">
-            <button
-                v-for="tab in tabs"
-                :key="tab.key"
-                class="settings-tab"
-                :class="{ active: activeTab === tab.key }"
-                type="button"
-                @click="activeTab = tab.key"
-            >
+            <button v-for="tab in tabs" :key="tab.key" class="settings-tab" :class="{ active: activeTab === tab.key }"
+                type="button" @click="activeTab = tab.key">
                 <i class="settings-tab-icon" :class="tab.icon" aria-hidden="true"></i>
                 <span>{{ t(tab.labelKey) }}</span>
             </button>
@@ -89,18 +76,15 @@
 
         <footer class="settings-footer">
             <button class="primary-button" type="button" @click="saveSettings" :disabled="isSaving">
-                <i :class="isSaving ? 'fas fa-spinner fa-spin button-icon' : 'fas fa-floppy-disk button-icon'" aria-hidden="true"></i>
+                <i :class="isSaving ? 'fas fa-spinner fa-spin button-icon' : 'fas fa-floppy-disk button-icon'"
+                    aria-hidden="true"></i>
                 {{ t('settings.actions.save') }}
             </button>
         </footer>
     </div>
 
-    <ConfirmDialog
-        v-model:visible="showResetDialog"
-        :title="t('settings.confirmReset.title')"
-        :message="t('settings.confirmReset.message')"
-        @confirm="confirmReset"
-    />
+    <ConfirmDialog v-model:visible="showResetDialog" :title="t('settings.confirmReset.title')"
+        :message="t('settings.confirmReset.message')" @confirm="confirmReset" />
 </template>
 
 <script setup lang="ts">
@@ -231,12 +215,12 @@ watch(() => props.visible, async (visible) => {
 
 .settings-header {
     flex-shrink: 0;
-    min-height: 84px;
-    padding: 20px 24px 16px;
+    min-height: 56px;
+    padding: 4px 24px;
     box-sizing: border-box;
     border-bottom: 1px solid var(--border-gray);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 16px;
     background: var(--panel-bg);
@@ -358,8 +342,8 @@ watch(() => props.visible, async (visible) => {
 .settings-footer {
     flex-shrink: 0;
     position: static;
-    min-height: 72px;
-    padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+    min-height: 50px;
+    padding: 6px 24px calc(6px + env(safe-area-inset-bottom));
     box-sizing: border-box;
     border-top: 1px solid var(--footer-border);
     background: var(--footer-bg);
@@ -368,6 +352,7 @@ watch(() => props.visible, async (visible) => {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    align-items: center;
 }
 
 .primary-button {
