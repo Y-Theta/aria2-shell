@@ -181,13 +181,13 @@ watch(() => props.visible, async (visible) => {
     position: fixed;
     inset: 0;
     z-index: 2000;
-    background: rgba(15, 23, 42, 0.36);
+    background: var(--overlay-light);
     backdrop-filter: blur(2px);
 }
 
 :global(html[data-theme='dark']) .settings-mask,
 :global(html.dark) .settings-mask {
-    background: rgba(0, 0, 0, 0.56);
+    background: var(--overlay-dark);
 }
 
 .settings-drawer {
@@ -203,14 +203,14 @@ watch(() => props.visible, async (visible) => {
     flex-direction: column;
     background: var(--panel-bg);
     color: var(--text-primary);
-    box-shadow: -16px 0 40px rgba(15, 23, 42, 0.16);
+    box-shadow: -16px 0 40px var(--shadow-light);
     overflow: hidden;
     overflow-y: hidden;
 }
 
 :global(html[data-theme='dark']) .settings-drawer,
 :global(html.dark) .settings-drawer {
-    box-shadow: -16px 0 40px rgba(0, 0, 0, 0.46);
+    box-shadow: -16px 0 40px var(--shadow-dark);
 }
 
 .settings-header {
@@ -257,7 +257,7 @@ watch(() => props.visible, async (visible) => {
     border: none;
     border-radius: 10px;
     background: var(--danger);
-    color: #fff;
+    color: var(--text-inverse);
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
@@ -268,7 +268,7 @@ watch(() => props.visible, async (visible) => {
 }
 
 .settings-close:hover {
-    background: #f87171;
+    background: var(--danger-hover);
 }
 
 .settings-tabs {

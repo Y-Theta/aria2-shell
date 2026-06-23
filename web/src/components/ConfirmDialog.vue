@@ -68,7 +68,7 @@ const confirm = () => {
 .confirm-dialog-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.36);
+    background: var(--overlay-light);
     backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
@@ -79,13 +79,13 @@ const confirm = () => {
 
 :global(html[data-theme='dark']) .confirm-dialog-overlay,
 :global(html.dark) .confirm-dialog-overlay {
-    background: rgba(0, 0, 0, 0.56);
+    background: var(--overlay-dark);
 }
 
 .confirm-dialog {
     background-color: var(--panel-bg);
     border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 40px var(--shadow-black);
     max-width: 360px;
     width: 100%;
     overflow: hidden;
@@ -103,7 +103,7 @@ const confirm = () => {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: rgba(245, 108, 108, 0.12);
+    background: var(--danger-12);
     color: var(--danger);
     display: flex;
     align-items: center;
@@ -171,16 +171,16 @@ const confirm = () => {
 .confirm-btn {
     background: var(--danger);
     color: var(--text-inverse);
-    box-shadow: 0 6px 14px rgba(245, 108, 108, 0.24);
+    box-shadow: 0 6px 14px var(--shadow-danger);
 }
 
 .confirm-btn:hover {
-    background: #dd6161;
+    background: var(--danger-dark-hover);
 }
 
 :global(html[data-theme='dark']) .confirm-btn:hover,
 :global(html.dark) .confirm-btn:hover {
-    background: #f87171;
+    background: var(--danger-hover);
 }
 
 @media (max-width: 768px) {

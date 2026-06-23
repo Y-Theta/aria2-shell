@@ -83,7 +83,7 @@ function confirmReset() {
     height: 52px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    color: var(--text-inverse);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -156,7 +156,7 @@ function confirmReset() {
 }
 
 .danger-button:hover {
-    background: #f87171;
+    background: var(--danger-hover);
 }
 
 .button-icon {

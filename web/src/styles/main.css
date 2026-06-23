@@ -61,6 +61,8 @@ html[data-theme='light'] {
     --primary-hover: #66b1ff;
 
     --danger: #f56c6c;
+    --danger-hover: #f87171;
+    --danger-dark-hover: #dd6161;
     --success-green: #2da44e;
 
     --button-shadow: rgba(64, 158, 255, 0.36);
@@ -84,6 +86,29 @@ html[data-theme='light'] {
     --status-paused: #6e7681;
     --status-completed: #2da44e;
     --status-error: #da3633;
+
+    /* Overlay & shadow colors */
+    --overlay-light: rgba(15, 23, 42, 0.36);
+    --overlay-dark: rgba(0, 0, 0, 0.56);
+    --shadow-black: rgba(0, 0, 0, 0.2);
+    --shadow-danger: rgba(245, 108, 108, 0.24);
+    --shadow-light: rgba(15, 23, 42, 0.16);
+
+    /* Semi-transparent colors */
+    --primary-blue-10: rgba(31, 111, 235, 0.1);
+    --primary-blue-8: rgba(31, 111, 235, 0.08);
+    --primary-blue-6: rgba(31, 111, 235, 0.06);
+    --primary-blue-4: rgba(31, 111, 235, 0.04);
+    --primary-blue-2: rgba(31, 111, 235, 0.2);
+
+    --success-green-10: rgba(45, 164, 78, 0.1);
+    --neutral-gray-10: rgba(110, 118, 129, 0.1);
+    --error-red-10: rgba(218, 54, 51, 0.1);
+    --danger-12: rgba(245, 108, 108, 0.12);
+
+    /* Tooltip colors */
+    --tooltip-bg: #333;
+    --tooltip-text: #fff;
 
     /* Spacing */
     --spacing-xs: 4px;
@@ -145,6 +170,8 @@ html[data-theme='dark'] {
     --primary-hover: #66b1ff;
 
     --danger: #f56c6c;
+    --danger-hover: #f87171;
+    --danger-dark-hover: #dd6161;
     --success-green: #3fb950;
 
     --button-shadow: rgba(64, 158, 255, 0.28);
@@ -172,6 +199,30 @@ html[data-theme='dark'] {
     /* Sidebar */
     --sidebar-bg: #161b22;
     --sidebar-border: #30363d;
+
+    /* Overlay & shadow colors */
+    --overlay-light: rgba(15, 23, 42, 0.36);
+    --overlay-dark: rgba(0, 0, 0, 0.56);
+    --shadow-black: rgba(0, 0, 0, 0.2);
+    --shadow-danger: rgba(245, 108, 108, 0.24);
+    --shadow-light: rgba(15, 23, 42, 0.16);
+    --shadow-dark: rgba(0, 0, 0, 0.46);
+
+    /* Semi-transparent colors */
+    --primary-blue-10: rgba(31, 111, 235, 0.1);
+    --primary-blue-8: rgba(31, 111, 235, 0.08);
+    --primary-blue-6: rgba(31, 111, 235, 0.06);
+    --primary-blue-4: rgba(31, 111, 235, 0.04);
+    --primary-blue-2: rgba(31, 111, 235, 0.2);
+
+    --success-green-10: rgba(63, 185, 80, 0.1);
+    --neutral-gray-10: rgba(139, 148, 158, 0.1);
+    --error-red-10: rgba(248, 81, 73, 0.1);
+    --danger-12: rgba(245, 108, 108, 0.12);
+
+    /* Tooltip colors */
+    --tooltip-bg: #333;
+    --tooltip-text: #fff;
 
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
@@ -208,6 +259,9 @@ html[data-theme='dark'] {
         --primary: #409eff;
         --primary-hover: #66b1ff;
         --danger: #f56c6c;
+        --danger-hover: #f87171;
+        --danger-dark-hover: #dd6161;
+        --success-green: #3fb950;
 
         --button-shadow: rgba(64, 158, 255, 0.28);
         --button-shadow-hover: rgba(64, 158, 255, 0.36);
@@ -231,6 +285,30 @@ html[data-theme='dark'] {
 
         --sidebar-bg: #161b22;
         --sidebar-border: #30363d;
+
+        /* Overlay & shadow colors */
+        --overlay-light: rgba(15, 23, 42, 0.36);
+        --overlay-dark: rgba(0, 0, 0, 0.56);
+        --shadow-black: rgba(0, 0, 0, 0.2);
+        --shadow-danger: rgba(245, 108, 108, 0.24);
+        --shadow-light: rgba(15, 23, 42, 0.16);
+        --shadow-dark: rgba(0, 0, 0, 0.46);
+
+        /* Semi-transparent colors */
+        --primary-blue-10: rgba(31, 111, 235, 0.1);
+        --primary-blue-8: rgba(31, 111, 235, 0.08);
+        --primary-blue-6: rgba(31, 111, 235, 0.06);
+        --primary-blue-4: rgba(31, 111, 235, 0.04);
+        --primary-blue-2: rgba(31, 111, 235, 0.2);
+
+        --success-green-10: rgba(63, 185, 80, 0.1);
+        --neutral-gray-10: rgba(139, 148, 158, 0.1);
+        --error-red-10: rgba(248, 81, 73, 0.1);
+        --danger-12: rgba(245, 108, 108, 0.12);
+
+        /* Tooltip colors */
+        --tooltip-bg: #333;
+        --tooltip-text: #fff;
 
         --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
         --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.5);
@@ -266,6 +344,9 @@ html[data-theme='dark'] {
         --primary: #409eff;
         --primary-hover: #66b1ff;
         --danger: #f56c6c;
+        --danger-hover: #f87171;
+        --danger-dark-hover: #dd6161;
+        --success-green: #2da44e;
 
         --button-shadow: rgba(64, 158, 255, 0.36);
         --button-shadow-hover: rgba(64, 158, 255, 0.44);
@@ -289,6 +370,29 @@ html[data-theme='dark'] {
 
         --sidebar-bg: #f6f8fa;
         --sidebar-border: #d0d7de;
+
+        /* Overlay & shadow colors */
+        --overlay-light: rgba(15, 23, 42, 0.36);
+        --overlay-dark: rgba(0, 0, 0, 0.56);
+        --shadow-black: rgba(0, 0, 0, 0.2);
+        --shadow-danger: rgba(245, 108, 108, 0.24);
+        --shadow-light: rgba(15, 23, 42, 0.16);
+
+        /* Semi-transparent colors */
+        --primary-blue-10: rgba(31, 111, 235, 0.1);
+        --primary-blue-8: rgba(31, 111, 235, 0.08);
+        --primary-blue-6: rgba(31, 111, 235, 0.06);
+        --primary-blue-4: rgba(31, 111, 235, 0.04);
+        --primary-blue-2: rgba(31, 111, 235, 0.2);
+
+        --success-green-10: rgba(45, 164, 78, 0.1);
+        --neutral-gray-10: rgba(110, 118, 129, 0.1);
+        --error-red-10: rgba(218, 54, 51, 0.1);
+        --danger-12: rgba(245, 108, 108, 0.12);
+
+        /* Tooltip colors */
+        --tooltip-bg: #333;
+        --tooltip-text: #fff;
 
         --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
         --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15);

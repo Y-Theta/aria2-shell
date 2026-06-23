@@ -335,11 +335,21 @@ onMounted(() => {
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
+    opacity: 0;
+}
+
+.add-task-dialog {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.fade-enter-from .add-task-dialog,
+.fade-leave-to .add-task-dialog {
+    transform: scale(0.95);
     opacity: 0;
 }
 
@@ -777,13 +787,14 @@ onMounted(() => {
 @media (max-width: 768px) {
     .add-task-dialog-overlay {
         padding: var(--spacing-md);
-        align-items: flex-end;
+        align-items: center;
     }
 
     .add-task-dialog {
-        max-width: 100%;
-        max-height: 90vh;
-        border-radius: 18px 18px 0 0;
+        width: calc(100% - 32px);
+        max-width: 560px;
+        max-height: 85vh;
+        border-radius: 16px;
     }
 
     .add-task-header {

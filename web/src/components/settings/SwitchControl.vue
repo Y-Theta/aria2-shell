@@ -60,7 +60,7 @@ function handleChange(event: Event) {
 
 :global(html[data-theme='dark']) .switch span::before,
 :global(html.dark) .switch span::before {
-    background: #ffffff;
+    background: var(--text-inverse);
 }
 
 .switch input:checked + span {

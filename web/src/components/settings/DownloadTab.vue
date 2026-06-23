@@ -267,7 +267,7 @@ function handlePathSelect(selectedPath: string) {
 }
 
 .remove-path-btn:hover {
-    background: #f87171;
+    background: var(--danger-hover);
 }
 
 .add-path-btn {

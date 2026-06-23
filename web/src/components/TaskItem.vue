@@ -328,7 +328,7 @@ const formatSpeed = (bytesPerSecond: number) => {
 
 .task-item.selected {
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 2px rgba(31, 111, 235, 0.2);
+    box-shadow: 0 0 0 2px var(--primary-blue-2);
 }
 
 .task-cell.checkbox-cell {
@@ -472,22 +472,22 @@ const formatSpeed = (bytesPerSecond: number) => {
 
 .status-downloading,
 .status-seeding {
-    background-color: rgba(31, 111, 235, 0.1);
+    background-color: var(--primary-blue-10);
     color: var(--primary-blue);
 }
 
 .status-completed {
-    background-color: rgba(45, 164, 78, 0.1);
+    background-color: var(--success-green-10);
     color: var(--success-green);
 }
 
 .status-paused {
-    background-color: rgba(110, 118, 129, 0.1);
+    background-color: var(--neutral-gray-10);
     color: var(--neutral-gray);
 }
 
 .status-error {
-    background-color: rgba(218, 54, 51, 0.1);
+    background-color: var(--error-red-10);
     color: var(--error-red);
 }
 
@@ -568,7 +568,7 @@ const formatSpeed = (bytesPerSecond: number) => {
     left: 0;
     top: 0;
     height: 100%;
-    background-color: rgba(31, 111, 235, 0.1);
+    background-color: var(--primary-blue-10);
     transition: width 0.3s ease;
     z-index: 1;
 }
@@ -773,8 +773,8 @@ const formatSpeed = (bytesPerSecond: number) => {
 
 .task-tooltip {
     position: fixed;
-    background-color: #333;
-    color: #fff;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 13px;
@@ -782,7 +782,7 @@ const formatSpeed = (bytesPerSecond: number) => {
     word-wrap: break-word;
     z-index: 1000;
     pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px var(--shadow-black);
 }
 
 .task-tooltip::after {
@@ -793,6 +793,6 @@ const formatSpeed = (bytesPerSecond: number) => {
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
+    border-color: var(--tooltip-bg) transparent transparent transparent;
 }
 </style>
