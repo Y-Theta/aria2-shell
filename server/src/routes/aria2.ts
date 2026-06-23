@@ -1,9 +1,13 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginAsync } from "fastify";
-import { Aria2Client } from "../aria2Client.js";
+import { getAria2Client } from "../aria2Manager.js";
 import { authPreHandler, handleError } from "./auth.js";
 
-const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: FastifyInstance, options) => {
-    const { aria2 } = options;
+const aria2Routes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
+    // Helper function to get aria2 client for current user
+    function getClient(request: FastifyRequest) {
+        const userId = (request as any).user.id;
+        return getAria2Client(userId);
+    }
 
     // 直接调用aria2 RPC方法
     fastify.post("/call", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
@@ -29,6 +33,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
                 return;
             }
 
+            const aria2 = getClient(request);
             const result = await aria2.callRaw(method, params ?? []);
 
             reply.send({
@@ -57,6 +62,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
                 return;
             }
 
+            const aria2 = getClient(request);
             const gid = await aria2.addUri(uris, options, position);
 
             reply.send({
@@ -73,6 +79,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
         try {
             const { gid } = request.params as { gid: string };
 
+            const aria2 = getClient(request);
             const status = await aria2.tellStatus(gid);
 
             reply.send({
@@ -85,8 +92,9 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
     });
 
     // 获取活跃任务
-    fastify.get("/active", { preHandler: authPreHandler }, async (_request: FastifyRequest, reply: FastifyReply) => {
+    fastify.get("/active", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
         try {
+            const aria2 = getClient(request);
             const list = await aria2.tellActive();
 
             reply.send({
@@ -105,6 +113,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
             const offset = Number(query.offset ?? 0);
             const num = Number(query.num ?? 20);
 
+            const aria2 = getClient(request);
             const list = await aria2.tellWaiting(offset, num);
 
             reply.send({
@@ -123,6 +132,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
             const offset = Number(query.offset ?? 0);
             const num = Number(query.num ?? 20);
 
+            const aria2 = getClient(request);
             const list = await aria2.tellStopped(offset, num);
 
             reply.send({
@@ -139,6 +149,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
         try {
             const { gid } = request.params as { gid: string };
 
+            const aria2 = getClient(request);
             const result = await aria2.pause(gid);
 
             reply.send({
@@ -155,6 +166,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
         try {
             const { gid } = request.params as { gid: string };
 
+            const aria2 = getClient(request);
             const result = await aria2.unpause(gid);
 
             reply.send({
@@ -171,6 +183,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
         try {
             const { gid } = request.params as { gid: string };
 
+            const aria2 = getClient(request);
             const result = await aria2.remove(gid);
 
             reply.send({
@@ -187,6 +200,7 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
         try {
             const { gid } = request.params as { gid: string };
 
+            const aria2 = getClient(request);
             const result = await aria2.forceRemove(gid);
 
             reply.send({
@@ -199,8 +213,9 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
     });
 
     // 获取全局状态
-    fastify.get("/global-stat", { preHandler: authPreHandler }, async (_request: FastifyRequest, reply: FastifyReply) => {
+    fastify.get("/global-stat", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
         try {
+            const aria2 = getClient(request);
             const stat = await aria2.getGlobalStat();
 
             reply.send({
@@ -213,8 +228,9 @@ const aria2Routes: FastifyPluginAsync<{ aria2: Aria2Client }> = async (fastify: 
     });
 
     // 获取aria2版本
-    fastify.get("/version", { preHandler: authPreHandler }, async (_request: FastifyRequest, reply: FastifyReply) => {
+    fastify.get("/version", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
         try {
+            const aria2 = getClient(request);
             const version = await aria2.getVersion();
 
             reply.send({

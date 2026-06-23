@@ -61,12 +61,16 @@ const settingsService = useSettings()
 const settings = settingsService.settings
 
 const aria2ServerUrl = ref<string>((settings.serverUrl as string) || '')
-const aria2Secret = ref<string>('')
+const aria2Secret = ref<string>((settings.secret as string) || '')
 const timeout = ref<number>((settings.timeout as number) || 10)
 const autoReconnect = ref<boolean>((settings.autoReconnect as boolean) || true)
 
 watch(aria2ServerUrl, (value) => {
     settingsService.setSetting('serverUrl', value)
+})
+
+watch(aria2Secret, (value) => {
+    settingsService.setSetting('secret', value)
 })
 
 watch(timeout, (value) => {

@@ -135,26 +135,40 @@ function saveToLocalStorage(): void {
     }
 }
 
-// 监听设置变化，自动保存
-let saveTimeout: ReturnType<typeof setTimeout> | null = null
-watch(
-    settings,
-    () => {
-        if (saveTimeout) {
-            clearTimeout(saveTimeout)
-        }
+// 保存所有设置到服务器
+async function saveAllSettingsToServer(): Promise<boolean> {
+    saveToLocalStorage()
+    
+    if (SKIP_LOGIN) {
+        return true
+    }
 
-        // 防抖保存
-        saveTimeout = setTimeout(async () => {
-            saveToLocalStorage()
-            // 异步保存到服务器
-            for (const [key, value] of Object.entries(settings)) {
-                await saveSettingToServer(key as SettingKey, value)
-            }
-        }, 500)
-    },
-    { deep: true }
-)
+    const token = localStorage.getItem('authToken')
+    if (!token) {
+        return true
+    }
+
+    try {
+        const headers = await getAuthHeaders()
+        const settingsToSave = Object.entries(settings).map(([key, value]) => ({
+            key: key as SettingKey,
+            value: stringifyValue(value),
+        }))
+        
+        await fetch(`${API_CONFIG.baseUrl}/user/configs`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                configs: settingsToSave,
+            }),
+        })
+        
+        return true
+    } catch (error) {
+        console.error('Failed to save settings to server:', error)
+        return false
+    }
+}
 
 // 监听主题变化，自动应用
 watch(
@@ -210,6 +224,10 @@ export function useSettings() {
         await loadSettingsFromServer()
     }
 
+    async function saveAllSettings(): Promise<boolean> {
+        return await saveAllSettingsToServer()
+    }
+
     // 在组件中使用时自动初始化
     onMounted(() => {
         initializeSettings()
@@ -221,6 +239,7 @@ export function useSettings() {
         setSetting,
         resetSettings,
         refreshSettings,
+        saveAllSettings,
     }
 }
 

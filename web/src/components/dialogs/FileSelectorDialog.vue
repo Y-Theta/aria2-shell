@@ -71,7 +71,7 @@
                 </div>
 
                 <div class="file-selector-footer">
-                    <button class="secondary-button" type="button" @click="showCreateFolderDialog">
+                    <button class="secondary-button" type="button" @click="showCreateFolderDialog" :disabled="!currentPath || !!error">
                         <i class="fas fa-folder-plus" aria-hidden="true"></i>
                         {{ t('fileSelector.createFolder') }}
                     </button>

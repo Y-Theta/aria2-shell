@@ -31,6 +31,7 @@ export type SettingKey =
     | 'uploadLimit'
     | 'keepSeeding'
     | 'serverUrl'
+    | 'secret'
     | 'timeout'
     | 'autoReconnect'
     | 'theme'
@@ -59,6 +60,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
     uploadLimit: 0,
     keepSeeding: true,
     serverUrl: 'http://127.0.0.1:8080',
+    secret: '',
     timeout: 10,
     autoReconnect: true,
     theme: 'light',

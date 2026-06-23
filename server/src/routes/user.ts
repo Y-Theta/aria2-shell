@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginAsync } from "fastify";
 import { userService } from "../userService.js";
+import { clearAria2ClientCache } from "../aria2Manager.js";
 import { authPreHandler, handleError } from "./auth.js";
 
 const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
@@ -30,6 +31,11 @@ const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
             const config = userService.setUserConfig(req.user.id, key.trim(), value);
 
+            // 如果是 Aria2 相关配置，清除缓存
+            if (key === "serverUrl" || key === "secret") {
+                clearAria2ClientCache(req.user.id);
+            }
+
             reply.send({
                 success: true,
                 config: {
@@ -37,6 +43,65 @@ const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
                     value: config.value,
                     updated_at: config.updated_at,
                 },
+            });
+        } catch (error) {
+            handleError(reply, error);
+        }
+    });
+
+    // 批量设置用户配置
+    fastify.post("/configs", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const req = request as any;
+            const { configs } = request.body as {
+                configs?: Array<{ key: string; value: string }>;
+            };
+
+            if (!configs || !Array.isArray(configs) || configs.length === 0) {
+                reply.code(400).send({
+                    success: false,
+                    message: "Configs array is required",
+                });
+                return;
+            }
+
+            for (const config of configs) {
+                if (!config.key || typeof config.key !== "string" || config.key.trim().length === 0) {
+                    reply.code(400).send({
+                        success: false,
+                        message: "Each config must have a valid key",
+                    });
+                    return;
+                }
+                if (config.value === undefined || config.value === null || typeof config.value !== "string") {
+                    reply.code(400).send({
+                        success: false,
+                        message: "Each config must have a valid value",
+                    });
+                    return;
+                }
+            }
+
+            const cleanedConfigs = configs.map(c => ({
+                key: c.key.trim(),
+                value: c.value,
+            }));
+
+            const result = userService.setUserConfigs(req.user.id, cleanedConfigs);
+
+            // 如果是 Aria2 相关配置，清除缓存
+            const hasAria2Config = cleanedConfigs.some(c => c.key === "serverUrl" || c.key === "secret");
+            if (hasAria2Config) {
+                clearAria2ClientCache(req.user.id);
+            }
+
+            reply.send({
+                success: true,
+                configs: result.configs.map(c => ({
+                    key: c.key,
+                    value: c.value,
+                    updated_at: c.updated_at,
+                })),
             });
         } catch (error) {
             handleError(reply, error);

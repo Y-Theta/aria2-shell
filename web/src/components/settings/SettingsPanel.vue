@@ -43,8 +43,8 @@
                     </main>
 
                     <footer class="settings-footer">
-                        <button class="primary-button" type="button" @click="saveSettings">
-                            <i class="fas fa-floppy-disk button-icon" aria-hidden="true"></i>
+                        <button class="primary-button" type="button" @click="saveSettings" :disabled="isSaving">
+                            <i :class="isSaving ? 'fas fa-spinner fa-spin button-icon' : 'fas fa-floppy-disk button-icon'" aria-hidden="true"></i>
                             {{ t('settings.actions.save') }}
                         </button>
                     </footer>
@@ -86,8 +86,8 @@
         </main>
 
         <footer class="settings-footer">
-            <button class="primary-button" type="button" @click="saveSettings">
-                <i class="fas fa-floppy-disk button-icon" aria-hidden="true"></i>
+            <button class="primary-button" type="button" @click="saveSettings" :disabled="isSaving">
+                <i :class="isSaving ? 'fas fa-spinner fa-spin button-icon' : 'fas fa-floppy-disk button-icon'" aria-hidden="true"></i>
                 {{ t('settings.actions.save') }}
             </button>
         </footer>
@@ -116,6 +116,7 @@ const { t } = useI18n()
 const settingsService = useSettings()
 const activeTab = ref('download')
 const showResetDialog = ref(false)
+const isSaving = ref(false)
 
 const tabs: SettingsTab[] = [
     {
@@ -155,8 +156,13 @@ function close() {
     emit('update:visible', false)
 }
 
-function saveSettings() {
-    close()
+async function saveSettings() {
+    isSaving.value = true
+    const success = await settingsService.saveAllSettings()
+    isSaving.value = false
+    if (success) {
+        close()
+    }
 }
 
 function confirmReset() {

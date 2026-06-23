@@ -2,7 +2,6 @@
 import { loadEnv } from "./utils.js";
 import fastify, { FastifyInstance } from "fastify";
 import fastifyCors from "@fastify/cors";
-import { Aria2Client } from "./aria2Client.js";
 import { initDb } from "./store.js";
 
 // Import Routes
@@ -22,18 +21,12 @@ console.log("  NODE_ENV:", process.env.NODE_ENV);
 console.log("  Working dir:", process.cwd());
 
 const app: FastifyInstance = fastify({
-  logger: false,
-  bodyLimit: 10 * 1024 * 1024 // 10mb
+    logger: false,
+    bodyLimit: 10 * 1024 * 1024 // 10mb
 });
 
 // Register CORS plugin
 await app.register(fastifyCors);
-
-const aria2 = new Aria2Client({
-    url: process.env.ARIA2_RPC_URL ?? "http://localhost:6800/jsonrpc",
-    secret: process.env.ARIA2_SECRET,
-    timeoutMs: 10_000,
-});
 
 // Register Auth Routes
 await app.register(authRoutes, { prefix: "/api/auth" });
@@ -41,8 +34,8 @@ await app.register(authRoutes, { prefix: "/api/auth" });
 // Register User Routes
 await app.register(userRoutes, { prefix: "/api/user" });
 
-// Register Aria2 Routes with aria2 client
-await app.register(aria2Routes, { prefix: "/api/aria2", aria2 });
+// Register Aria2 Routes
+await app.register(aria2Routes, { prefix: "/api/aria2" });
 
 // Register Filesystem Routes
 await app.register(filesystemRoutes, { prefix: "/api/filesystem" });

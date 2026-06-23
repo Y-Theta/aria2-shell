@@ -119,6 +119,23 @@ export class UserService {
         };
     }
 
+    setUserConfigs(userId: number, configs: { key: string; value: string }[]): {
+        user_id: number;
+        configs: UserConfig[];
+    } {
+        const result = store.setUserConfigs(userId, configs);
+        return {
+            user_id: result.user_id,
+            configs: result.configs.map(configData => ({
+                id: 0,
+                user_id: result.user_id,
+                key: configData.key,
+                value: configData.value,
+                updated_at: configData.updated_at,
+            })),
+        };
+    }
+
     getUserConfig(userId: number, key: string): UserConfig | null {
         const configData = store.getUserConfig(userId, key);
         if (!configData) return null;

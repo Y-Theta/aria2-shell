@@ -177,6 +177,35 @@ export function setUserConfig(userId: number, key: string, value: string): {
     };
 }
 
+export function setUserConfigs(userId: number, configs: { key: string; value: string }[]): {
+    user_id: number;
+    configs: { key: string; value: string; updated_at: number }[];
+} {
+    const now = Date.now();
+    const user = store.users.find(u => u.id === userId);
+    if (!user) {
+        throw new Error("User not found");
+    }
+    const updatedConfigs: { key: string; value: string; updated_at: number }[] = [];
+    for (const config of configs) {
+        user.configs[config.key] = {
+            value: config.value,
+            updated_at: now,
+        };
+        updatedConfigs.push({
+            key: config.key,
+            value: config.value,
+            updated_at: now,
+        });
+    }
+    user.updated_at = now;
+    saveStore();
+    return {
+        user_id: userId,
+        configs: updatedConfigs,
+    };
+}
+
 export function getUserConfig(userId: number, key: string): {
     user_id: number;
     key: string;
