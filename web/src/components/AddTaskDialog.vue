@@ -136,11 +136,24 @@
 
                             <div class="form-group">
                                 <label class="form-label">{{ t('addTask.saveTo') }}</label>
-                                <div class="save-path-wrapper">
-                                    <i class="fas fa-folder input-icon"></i>
-                                    <span class="save-path">{{ savePath }}</span>
-                                    <button class="change-path-btn" type="button">
-                                        {{ t('addTask.change') }}
+                                <div class="save-path-selector">
+                                    <div class="path-label-select-wrapper">
+                                        <CustomSelect
+                                            v-model="selectedPathLabel"
+                                            :options="savePathOptions"
+                                        />
+                                    </div>
+                                    <div class="divider"></div>
+                                    <div class="path-input-wrapper">
+                                        <input
+                                            v-model="savePath"
+                                            type="text"
+                                            :placeholder="t('addTask.savePathPlaceholder')"
+                                            :disabled="!isCustomPath"
+                                        />
+                                    </div>
+                                    <button class="browse-path-btn" type="button" @click="openFileSelector">
+                                        <i class="fas fa-folder-open"></i>
                                     </button>
                                 </div>
                             </div>
@@ -156,6 +169,12 @@
                             {{ t('addTask.startNow') }}
                         </button>
                     </div>
+
+                    <FileSelectorDialog
+                        v-model:visible="fileSelectorVisible"
+                        :initial-path="savePath"
+                        @select="handlePathSelect"
+                    />
                 </div>
             </div>
         </Transition>
@@ -163,10 +182,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSettings } from '../services/settings'
+import CustomSelect from './settings/CustomSelect.vue'
+import FileSelectorDialog from './FileSelectorDialog.vue'
+import type { SavePath } from '../types/settings'
 
 const { t } = useI18n()
+const settingsService = useSettings()
 
 const props = defineProps<{
     visible: boolean
@@ -183,9 +207,41 @@ const batchUrls = ref('')
 const regexPattern = ref('')
 const regexTemplate = ref('')
 const selectedFile = ref<File | null>(null)
-const savePath = ref('/downloads')
+const savePath = ref('')
+const selectedPathLabel = ref('')
+const fileSelectorVisible = ref(false)
 
 const torrentFileInput = ref<HTMLInputElement | null>(null)
+
+const CUSTOM_PATH_VALUE = 'custom'
+
+const isCustomPath = computed(() => selectedPathLabel.value === CUSTOM_PATH_VALUE)
+
+const savePathOptions = computed(() => {
+    const savePaths = (settingsService.settings.savePaths as SavePath[]) || []
+    const options = savePaths.map(path => ({
+        value: path.label,
+        label: path.label
+    }))
+    // 添加自定义选项
+    options.push({
+        value: CUSTOM_PATH_VALUE,
+        label: t('addTask.customPath')
+    })
+    return options
+})
+
+watch(selectedPathLabel, (label) => {
+    if (label === CUSTOM_PATH_VALUE) {
+        // 自定义模式，保持当前路径不变
+        return
+    }
+    const savePaths = (settingsService.settings.savePaths as SavePath[]) || []
+    const selected = savePaths.find(p => p.label === label)
+    if (selected) {
+        savePath.value = selected.path
+    }
+})
 
 const close = () => {
     emit('update:visible', false)
@@ -256,6 +312,24 @@ const removeFile = () => {
         torrentFileInput.value.value = ''
     }
 }
+
+const openFileSelector = () => {
+    fileSelectorVisible.value = true
+}
+
+const handlePathSelect = (path: string) => {
+    // 选择路径时，自动切换到自定义模式
+    selectedPathLabel.value = CUSTOM_PATH_VALUE
+    savePath.value = path
+}
+
+onMounted(() => {
+    const savePaths = (settingsService.settings.savePaths as SavePath[]) || []
+    if (savePaths.length > 0) {
+        selectedPathLabel.value = savePaths[0].label
+        savePath.value = savePaths[0].path
+    }
+})
 </script>
 
 <style scoped>
@@ -488,42 +562,94 @@ const removeFile = () => {
     box-shadow: 0 0 0 3px var(--input-focus-shadow);
 }
 
-.save-path-wrapper {
+.save-path-selector {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: 12px 14px;
+    align-items: stretch;
     border: 1px solid var(--input-border);
     border-radius: 10px;
     background: var(--input-bg);
-}
-
-.save-path-wrapper .input-icon {
-    position: static;
-    transform: none;
-}
-
-.save-path {
-    flex: 1;
-    font-size: 14px;
-    color: var(--text-primary);
-}
-
-.change-path-btn {
-    padding: 8px 14px;
-    border: 1px solid var(--border-gray);
-    border-radius: 8px;
-    background: var(--bg-gray);
-    color: var(--text-primary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
+    overflow: hidden;
     transition: all 0.2s ease;
-    white-space: nowrap;
 }
 
-.change-path-btn:hover {
-    background: var(--light-gray);
+.save-path-selector:focus-within {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px var(--input-focus-shadow);
+}
+
+.path-label-select-wrapper {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.path-label-select-wrapper :deep(.custom-select-wrapper) {
+    width: 140px;
+}
+
+.path-label-select-wrapper :deep(.custom-select-display) {
+    border: none;
+    border-radius: 0;
+    height: 44px;
+    padding: 0 40px 0 12px;
+    background: transparent;
+}
+
+.path-label-select-wrapper :deep(.custom-select-display:hover) {
+    border-color: transparent;
+}
+
+.divider {
+    width: 1px;
+    background: var(--border-gray);
+    flex-shrink: 0;
+}
+
+.path-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.path-input-wrapper input {
+    flex: 1;
+    height: 44px;
+    border: none;
+    border-radius: 0;
+    padding: 0 12px;
+    background: transparent;
+    font-size: 14px;
+    color: var(--input-color);
+    outline: none;
+}
+
+.path-input-wrapper input:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.path-input-wrapper input::placeholder {
+    color: var(--input-placeholder);
+}
+
+.browse-path-btn {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.browse-path-btn:hover {
+    color: var(--primary);
+    background: var(--bg-gray);
 }
 
 .file-upload {
@@ -716,6 +842,10 @@ const removeFile = () => {
         flex: 1;
         justify-content: center;
         padding: 14px 16px;
+    }
+
+    .path-label-select-wrapper :deep(.custom-select-wrapper) {
+        width: 100px;
     }
 }
 

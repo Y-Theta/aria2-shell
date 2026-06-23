@@ -1,4 +1,10 @@
-export type SettingValue = string | number | boolean
+export type SettingValue = string | number | boolean | SavePath[]
+
+export interface SavePath {
+    label: string
+    path: string
+    isDefault?: boolean
+}
 
 export type SettingKey =
     | 'autoStart'
@@ -15,6 +21,7 @@ export type SettingKey =
     | 'language'
     | 'compactMode'
     | 'showRegister'
+    | 'savePaths'
 
 export interface SettingConfig {
     key: SettingKey
@@ -42,4 +49,11 @@ export const DEFAULT_SETTINGS: SettingsState = {
     language: 'zh-CN',
     compactMode: false,
     showRegister: true,
+    savePaths: [
+        {
+            label: '默认',
+            path: '',
+            isDefault: true
+        }
+    ],
 }

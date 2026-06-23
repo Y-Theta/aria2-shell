@@ -272,7 +272,7 @@ watch(() => props.visible, async (visible) => {
 .file-selector-mask {
     position: fixed;
     inset: 0;
-    z-index: 2002;
+    z-index: 10002;
     background: rgba(15, 23, 42, 0.36);
     backdrop-filter: blur(2px);
 }
@@ -287,7 +287,7 @@ watch(() => props.visible, async (visible) => {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 2003;
+    z-index: 10003;
     width: 600px;
     max-width: 90vw;
     max-height: 80vh;
@@ -589,19 +589,19 @@ watch(() => props.visible, async (visible) => {
 
 @media (max-width: 768px) {
     .file-selector-dialog {
-        width: 95vw;
-        max-height: 90vh;
-        border-radius: 16px 16px 0 0;
-        top: auto;
-        bottom: 0;
+        width: calc(100% - 32px);
+        max-width: 480px;
+        max-height: 80vh;
+        border-radius: 16px;
+        top: 50%;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translate(-50%, -50%);
     }
 
     .settings-slide-enter-from,
     .settings-slide-leave-to {
-        transform: translateX(-50%) translateY(100%);
-        opacity: 1;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
     }
 
     .file-selector-header {

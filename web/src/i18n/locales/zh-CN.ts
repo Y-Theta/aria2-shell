@@ -145,6 +145,7 @@ export default {
             pathLabelPlaceholder: '标签',
             pathPlaceholder: '路径',
             addPath: '添加保存位置',
+            defaultPathLabel: '默认',
         },
         aria2: {
             serverUrl: {
@@ -224,6 +225,8 @@ export default {
         regexUrlTemplate: 'URL 模板',
         regexUrlTemplatePlaceholder: '请输入 URL 模板，使用 $1, $2, $3 等引用匹配组',
         saveTo: '保存到',
+        savePathPlaceholder: '请输入保存路径',
+        customPath: '自定义',
         change: '更改',
         startNow: '立即添加',
         selectTorrentFile: '选择种子文件',

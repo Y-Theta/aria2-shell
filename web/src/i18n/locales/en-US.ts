@@ -145,6 +145,7 @@ export default {
             pathLabelPlaceholder: 'Label',
             pathPlaceholder: 'Path',
             addPath: 'Add Save Path',
+            defaultPathLabel: 'Default',
         },
         aria2: {
             serverUrl: {
@@ -224,6 +225,8 @@ export default {
         regexUrlTemplate: 'URL Template',
         regexUrlTemplatePlaceholder: 'Enter URL template, use $1, $2, $3, etc. to reference match groups',
         saveTo: 'Save To',
+        savePathPlaceholder: 'Enter save path',
+        customPath: 'Custom',
         change: 'Change',
         startNow: 'Add Now',
         selectTorrentFile: 'Select Torrent File',

@@ -47,6 +47,7 @@
                         class="path-label-input"
                         type="text"
                         :placeholder="t('settings.download.pathLabelPlaceholder')"
+                        :disabled="path.isDefault"
                     />
                     <input
                         v-model="path.path"
@@ -59,7 +60,12 @@
                     <button class="browse-btn" type="button" @click="openFileSelector(index)">
                         <i class="fas fa-folder-open" aria-hidden="true"></i>
                     </button>
-                    <button class="remove-path-btn" type="button" @click="removePath(index)">
+                    <button
+                        v-if="!path.isDefault"
+                        class="remove-path-btn"
+                        type="button"
+                        @click="removePath(index)"
+                    >
                         <i class="fas fa-trash" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -80,30 +86,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
 import SettingItem from './SettingItem.vue'
 import NumberControl from './NumberControl.vue'
 import FileSelectorDialog from '../FileSelectorDialog.vue'
+import type { SavePath } from '../../types/settings'
 
 const { t } = useI18n()
 const settingsService = useSettings()
 const settings = settingsService.settings
 
-interface SavePath {
-    label: string
-    path: string
-}
-
 const maxActiveDownloads = ref<number>(settings.maxActiveDownloads as number)
 const downloadLimit = ref<number>(settings.downloadLimit as number)
 const uploadLimit = ref<number>(settings.uploadLimit as number)
-const savePaths = ref<SavePath[]>([
-    { label: '默认', path: '' }
-])
+const savePaths = ref<SavePath[]>([])
 const fileSelectorVisible = ref(false)
 const selectedPathIndex = ref(0)
+
+onMounted(() => {
+    // 从设置中加载保存路径
+    if (Array.isArray(settings.savePaths) && settings.savePaths.length > 0) {
+        savePaths.value = [...settings.savePaths]
+    } else {
+        savePaths.value = [
+            { label: t('settings.download.defaultPathLabel'), path: '', isDefault: true }
+        ]
+    }
+})
 
 watch(maxActiveDownloads, (value) => {
     settingsService.setSetting('maxActiveDownloads', value)
@@ -117,14 +128,16 @@ watch(uploadLimit, (value) => {
     settingsService.setSetting('uploadLimit', value)
 })
 
+watch(savePaths, (value) => {
+    settingsService.setSetting('savePaths', value)
+}, { deep: true })
+
 function addPath() {
-    savePaths.value.push({ label: '', path: '' })
+    savePaths.value.push({ label: '', path: '', isDefault: false })
 }
 
 function removePath(index: number) {
-    if (savePaths.value.length > 1) {
-        savePaths.value.splice(index, 1)
-    }
+    savePaths.value.splice(index, 1)
 }
 
 function openFileSelector(index: number) {

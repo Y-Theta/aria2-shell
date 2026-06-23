@@ -25,11 +25,20 @@ function parseValue(value: string, key: SettingKey): SettingValue {
         return value === 'true'
     } else if (typeof defaultValue === 'number') {
         return Number(value)
+    } else if (Array.isArray(defaultValue)) {
+        try {
+            return JSON.parse(value)
+        } catch {
+            return defaultValue
+        }
     }
     return value
 }
 
 function stringifyValue(value: SettingValue): string {
+    if (Array.isArray(value)) {
+        return JSON.stringify(value)
+    }
     return String(value)
 }
 
