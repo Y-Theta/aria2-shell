@@ -7,9 +7,9 @@
 #
 # Variables
 @baseUrl = http://localhost:65004
-@testUsername = testuser
-@testPassword = password123
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsImlhdCI6MTc4MTc2OTIyNywiZXhwIjoxNzgyMzc0MDI3fQ.c4LipmvrXopW0ao1Ni4wT5Cv6hvvvSmW9yK9kZnTaag
+@testUsername = test
+@testPassword = 20154530
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJ0ZXN0IiwiaWF0IjoxNzgyNDYwMDY2LCJleHAiOjE3ODMwNjQ4NjZ9.F6whssvYdtw98CQZ8xyJI0zxnZBIdXTPzl4egx6HEzU
 @gid = 
 
 ###
@@ -104,7 +104,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "uris": ["https://httpbin.org/image/jpeg"]
+  "uris": ["https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n8.1.2.zip"]
 }
 
 ###

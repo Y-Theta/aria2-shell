@@ -7,8 +7,11 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "paths": {
+      "@common/*": ["../common/*"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../common/**/*"],
   "exclude": ["node_modules", "dist", "tsup.config.ts"]
 }

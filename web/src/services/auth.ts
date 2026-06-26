@@ -100,7 +100,7 @@ export function useAuth() {
     }
 }
 
-export async function getAuthHeaders(): Promise<Record<string, string>> {
+export function getAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     }

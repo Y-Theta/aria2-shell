@@ -32,27 +32,28 @@
             :totalTasks="tasks!.length"
         />
         <add-task-dialog v-model:visible="showAddTaskDialog" @addTask="handleConfirmAddTask" />
+        <confirm-dialog
+            v-model:visible="showDeleteConfirm"
+            :title="deleteConfirmTitle"
+            :message="deleteConfirmMessage"
+            :show-delete-file-option="true"
+            :delete-file-label="t('taskPage.deleteLocalFile')"
+            @confirm="confirmDelete"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import TaskToolbar from '../components/task/TaskToolbar.vue'
 import TaskList from '../components/task/TaskList.vue'
 import TaskFooter from '../components/task/TaskFooter.vue'
 import AddTaskDialog from '../components/dialogs/AddTaskDialog.vue'
+import ConfirmDialog from '../components/dialogs/ConfirmDialog.vue'
+import type { Task } from '@common/task'
 
-interface Task {
-    id: string
-    name: string
-    totalSize: number
-    progress: number
-    downloadSpeed: number
-    uploadSpeed: number
-    status: 'downloading' | 'completed' | 'paused' | 'error' | 'seeding'
-    isTorrent?: boolean
-    path?: string
-}
+const { t } = useI18n()
 
 const props = defineProps<{
     tasks?: Task[]
@@ -72,13 +73,47 @@ const emit = defineEmits<{
     (e: 'startSelected', ids: string[]): void
     (e: 'pauseSelected', ids: string[]): void
     (e: 'deleteSelected', ids: string[]): void
+    (e: 'confirmDelete', id: string, deleteLocalFile: boolean): void
+    (e: 'confirmDeleteSelected', ids: string[], deleteLocalFile: boolean): void
+    (e: 'confirmDeleteAll', deleteLocalFile: boolean): void
 }>()
 
 const showAddTaskDialog = ref(false)
+const showDeleteConfirm = ref(false)
 
 const searchText = ref('')
 const isBatchMode = ref(false)
 const selectedIds = ref<string[]>([])
+
+type DeleteMode = 'single' | 'selected' | 'all' | null
+const deleteMode = ref<DeleteMode>(null)
+const deleteTargetId = ref<string | null>(null)
+
+const deleteConfirmTitle = computed(() => {
+    switch (deleteMode.value) {
+        case 'single':
+            return t('taskPage.deleteTask')
+        case 'selected':
+            return t('taskPage.deleteSelectedTasks')
+        case 'all':
+            return t('taskPage.deleteAllTasks')
+        default:
+            return ''
+    }
+})
+
+const deleteConfirmMessage = computed(() => {
+    switch (deleteMode.value) {
+        case 'single':
+            return t('taskPage.deleteTaskConfirm')
+        case 'selected':
+            return t('taskPage.deleteSelectedTasksConfirm', { count: selectedIds.value.length })
+        case 'all':
+            return t('taskPage.deleteAllTasksConfirm')
+        default:
+            return ''
+    }
+})
 
 const totalDownloadSpeed = computed(() => {
     const t = props.tasks || []
@@ -106,15 +141,46 @@ const handleConfirmAddTask = (data: any) => {
 }
 const handleStartAll = () => emit('startAll')
 const handlePauseAll = () => emit('pauseAll')
-const handleDeleteAll = () => emit('deleteAll')
+const handleDeleteAll = () => {
+    deleteMode.value = 'all'
+    showDeleteConfirm.value = true
+}
 const handleStart = (id: string) => emit('start', id)
 const handlePause = (id: string) => emit('pause', id)
-const handleDelete = (id: string) => emit('delete', id)
+const handleDelete = (id: string) => {
+    deleteMode.value = 'single'
+    deleteTargetId.value = id
+    showDeleteConfirm.value = true
+}
 const handleOpenFolder = (id: string) => emit('openFolder', id)
 const handleOpenFile = (id: string) => emit('openFile', id)
 const handleStartSelected = () => emit('startSelected', [...selectedIds.value])
 const handlePauseSelected = () => emit('pauseSelected', [...selectedIds.value])
-const handleDeleteSelected = () => emit('deleteSelected', [...selectedIds.value])
+const handleDeleteSelected = () => {
+    if (selectedIds.value.length === 0) return
+    deleteMode.value = 'selected'
+    showDeleteConfirm.value = true
+}
+
+const confirmDelete = (deleteLocalFile: boolean) => {
+    switch (deleteMode.value) {
+        case 'single':
+            if (deleteTargetId.value) {
+                emit('confirmDelete', deleteTargetId.value, deleteLocalFile)
+            }
+            break
+        case 'selected':
+            emit('confirmDeleteSelected', [...selectedIds.value], deleteLocalFile)
+            selectedIds.value = []
+            isBatchMode.value = false
+            break
+        case 'all':
+            emit('confirmDeleteAll', deleteLocalFile)
+            break
+    }
+    deleteMode.value = null
+    deleteTargetId.value = null
+}
 </script>
 
 <style scoped>

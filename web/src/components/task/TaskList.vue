@@ -58,27 +58,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TaskItem from './TaskItem.vue'
-
-interface Task {
-    id: string
-    name: string
-    totalSize: number
-    progress: number
-    downloadSpeed: number
-    uploadSpeed: number
-    status: 'downloading' | 'completed' | 'paused' | 'error' | 'seeding'
-    isTorrent?: boolean
-    path?: string
-    files?: TorrentFile[]
-}
-
-interface TorrentFile {
-    id: string
-    name: string
-    size: number
-    progress: number
-    priority: 'high' | 'normal' | 'low'
-}
+import type { Task } from '@common/task'
 
 interface Column {
     id: string
@@ -191,6 +171,17 @@ const getColumnStyle = (columnId: string) => {
 const updateVisibleItems = () => {
     if (!scrollContainer.value) return
     
+    const tasks = filteredTasks.value
+    
+    // 空列表处理
+    if (tasks.length === 0) {
+        visibleTasks.value = []
+        offsetY.value = 0
+        startIndex.value = 0
+        endIndex.value = 0
+        return
+    }
+    
     const scrollTop = scrollContainer.value.scrollTop
     const containerHeight = scrollContainer.value.clientHeight
     
@@ -198,8 +189,8 @@ const updateVisibleItems = () => {
     const items = []
     let currentHeight = 0
     
-    for (let i = 0; i < filteredTasks.value.length; i++) {
-        const task = filteredTasks.value[i]
+    for (let i = 0; i < tasks.length; i++) {
+        const task = tasks[i]
         const height = expandedIds.value.has(task.id) ? (itemHeight.value + 200) : itemHeight.value
         items.push({
             index: i,
@@ -237,10 +228,10 @@ const updateVisibleItems = () => {
     endIndex.value = newEndIndex
     
     // 计算偏移量
-    offsetY.value = items[newStartIndex].top
+    offsetY.value = items[newStartIndex] ? items[newStartIndex].top : 0
     
     // 更新可见任务
-    visibleTasks.value = filteredTasks.value.slice(newStartIndex, newEndIndex)
+    visibleTasks.value = tasks.slice(newStartIndex, newEndIndex)
 }
 
 const handleScroll = () => {

@@ -3,7 +3,11 @@
         <sidebar v-if="!isLoginPage" />
 
         <div class="main-content">
-            <router-view />
+            <router-view v-slot="{ Component, route }">
+                <keep-alive>
+                    <component :is="Component" :key="route.name" />
+                </keep-alive>
+            </router-view>
         </div>
     </div>
 </template>

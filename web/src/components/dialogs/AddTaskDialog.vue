@@ -135,16 +135,22 @@
                                     <SwitchControl v-model="useProxy" />
                                 </div>
                             </div>
+
+                            <div v-if="errorMessage" class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ errorMessage }}</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="add-task-footer">
-                        <button class="footer-btn cancel-btn" @click="close">
+                        <button class="footer-btn cancel-btn" @click="close" :disabled="isLoading">
                             {{ t('common.cancel') }}
                         </button>
-                        <button class="footer-btn confirm-btn" @click="confirm">
-                            <i class="fas fa-download"></i>
-                            {{ t('addTask.startNow') }}
+                        <button class="footer-btn confirm-btn" @click="confirm" :disabled="isLoading">
+                            <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
+                            <i v-else class="fas fa-download"></i>
+                            {{ isLoading ? t('common.loading') : t('addTask.startNow') }}
                         </button>
                     </div>
 
@@ -163,6 +169,7 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings.ts'
+import { addUri } from '../../services/aria2.ts'
 import CustomSelect from '../common/CustomSelect.vue'
 import FileSelectorDialog from './FileSelectorDialog.vue'
 import SwitchControl from '../common/SwitchControl.vue'
@@ -177,7 +184,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:visible', value: boolean): void
-    (e: 'addTask', data: any): void
+    (e: 'addTask', gids: string[]): void
 }>()
 
 const activeMethod = ref('single')
@@ -188,6 +195,8 @@ const savePath = ref('')
 const selectedPathLabel = ref('')
 const fileSelectorVisible = ref(false)
 const useProxy = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
 
 const torrentFileInput = ref<HTMLInputElement | null>(null)
 
@@ -252,27 +261,65 @@ const close = () => {
     resetForm()
 }
 
-const confirm = () => {
-    const data: any = {
-        method: activeMethod.value,
-        savePath: savePath.value,
-        useProxy: useProxy.value,
-    }
+const confirm = async () => {
+    errorMessage.value = ''
+    
+    try {
+        isLoading.value = true
+        
+        const options: Record<string, string | number | boolean> = {}
+        // 保存路径通过 options.dir 传递给 aria2
+        if (savePath.value.trim()) {
+            options.dir = savePath.value.trim()
+        }
+        // 代理设置使用 aria2 要求的 kebab-case 选项名
+        if (useProxy.value && (settingsService.settings.httpProxyUrl as string)?.trim()) {
+            options['all-proxy'] = (settingsService.settings.httpProxyUrl as string).trim()
+        }
 
-    switch (activeMethod.value) {
-        case 'single':
-            data.url = singleUrl.value
-            break
-        case 'batch':
-            data.urls = batchUrls.value.split('\n').filter(u => u.trim())
-            break
-        case 'torrent':
-            data.file = selectedFile.value
-            break
-    }
+        const newGids: string[] = []
+        
+        switch (activeMethod.value) {
+            case 'single': {
+                const url = singleUrl.value.trim()
+                if (!url) {
+                    errorMessage.value = t('addTask.urlRequired')
+                    return
+                }
+                // 单个URL：支持空格/换行分隔多个镜像源，一次调用 addUri
+                const urls = url.split(/[\s\n]+/).filter(u => u.trim()).map(u => u.trim())
+                const gid = await addUri(urls, options)
+                newGids.push(gid)
+                break
+            }
+            case 'batch': {
+                const urls = batchUrls.value.split('\n').filter(u => u.trim()).map(u => u.trim())
+                if (urls.length === 0) {
+                    errorMessage.value = t('addTask.urlRequired')
+                    return
+                }
+                // 批量URL：每行一个独立任务，逐个调用 addUri 创建
+                for (const url of urls) {
+                    const gid = await addUri(url, options)
+                    newGids.push(gid)
+                }
+                break
+            }
+            case 'torrent': {
+                // Torrent file upload not implemented yet
+                errorMessage.value = 'Torrent upload is not yet implemented'
+                return
+            }
+        }
 
-    emit('addTask', data)
-    close()
+        emit('addTask', newGids)
+        close()
+    } catch (error) {
+        console.error('Failed to add task:', error)
+        errorMessage.value = error instanceof Error ? error.message : 'Failed to add task'
+    } finally {
+        isLoading.value = false
+    }
 }
 
 const resetForm = () => {
@@ -284,6 +331,8 @@ const resetForm = () => {
         torrentFileInput.value.value = ''
     }
     useProxy.value = false
+    errorMessage.value = ''
+    isLoading.value = false
 }
 
 const triggerFileInput = () => {
@@ -797,6 +846,22 @@ watch(
     justify-content: flex-end;
 }
 
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: 10px;
+    background: rgba(220, 53, 69, 0.08);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    color: var(--error-red);
+    font-size: 14px;
+}
+
+.error-message i {
+    flex-shrink: 0;
+}
+
 .footer-btn {
     padding: 12px 24px;
     border-radius: 10px;
@@ -807,6 +872,12 @@ watch(
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
+}
+
+.footer-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
 }
 
 .cancel-btn {

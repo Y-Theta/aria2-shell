@@ -1,10 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { useAuth } from '../services/auth'
 
-import ActiveTasks from '../views/ActiveTasks.vue'
-import CompletedTasks from '../views/CompletedTasks.vue'
-import PausedTasks from '../views/PausedTasks.vue'
-import Torrents from '../views/Torrents.vue'
+import TaskListView from '../views/TaskListView.vue'
 import SettingsPage from '../views/SettingsPage.vue'
 import LoginPage from '../views/LoginPage.vue'
 
@@ -23,25 +20,25 @@ const router = createRouter({
         {
             path: '/active',
             name: 'active',
-            component: ActiveTasks,
+            component: TaskListView,
             meta: { requiresAuth: true },
         },
         {
             path: '/completed',
             name: 'completed',
-            component: CompletedTasks,
+            component: TaskListView,
             meta: { requiresAuth: true },
         },
         {
             path: '/paused',
             name: 'paused',
-            component: PausedTasks,
+            component: TaskListView,
             meta: { requiresAuth: true },
         },
         {
             path: '/torrents',
             name: 'torrents',
-            component: Torrents,
+            component: TaskListView,
             meta: { requiresAuth: true },
         },
         {

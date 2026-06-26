@@ -11,6 +11,16 @@
                     </div>
                     <div class="confirm-dialog-body">
                         <p class="confirm-dialog-message">{{ message }}</p>
+                        <div v-if="showDeleteFileOption" class="delete-file-option">
+                            <label class="checkbox-label">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="deleteLocalFile"
+                                    class="delete-file-checkbox"
+                                />
+                                <span>{{ deleteFileLabel }}</span>
+                            </label>
+                        </div>
                     </div>
                     <div class="confirm-dialog-footer">
                         <button class="confirm-dialog-btn cancel-btn" @click="close">
@@ -29,6 +39,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -37,19 +48,29 @@ const props = defineProps<{
     visible: boolean
     title: string
     message: string
+    showDeleteFileOption?: boolean
+    deleteFileLabel?: string
 }>()
 
 const emit = defineEmits<{
     'update:visible': [value: boolean]
-    confirm: []
+    confirm: [deleteLocalFile: boolean]
 }>()
+
+const deleteLocalFile = ref(false)
+
+watch(() => props.visible, (newVal) => {
+    if (newVal) {
+        deleteLocalFile.value = false
+    }
+})
 
 const close = () => {
     emit('update:visible', false)
 }
 
 const confirm = () => {
-    emit('confirm')
+    emit('confirm', deleteLocalFile.value)
     close()
 }
 </script>
@@ -129,6 +150,88 @@ const confirm = () => {
     color: var(--text-secondary);
     line-height: 1.5;
     text-align: center;
+}
+
+.delete-file-option {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-gray);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-secondary);
+    user-select: none;
+}
+
+.delete-file-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    max-width: 20px;
+    max-height: 20px;
+    border: 1.5px solid var(--border-gray);
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-basis: auto;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: transparent;
+    outline: none;
+}
+
+.delete-file-checkbox:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px var(--primary-blue-10);
+}
+
+.delete-file-checkbox:checked {
+    border-color: var(--primary-blue);
+    background-color: transparent;
+}
+
+.delete-file-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--primary-blue);
+    animation: checkPopIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.delete-file-checkbox:active {
+    transform: scale(0.92);
+}
+
+@keyframes checkPopIn {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
 }
 
 .confirm-dialog-footer {

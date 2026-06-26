@@ -47,11 +47,11 @@
                         </template>
                         <template v-else-if="column.id === 'actions'">
                             <div class="task-actions" @click.stop>
-                                <button v-if="task.status === 'paused'" class="action-btn"
+                                <button v-if="task.status === 'paused' || task.status === 'error'" class="action-btn"
                                     @click="$emit('start', task.id)" :title="t('taskPage.start')">
                                     <i class="fas fa-play"></i>
                                 </button>
-                                <button v-else-if="task.status === 'downloading'" class="action-btn"
+                                <button v-else-if="task.status === 'downloading' || task.status === 'waiting' || task.status === 'seeding'" class="action-btn"
                                     @click="$emit('pause', task.id)" :title="t('taskPage.pause')">
                                     <i class="fas fa-pause"></i>
                                 </button>
@@ -90,11 +90,11 @@
                         </div>
                     </div>
                     <div class="task-actions" @click.stop>
-                        <button v-if="task.status === 'paused'" class="action-btn" @click="$emit('start', task.id)"
+                        <button v-if="task.status === 'paused' || task.status === 'error'" class="action-btn" @click="$emit('start', task.id)"
                             :title="t('taskPage.start')">
                             <i class="fas fa-play"></i>
                         </button>
-                        <button v-else-if="task.status === 'downloading'" class="action-btn"
+                        <button v-else-if="task.status === 'downloading' || task.status === 'waiting' || task.status === 'seeding'" class="action-btn"
                             @click="$emit('pause', task.id)" :title="t('taskPage.pause')">
                             <i class="fas fa-pause"></i> </button>
                         <button class="action-btn action-btn-danger" @click="$emit('delete', task.id)"
@@ -158,27 +158,7 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TaskProgressBar from './TaskProgressBar.vue'
-
-interface TorrentFile {
-    id: string
-    name: string
-    size: number
-    progress: number
-    priority: 'high' | 'normal' | 'low'
-}
-
-interface Task {
-    id: string
-    name: string
-    totalSize: number
-    progress: number
-    downloadSpeed: number
-    uploadSpeed: number
-    status: 'downloading' | 'completed' | 'paused' | 'error' | 'seeding'
-    isTorrent?: boolean
-    path?: string
-    files?: TorrentFile[]
-}
+import type { Task, TorrentFile } from '@common/task'
 
 interface Column {
     id: string
@@ -278,6 +258,10 @@ const getStatusText = (status: string) => {
             return t('taskPage.completed')
         case 'paused':
             return t('taskPage.paused')
+        case 'waiting':
+            return t('taskPage.waiting')
+        case 'error':
+            return t('taskPage.error')
         case 'seeding':
             return t('sidebar.seeding')
         default:
@@ -481,7 +465,8 @@ const formatSpeed = (bytesPerSecond: number) => {
     color: var(--success-green);
 }
 
-.status-paused {
+.status-paused,
+.status-waiting {
     background-color: var(--neutral-gray-10);
     color: var(--neutral-gray);
 }

@@ -92,7 +92,21 @@ export const DEFAULT_SETTINGS: SettingsState = {
 export interface ApiResponse<T = any> {
     success: boolean;
     message?: string;
-    data?: T;
+}
+
+export interface ListResponse<T> extends ApiResponse {
+    success: true;
+    list: T[];
+}
+
+export interface DataResponse<T> extends ApiResponse {
+    success: true;
+    [key: string]: any;
+}
+
+export interface GidResponse extends ApiResponse {
+    success: true;
+    gid: string;
 }
 
 export interface LoginResponse {
@@ -108,3 +122,6 @@ export interface RegisterResponse {
     token?: string;
     error?: string;
 }
+
+export * from './task';
+export * from './aria2';

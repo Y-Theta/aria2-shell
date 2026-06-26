@@ -18,7 +18,6 @@
                     :to="item.to">
                     <i :class="item.icon"></i>
                     <span v-if="!isCollapsed" class="nav-label">{{ t(item.labelKey) }}</span>
-                    <span v-if="!isCollapsed && item.badge" class="badge">{{ item.badge }}</span>
                 </router-link>
             </template>
 
@@ -58,7 +57,6 @@
                                     active-class="active" :to="item.to" @click="selectMenuItem(item)">
                                     <i :class="item.icon"></i>
                                     <span class="nav-label">{{ t(item.labelKey) }}</span>
-                                    <span v-if="item.badge" class="badge">{{ item.badge }}</span>
                                 </router-link>
                                 <div class="mobile-menu-section">{{ t('sidebar.features') }}</div>
                                 <router-link class="nav-item" active-class="active" to="/settings"
@@ -109,7 +107,7 @@ const isMobileMenuOpen = ref(false)
 const showConfirmLogout = ref(false)
 
 const statusMenuItems: MenuItem[] = [
-    { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active', badge: 2 },
+    { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active' },
     { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check', to: '/completed' },
     { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause', to: '/paused' },
     { id: 'torrents', labelKey: 'sidebar.torrents', icon: 'fas fa-file-arrow-down', to: '/torrents' },

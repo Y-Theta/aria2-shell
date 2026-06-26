@@ -12,7 +12,7 @@ import { computed } from 'vue'
 
 interface Props {
     progress: number
-    status?: 'downloading' | 'completed' | 'paused' | 'error' | 'seeding'
+    status?: 'downloading' | 'completed' | 'paused' | 'waiting' | 'error' | 'seeding'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -24,6 +24,7 @@ const color = computed(() => {
         case 'completed':
             return 'var(--success-green)'
         case 'paused':
+        case 'waiting':
             return 'var(--neutral-gray)'
         case 'error':
             return 'var(--error-red)'
