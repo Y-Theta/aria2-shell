@@ -1,337 +1,337 @@
 export default {
+    addTask: {
+        batchUrl: 'Batch URLs',
+        batchUrlDesc: 'Add multiple download links',
+        batchUrlsPlaceholder: 'Enter multiple links, one per line',
+        change: 'Change',
+        customPath: 'Custom',
+        downloadUrl: 'Download URL',
+        downloadUrlPlaceholder: 'Enter download link, e.g.: magnet:?xt=urn:btih:...',
+        linkSupported: 'HTTP(S)/FTP/Magnet links are supported',
+        noFileSelected: 'No file selected',
+        regexAdd: 'Regex Add',
+        regexAddDesc: 'Match links using regular expressions',
+        regexPattern: 'Regex Pattern',
+        regexPatternPlaceholder: 'Enter regular expression',
+        regexUrlTemplate: 'URL Template',
+        regexUrlTemplatePlaceholder: 'Enter URL template, use $1, $2, $3, etc. to reference match groups',
+        savePathPlaceholder: 'Enter save path',
+        saveTo: 'Save To',
+        selectTorrentFile: 'Select Torrent File',
+        selectTorrentFileDesc: 'Click or drag file here',
+        selectedFile: 'Selected File',
+        singleUrl: 'Single URL',
+        singleUrlDesc: 'Add a single download link',
+        startNow: 'Add Now',
+        subtitle: 'Support multiple ways to add download links or torrent files',
+        title: 'Add New Download Task',
+        uploadTorrent: 'Upload Torrent',
+        uploadTorrentDesc: 'Select torrent file from local',
+        urlRequired: 'Please enter download URL',
+        useProxy: 'Use Proxy'
+    },
     common: {
         appName: 'aria2-shell',
-        language: 'Language',
-        theme: 'Theme',
-        light: 'Light',
-        dark: 'Dark',
-        close: 'Close',
-        logout: 'Logout',
-        confirm: 'Confirm',
         cancel: 'Cancel',
-        loading: 'Loading...',
-        confirmLogoutTitle: 'Confirm Logout',
+        close: 'Close',
+        confirm: 'Confirm',
         confirmLogoutMessage: 'Are you sure you want to logout?',
-    },
-    login: {
-        subtitle: 'Efficient Download Manager',
-        login: 'Login',
-        register: 'Register',
-        username: 'Username',
-        password: 'Password',
-        usernamePlaceholder: 'Enter your username',
-        passwordPlaceholder: 'Enter your password',
-        footerText: 'Powered by Aria2',
+        confirmLogoutTitle: 'Confirm Logout',
+        dark: 'Dark',
+        language: 'Language',
+        light: 'Light',
+        loading: 'Loading...',
+        logout: 'Logout',
+        theme: 'Theme'
     },
     connection: {
-        checkingTitle: 'Connecting to aria2 ',
         checkingDesc: 'Please wait while the connection status is being checked...',
-        failedTitle: 'Connect to aria2 failed',
-        failedDesc: 'Please check whether the aria2 service is running or the network is available.',
-        retry: 'Retry',
+        checkingTitle: 'Connecting to aria2 ',
         connected: 'Connected',
         disconnected: 'Disconnected',
+        failedDesc: 'Please check whether the aria2 service is running or the network is available.',
+        failedTitle: 'Connect to aria2 failed',
+        retry: 'Retry'
     },
-    sidebar: {
-        title: 'Downloader',
-        all: 'All Tasks',
-        status: 'Status',
-        features: 'Features',
-        menu: 'Menu',
-        active: 'Active',
-        downloading: 'Downloading',
-        seeding: 'Seeding',
-        completed: 'Completed',
-        paused: 'Paused',
-        error: 'Error',
-        settings: 'Settings',
-        torrents: 'Torrents',
-        category: 'Categories',
-        categoryAll: 'All',
-        categoryVideo: 'Video',
-        categoryAudio: 'Audio',
-        categoryDoc: 'Document',
-        categoryZip: 'Archive',
-        categorySoftware: 'Software',
+    fileSelector: {
+        confirm: 'Select',
+        createFolder: 'New Folder',
+        createFolderTitle: 'New Folder',
+        empty: 'Directory is empty',
+        error: 'Failed to load, please try again',
+        folderName: 'Folder Name',
+        loading: 'Loading...',
+        subtitle: 'Choose a save location from the file system',
+        title: 'Select Path'
     },
-    taskPage: {
-        addTask: 'Add Task',
-        start: 'Start',
-        pause: 'Pause',
-        delete: 'Delete',
-        search: 'Search tasks',
-        fileName: 'File Name',
-        size: 'Size',
-        progress: 'Progress',
-        speed: 'Speed',
-        status: 'Status',
-        actions: 'Actions',
-        downloading: 'Downloading',
-        completed: 'Completed',
-        paused: 'Paused',
-        waiting: 'Waiting',
-        error: 'Error',
-        openFolder: 'Open Folder',
-        openFile: 'Open File',
-        downloadSpeed: 'Download Speed',
-        uploadSpeed: 'Upload Speed',
-        downloadingCount: 'Downloading',
-        availableSpace: 'Available Space',
-        totalTasks: 'Total Tasks',
-        completedSize: 'Downloaded',
-        totalSize: 'Total Size',
-        pieces: 'Piece Progress',
-        expand: 'Expand',
-        collapse: 'Collapse',
-        batchOperation: 'Batch Operation',
-        startSelected: 'Start Selected',
-        pauseSelected: 'Pause Selected',
-        deleteSelected: 'Delete Selected',
-        selectedCount: '{count} items selected',
-        torrentFileList: 'Torrent File List',
-        deleteTask: 'Delete Task',
-        deleteTaskConfirm: 'Are you sure you want to delete this task? This action cannot be undone.',
-        deleteSelectedTasks: 'Delete Selected Tasks',
-        deleteSelectedTasksConfirm: 'Are you sure you want to delete {count} selected tasks? This action cannot be undone.',
-        deleteAllTasks: 'Delete All Tasks',
-        deleteAllTasksConfirm: 'Are you sure you want to delete all tasks in this list? This action cannot be undone.',
-        deleteLocalFile: 'Also delete local files',
+    login: {
+        footerText: 'Powered by Aria2',
+        login: 'Login',
+        password: 'Password',
+        passwordPlaceholder: 'Enter your password',
+        register: 'Register',
+        subtitle: 'Efficient Download Manager',
+        username: 'Username',
+        usernamePlaceholder: 'Enter your username'
+    },
+    nav: {
+        home: 'Home',
+        settings: 'Settings'
     },
     settings: {
-        title: 'Settings',
-        subtitle: 'Manage app, download, connection, and appearance preferences',
+        about: {
+            appDesc: 'A clean and simple download task management tool',
+            appName: 'Download Manager',
+            build: 'Build Type',
+            buildValue: 'Desktop/Web',
+            status: 'Status',
+            statusValue: 'Running Normally',
+            title: 'About App',
+            version: 'Version',
+            versionValue: '1.0.0'
+        },
         actions: {
-            select: 'Select',
-            save: 'Save Settings',
             resetDefault: 'Reset to Default',
+            save: 'Save Settings',
+            select: 'Select'
         },
-        confirmReset: {
-            title: 'Confirm Reset to Default',
-            message: 'This action will reset all settings to their default values. Are you sure you want to continue?',
-        },
-        tabs: {
-            download: 'Download',
-            aria2: 'Aria2',
-            appearance: 'Appearance',
-            user: 'User',
-            about: 'About',
-        },
-        sections: {
-            general: 'General Settings',
-            download: 'Download Settings',
-            connection: 'Connection Settings',
-            appearance: 'Appearance Settings',
-        },
-        general: {
-            autoStart: {
-                label: 'Auto-start on Boot',
-                desc: 'Automatically open the download manager after system startup',
+        appearance: {
+            appName: {
+                desc: 'Customize the browser tab title',
+                label: 'Page Title',
+                placeholder: 'Enter page title'
             },
-            minimizeToTray: {
-                label: 'Minimize to Tray on Close',
-                desc: 'Keep the program running in the background after clicking the close button',
+            language: {
+                desc: 'Select the interface display language',
+                enUS: 'English',
+                label: 'Language',
+                zhCN: '简体中文'
             },
-            downloadPath: {
-                label: 'Default Save Path',
-                desc: 'The default location for new download tasks',
-                placeholder: 'Please select a download path',
+            showRegister: {
+                desc: 'Show registration button on login page',
+                label: 'Show Registration'
             },
-            reset: {
-                desc: 'Reset all settings to their default values',
-            },
-        },
-        download: {
-            maxActiveDownloads: {
-                label: 'Max Active Downloads',
-                desc: 'Limit the number of tasks in downloading state at the same time',
-            },
-            maxConnections: {
-                label: 'Download Threads',
-                desc: 'Max connections per server for multi-threaded downloading, range 1-16',
-            },
-            downloadLimit: {
-                label: 'Global Download Limit',
-                desc: 'Set to 0 for no limit, unit KB/s',
-            },
-            uploadLimit: {
-                label: 'Upload Speed Limit',
-                desc: 'Set to 0 for unlimited, unit KB/s',
-            },
-            keepSeeding: {
-                label: 'Keep Seeding After Completion',
-                desc: 'Continue uploading and sharing after BT tasks are completed',
-            },
-            defaultSavePaths: 'Default Save Paths',
-            pathLabelPlaceholder: 'Label',
-            pathPlaceholder: 'Path',
-            addPath: 'Add Save Path',
-            defaultPathLabel: 'Default',
+            theme: {
+                dark: 'Dark Mode',
+                desc: 'Select the app display theme',
+                label: 'Theme Mode',
+                light: 'Light Mode',
+                system: 'Follow System'
+            }
         },
         aria2: {
-            serverUrl: {
-                label: 'Backend Service URL',
-                desc: 'API address for connecting to download service',
-                placeholder: 'http://127.0.0.1:8080',
-            },
-            secret: {
-                label: 'RPC Secret',
-                desc: 'Authentication secret for connecting to aria2 service',
-                placeholder: 'Enter secret',
-            },
-            timeout: {
-                label: 'Connection Timeout',
-                desc: 'Maximum wait time for backend API requests, in seconds',
-            },
             autoReconnect: {
-                label: 'Auto Reconnect',
                 desc: 'Automatically attempt to reconnect after the connection is lost',
+                label: 'Auto Reconnect'
+            },
+            btMaxUploadSpeed: {
+                desc: 'BT task maximum upload speed limit, 0 means unlimited, unit KB/s',
+                label: 'BT Max Upload Speed'
+            },
+            btMinSeedRatio: {
+                desc: 'BT task can stop seeding after reaching this ratio',
+                label: 'Minimum Seed Ratio'
+            },
+            btMinSeedTime: {
+                desc: 'BT task minimum seeding time, unit minutes',
+                label: 'Minimum Seed Time'
             },
             btSection: 'BT Settings',
             btTrackerUrl: {
-                label: 'BT Tracker URL',
                 desc: 'Optional, custom BT Tracker server address, one address per line',
-                placeholder: 'e.g.: udp://tracker.example.com:6969/announce',
+                label: 'BT Tracker URL',
+                placeholder: 'e.g.: udp://tracker.example.com:6969/announce'
             },
-            btMaxUploadSpeed: {
-                label: 'BT Max Upload Speed',
-                desc: 'BT task maximum upload speed limit, 0 means unlimited, unit KB/s',
-            },
-            btMinSeedRatio: {
-                label: 'Minimum Seed Ratio',
-                desc: 'BT task can stop seeding after reaching this ratio',
-            },
-            btMinSeedTime: {
-                label: 'Minimum Seed Time',
-                desc: 'BT task minimum seeding time, unit minutes',
+            httpProxyPassword: {
+                desc: 'Fill in password if proxy requires authentication',
+                label: 'Proxy Password',
+                placeholder: 'Optional'
             },
             httpProxySection: 'HTTP Proxy Settings',
             httpProxyUrl: {
-                label: 'Proxy URL',
                 desc: 'Supports HTTP/HTTPS/SOCKS5 proxy, format: http://host:port',
-                placeholder: 'http://127.0.0.1:7890',
+                label: 'Proxy URL',
+                placeholder: 'http://127.0.0.1:7890'
             },
             httpProxyUser: {
-                label: 'Proxy Username',
                 desc: 'Fill in username if proxy requires authentication',
-                placeholder: 'Optional',
+                label: 'Proxy Username',
+                placeholder: 'Optional'
             },
-            httpProxyPassword: {
-                label: 'Proxy Password',
-                desc: 'Fill in password if proxy requires authentication',
-                placeholder: 'Optional',
-            },
-            proxyTestUrl: {
-                label: 'Test Server URL',
-                desc: 'Target URL to test proxy connectivity',
-                placeholder: 'https://www.google.com/generate_204',
-            },
-            testProxyConnection: {
-                label: 'Test Proxy Connection',
-                desc: 'Test if can connect to specified server through proxy',
-                buttonText: 'Test Connection',
-            },
-            proxyTestSuccess: 'Proxy connection successful! Response time: {elapsed}, HTTP status: {status}',
             proxyTestFailed: 'Proxy connection failed',
             proxyTestNetworkError: 'Network request failed, please check if backend service is running',
+            proxyTestSuccess: 'Proxy connection successful! Response time: {elapsed}, HTTP status: {status}',
+            proxyTestUrl: {
+                desc: 'Target URL to test proxy connectivity',
+                label: 'Test Server URL',
+                placeholder: 'https://www.google.com/generate_204'
+            },
+            secret: {
+                desc: 'Authentication secret for connecting to aria2 service',
+                label: 'RPC Secret',
+                placeholder: 'Enter secret'
+            },
+            serverUrl: {
+                desc: 'API address for connecting to download service',
+                label: 'Backend Service URL',
+                placeholder: 'http://127.0.0.1:8080'
+            },
+            testProxyConnection: {
+                buttonText: 'Test Connection',
+                desc: 'Test if can connect to specified server through proxy',
+                label: 'Test Proxy Connection'
+            },
+            timeout: {
+                desc: 'Maximum wait time for backend API requests, in seconds',
+                label: 'Connection Timeout'
+            }
         },
-        appearance: {
-            theme: {
-                label: 'Theme Mode',
-                desc: 'Select the app display theme',
-                light: 'Light Mode',
-                dark: 'Dark Mode',
-                system: 'Follow System',
-            },
-            language: {
-                label: 'Language',
-                desc: 'Select the interface display language',
-                zhCN: '简体中文',
-                enUS: 'English',
-            },
-            appName: {
-                label: 'Page Title',
-                desc: 'Customize the browser tab title',
-                placeholder: 'Enter page title',
-            },
-            showRegister: {
-                label: 'Show Registration',
-                desc: 'Show registration button on login page',
-            },
+        confirmReset: {
+            message: 'This action will reset all settings to their default values. Are you sure you want to continue?',
+            title: 'Confirm Reset to Default'
         },
+        download: {
+            addPath: 'Add Save Path',
+            defaultPathLabel: 'Default',
+            defaultSavePaths: 'Default Save Paths',
+            downloadLimit: {
+                desc: 'Set to 0 for no limit, unit KB/s',
+                label: 'Global Download Limit'
+            },
+            keepSeeding: {
+                desc: 'Continue uploading and sharing after BT tasks are completed',
+                label: 'Keep Seeding After Completion'
+            },
+            maxActiveDownloads: {
+                desc: 'Limit the number of tasks in downloading state at the same time',
+                label: 'Max Active Downloads'
+            },
+            maxConnections: {
+                desc: 'Max connections per server for multi-threaded downloading, range 1-16',
+                label: 'Download Threads'
+            },
+            pathLabelPlaceholder: 'Label',
+            pathPlaceholder: 'Path',
+            uploadLimit: {
+                desc: 'Set to 0 for unlimited, unit KB/s',
+                label: 'Upload Speed Limit'
+            }
+        },
+        general: {
+            autoStart: {
+                desc: 'Automatically open the download manager after system startup',
+                label: 'Auto-start on Boot'
+            },
+            downloadPath: {
+                desc: 'The default location for new download tasks',
+                label: 'Default Save Path',
+                placeholder: 'Please select a download path'
+            },
+            minimizeToTray: {
+                desc: 'Keep the program running in the background after clicking the close button',
+                label: 'Minimize to Tray on Close'
+            },
+            reset: {
+                desc: 'Reset all settings to their default values'
+            }
+        },
+        sections: {
+            appearance: 'Appearance Settings',
+            connection: 'Connection Settings',
+            download: 'Download Settings',
+            general: 'General Settings'
+        },
+        subtitle: 'Manage app, download, connection, and appearance preferences',
+        tabs: {
+            about: 'About',
+            appearance: 'Appearance',
+            aria2: 'Aria2',
+            download: 'Download',
+            user: 'User'
+        },
+        title: 'Settings',
         user: {
             changePassword: 'Change Password',
-            oldPassword: 'Old Password',
-            oldPasswordDesc: 'Enter your current password',
-            oldPasswordPlaceholder: 'Enter old password',
-            oldPasswordRequired: 'Old password is required',
+            changePasswordError: 'Failed to change password, please try again',
+            confirmPassword: 'Confirm New Password',
+            confirmPasswordDesc: 'Enter your new password again',
+            confirmPasswordPlaceholder: 'Enter new password again',
             newPassword: 'New Password',
             newPasswordDesc: 'Enter your new password (at least 6 characters)',
             newPasswordPlaceholder: 'Enter new password',
             newPasswordRequired: 'New password is required',
             newPasswordTooShort: 'New password must be at least 6 characters',
-            confirmPassword: 'Confirm New Password',
-            confirmPasswordDesc: 'Enter your new password again',
-            confirmPasswordPlaceholder: 'Enter new password again',
+            oldPassword: 'Old Password',
+            oldPasswordDesc: 'Enter your current password',
+            oldPasswordPlaceholder: 'Enter old password',
+            oldPasswordRequired: 'Old password is required',
             passwordNotMatch: 'Passwords do not match',
-            updatePassword: 'Update Password',
-            changePasswordError: 'Failed to change password, please try again',
-        },
-        about: {
-            title: 'About App',
-            appName: 'Download Manager',
-            appDesc: 'A clean and simple download task management tool',
-            version: 'Version',
-            versionValue: '1.0.0',
-            build: 'Build Type',
-            buildValue: 'Desktop/Web',
-            status: 'Status',
-            statusValue: 'Running Normally',
-        },
+            updatePassword: 'Update Password'
+        }
     },
-    nav: {
-        home: 'Home',
+    sidebar: {
+        active: 'Active',
+        all: 'All Tasks',
+        category: 'Categories',
+        categoryAll: 'All',
+        categoryAudio: 'Audio',
+        categoryDoc: 'Document',
+        categorySoftware: 'Software',
+        categoryVideo: 'Video',
+        categoryZip: 'Archive',
+        completed: 'Completed',
+        downloading: 'Downloading',
+        error: 'Error',
+        features: 'Features',
+        menu: 'Menu',
+        paused: 'Paused',
+        seeding: 'Seeding',
         settings: 'Settings',
+        status: 'Status',
+        title: 'Downloader',
+        torrents: 'Torrents'
     },
-    addTask: {
-        title: 'Add New Download Task',
-        subtitle: 'Support multiple ways to add download links or torrent files',
-        singleUrl: 'Single URL',
-        singleUrlDesc: 'Add a single download link',
-        batchUrl: 'Batch URLs',
-        batchUrlDesc: 'Add multiple download links',
-        regexAdd: 'Regex Add',
-        regexAddDesc: 'Match links using regular expressions',
-        uploadTorrent: 'Upload Torrent',
-        uploadTorrentDesc: 'Select torrent file from local',
-        downloadUrl: 'Download URL',
-        downloadUrlPlaceholder: 'Enter download link, e.g.: magnet:?xt=urn:btih:...',
-        batchUrlsPlaceholder: 'Enter multiple links, one per line',
-        regexPattern: 'Regex Pattern',
-        regexPatternPlaceholder: 'Enter regular expression',
-        regexUrlTemplate: 'URL Template',
-        regexUrlTemplatePlaceholder: 'Enter URL template, use $1, $2, $3, etc. to reference match groups',
-        saveTo: 'Save To',
-        savePathPlaceholder: 'Enter save path',
-        customPath: 'Custom',
-        change: 'Change',
-        startNow: 'Add Now',
-        selectTorrentFile: 'Select Torrent File',
-        selectTorrentFileDesc: 'Click or drag file here',
-        selectedFile: 'Selected File',
-        noFileSelected: 'No file selected',
-        linkSupported: 'HTTP(S)/FTP/Magnet links are supported',
-        useProxy: 'Use Proxy',
-        urlRequired: 'Please enter download URL',
-    },
-    fileSelector: {
-        title: 'Select Path',
-        subtitle: 'Choose a save location from the file system',
-        loading: 'Loading...',
-        error: 'Failed to load, please try again',
-        empty: 'Directory is empty',
-        confirm: 'Select',
-        createFolder: 'New Folder',
-        createFolderTitle: 'New Folder',
-        folderName: 'Folder Name',
-    },
+    taskPage: {
+        actions: 'Actions',
+        addTask: 'Add Task',
+        availableSpace: 'Available Space',
+        batchOperation: 'Batch Operation',
+        collapse: 'Collapse',
+        completed: 'Completed',
+        completedSize: 'Downloaded',
+        delete: 'Delete',
+        deleteAllTasks: 'Delete All Tasks',
+        deleteAllTasksConfirm: 'Are you sure you want to delete all tasks in this list? This action cannot be undone.',
+        deleteLocalFile: 'Also delete local files',
+        deleteSelected: 'Delete Selected',
+        deleteSelectedTasks: 'Delete Selected Tasks',
+        deleteSelectedTasksConfirm: 'Are you sure you want to delete {count} selected tasks? This action cannot be undone.',
+        deleteTask: 'Delete Task',
+        deleteTaskConfirm: 'Are you sure you want to delete this task? This action cannot be undone.',
+        downloadSpeed: 'Download Speed',
+        downloading: 'Downloading',
+        downloadingCount: 'Downloading',
+        error: 'Error',
+        expand: 'Expand',
+        fileName: 'File Name',
+        openFile: 'Open File',
+        openFolder: 'Open Folder',
+        pause: 'Pause',
+        pauseSelected: 'Pause Selected',
+        paused: 'Paused',
+        pieces: 'Piece Progress',
+        progress: 'Progress',
+        search: 'Search tasks',
+        selectedCount: '{count} items selected',
+        size: 'Size',
+        speed: 'Speed',
+        start: 'Start',
+        startSelected: 'Start Selected',
+        status: 'Status',
+        torrentFileList: 'Torrent File List',
+        totalSize: 'Total Size',
+        totalTasks: 'Total Tasks',
+        uploadSpeed: 'Upload Speed',
+        waiting: 'Waiting'
+    }
 }
