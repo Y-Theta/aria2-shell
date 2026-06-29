@@ -151,14 +151,8 @@ const startRefresh = () => {
     }
     
     // UI直接从响应式缓存读取，只要缓存有数据会立即渲染
-    // 这里后台异步加载，不阻塞UI显示
+    // 这里后台异步加载，不阻塞UI显示，只加载当前列表需要的数据
     loadTasks()
-    
-    // 当访问active页面（默认首页）时，预加载所有其他列表
-    // 这样切换到其他页面时缓存已有数据，无需等待
-    if (listType.value === 'active') {
-        preloadOtherLists()
-    }
     
     refreshInterval = window.setInterval(loadTasks, refreshIntervalTime.value)
     
