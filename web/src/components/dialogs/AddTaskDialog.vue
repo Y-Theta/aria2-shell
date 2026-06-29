@@ -274,14 +274,35 @@ const confirm = async () => {
         }
         // 代理设置使用 aria2 要求的 kebab-case 选项名
         if (useProxy.value && (settingsService.settings.httpProxyUrl as string)?.trim()) {
-            options['all-proxy'] = (settingsService.settings.httpProxyUrl as string).trim()
+            let proxyUrl = (settingsService.settings.httpProxyUrl as string).trim()
+            const proxyUser = settingsService.settings.httpProxyUser as string
+            const proxyPass = settingsService.settings.httpProxyPassword as string
+            
+            // 如果代理 URL 中没有包含用户名密码，且设置了用户名密码，添加认证信息
+            if (proxyUser && !proxyUrl.includes('@')) {
+                try {
+                    const url = new URL(proxyUrl)
+                    url.username = encodeURIComponent(proxyUser)
+                    if (proxyPass) {
+                        url.password = encodeURIComponent(proxyPass)
+                    }
+                    proxyUrl = url.toString()
+                } catch {
+                    // URL 解析失败，使用单独的认证参数
+                    options['all-proxy-user'] = proxyUser
+                    if (proxyPass) {
+                        options['all-proxy-passwd'] = proxyPass
+                    }
+                }
+            }
+            options['all-proxy'] = proxyUrl
         }
         // 下载线程数配置：多线程下载
         const maxConnections = settingsService.settings.maxConnections as number || 5
         // aria2 多线程下载关键参数
         options['max-connection-per-server'] = String(maxConnections) // 单个服务器最大连接数
         options['split'] = String(maxConnections) // 分片数量，与连接数一致
-        options['min-split-size'] = '100M' // 最小分片大小 1MB，让小文件也能多线程
+        options['min-split-size'] = '1M' // 最小分片大小 1MB，让小文件也能多线程
 
         const newGids: string[] = []
         

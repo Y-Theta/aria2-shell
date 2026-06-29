@@ -9,6 +9,7 @@ import { authRoutes } from "./routes/auth.js";
 import { userRoutes } from "./routes/user.js";
 import { aria2Routes } from "./routes/aria2.js";
 import { filesystemRoutes } from "./routes/filesystem.js";
+import { proxyRoutes } from "./routes/proxy.js";
 
 // Load .env from project root
 loadEnv();
@@ -39,6 +40,9 @@ await app.register(aria2Routes, { prefix: "/api/aria2" });
 
 // Register Filesystem Routes
 await app.register(filesystemRoutes, { prefix: "/api/filesystem" });
+
+// Register Proxy Routes
+await app.register(proxyRoutes, { prefix: "/api/proxy" });
 
 const port = Number(process.env.PORT ?? 65002);
 

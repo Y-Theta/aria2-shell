@@ -150,8 +150,8 @@ export default {
                 desc: 'Max connections per server for multi-threaded downloading, range 1-16',
             },
             downloadLimit: {
-                label: 'Download Speed Limit',
-                desc: 'Set to 0 for unlimited, unit KB/s',
+                label: 'Global Download Limit',
+                desc: 'Set to 0 for no limit, unit KB/s',
             },
             uploadLimit: {
                 label: 'Upload Speed Limit',
@@ -207,24 +207,32 @@ export default {
             httpProxySection: 'HTTP Proxy Settings',
             httpProxyUrl: {
                 label: 'Proxy URL',
-                desc: 'HTTP proxy server address',
-                placeholder: 'e.g.: http://127.0.0.1:7890',
+                desc: 'Supports HTTP/HTTPS/SOCKS5 proxy, format: http://host:port',
+                placeholder: 'http://127.0.0.1:7890',
             },
             httpProxyUser: {
                 label: 'Proxy Username',
-                desc: 'Proxy authentication username (optional)',
-                placeholder: 'Enter username',
+                desc: 'Fill in username if proxy requires authentication',
+                placeholder: 'Optional',
             },
             httpProxyPassword: {
                 label: 'Proxy Password',
-                desc: 'Proxy authentication password (optional)',
-                placeholder: 'Enter password',
+                desc: 'Fill in password if proxy requires authentication',
+                placeholder: 'Optional',
+            },
+            proxyTestUrl: {
+                label: 'Test Server URL',
+                desc: 'Target URL to test proxy connectivity',
+                placeholder: 'https://www.google.com/generate_204',
             },
             testProxyConnection: {
-                label: 'Test Proxy',
-                desc: 'Test if proxy connection works',
+                label: 'Test Proxy Connection',
+                desc: 'Test if can connect to specified server through proxy',
                 buttonText: 'Test Connection',
             },
+            proxyTestSuccess: 'Proxy connection successful! Response time: {elapsed}, HTTP status: {status}',
+            proxyTestFailed: 'Proxy connection failed',
+            proxyTestNetworkError: 'Network request failed, please check if backend service is running',
         },
         appearance: {
             theme: {

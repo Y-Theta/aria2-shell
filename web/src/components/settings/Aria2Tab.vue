@@ -112,39 +112,64 @@
             />
         </SettingItem>
 
-        <SettingItem
-            :label="t('settings.aria2.httpProxyUser.label')"
-            :description="t('settings.aria2.httpProxyUser.desc')"
-            icon="fas fa-user"
-        >
-            <TextControl
-                v-model="httpProxyUser"
-                :placeholder="t('settings.aria2.httpProxyUser.placeholder')"
-            />
-        </SettingItem>
+        <div class="proxy-auth-row">
+            <SettingItem
+                :label="t('settings.aria2.httpProxyUser.label')"
+                :description="t('settings.aria2.httpProxyUser.desc')"
+                icon="fas fa-user"
+                class="proxy-auth-item"
+            >
+                <TextControl
+                    v-model="httpProxyUser"
+                    :placeholder="t('settings.aria2.httpProxyUser.placeholder')"
+                />
+            </SettingItem>
+
+            <SettingItem
+                :label="t('settings.aria2.httpProxyPassword.label')"
+                :description="t('settings.aria2.httpProxyPassword.desc')"
+                icon="fas fa-key"
+                class="proxy-auth-item"
+            >
+                <TextControl
+                    v-model="httpProxyPassword"
+                    type="password"
+                    :placeholder="t('settings.aria2.httpProxyPassword.placeholder')"
+                />
+            </SettingItem>
+        </div>
 
         <SettingItem
-            :label="t('settings.aria2.httpProxyPassword.label')"
-            :description="t('settings.aria2.httpProxyPassword.desc')"
-            icon="fas fa-key"
+            :label="t('settings.aria2.proxyTestUrl.label')"
+            :description="t('settings.aria2.proxyTestUrl.desc')"
+            icon="fas fa-link"
         >
-            <TextControl
-                v-model="httpProxyPassword"
-                type="password"
-                :placeholder="t('settings.aria2.httpProxyPassword.placeholder')"
-            />
+            <div class="test-proxy-row">
+                <TextControl
+                    v-model="proxyTestUrl"
+                    :placeholder="t('settings.aria2.proxyTestUrl.placeholder')"
+                />
+                <button 
+                    class="test-proxy-button" 
+                    type="button" 
+                    @click="testProxyConnection" 
+                    :disabled="testingProxy || !httpProxyUrl"
+                >
+                    <i :class="testingProxy ? 'fas fa-spinner fa-spin button-icon' : 'fas fa-vial button-icon'" aria-hidden="true"></i>
+                    {{ t('settings.aria2.testProxyConnection.buttonText') }}
+                </button>
+            </div>
         </SettingItem>
 
-        <SettingItem
-            :label="t('settings.aria2.testProxyConnection.label')"
-            :description="t('settings.aria2.testProxyConnection.desc')"
-            icon="fas fa-plug"
-        >
-            <button class="test-proxy-button" type="button" @click="testProxyConnection" :disabled="testingProxy">
-                <i v-if="testingProxy" class="fas fa-spinner fa-spin" aria-hidden="true"></i>
-                <span v-else>{{ t('settings.aria2.testProxyConnection.buttonText') }}</span>
-            </button>
-        </SettingItem>
+        <div v-if="proxyTestResult === 'success'" class="success-message">
+            <i class="fas fa-check-circle" aria-hidden="true"></i>
+            <span>{{ t('settings.aria2.proxyTestSuccess', { elapsed: proxyTestElapsed, status: proxyTestStatus }) }}</span>
+        </div>
+
+        <div v-if="proxyTestResult === 'error'" class="error-message">
+            <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+            <span>{{ proxyTestError }}</span>
+        </div>
     </div>
 </template>
 
@@ -157,6 +182,8 @@ import TextControl from '../common/TextControl.vue'
 import TextareaControl from '../common/TextareaControl.vue'
 import NumberControl from '../common/NumberControl.vue'
 import SwitchControl from '../common/SwitchControl.vue'
+import { getAuthHeaders } from '../../services/auth'
+import { API_CONFIG } from '../../config/api'
 
 const { t } = useI18n()
 const settingsService = useSettings()
@@ -175,7 +202,12 @@ const btMinSeedTime = ref<number>((settings.btMinSeedTime as number) || 60)
 const httpProxyUrl = ref<string>((settings.httpProxyUrl as string) || '')
 const httpProxyUser = ref<string>((settings.httpProxyUser as string) || '')
 const httpProxyPassword = ref<string>((settings.httpProxyPassword as string) || '')
+const proxyTestUrl = ref<string>('https://www.google.com/generate_204')
 const testingProxy = ref(false)
+const proxyTestResult = ref<'success' | 'error' | ''>('')
+const proxyTestError = ref('')
+const proxyTestElapsed = ref('')
+const proxyTestStatus = ref('')
 
 watch(aria2ServerUrl, (value) => {
     settingsService.setSetting('serverUrl', value)
@@ -222,12 +254,39 @@ watch(httpProxyPassword, (value) => {
 })
 
 async function testProxyConnection() {
+    if (!httpProxyUrl.value) return
+    
     testingProxy.value = true
+    proxyTestResult.value = ''
+    proxyTestError.value = ''
+    
     try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        alert('代理测试成功！')
+        const headers = getAuthHeaders()
+        const response = await fetch(`${API_CONFIG.baseUrl}/proxy/test`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                proxyUrl: httpProxyUrl.value,
+                proxyUser: httpProxyUser.value || undefined,
+                proxyPassword: httpProxyPassword.value || undefined,
+                testUrl: proxyTestUrl.value || 'https://www.google.com/generate_204'
+            })
+        })
+
+        const result = await response.json()
+
+        if (result.success) {
+            proxyTestResult.value = 'success'
+            proxyTestElapsed.value = result.elapsed || ''
+            proxyTestStatus.value = String(result.status || '')
+        } else {
+            proxyTestResult.value = 'error'
+            proxyTestError.value = result.message || t('settings.aria2.proxyTestFailed')
+        }
     } catch (error) {
-        alert('代理测试失败！')
+        console.error('Proxy test error:', error)
+        proxyTestResult.value = 'error'
+        proxyTestError.value = t('settings.aria2.proxyTestNetworkError')
     } finally {
         testingProxy.value = false
     }
@@ -255,9 +314,29 @@ async function testProxyConnection() {
     color: var(--primary);
 }
 
+.proxy-auth-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.proxy-auth-item {
+    margin: 0;
+}
+
+.test-proxy-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.test-proxy-row .text-input {
+    flex: 1;
+}
+
 .test-proxy-button {
-    height: 40px;
-    padding: 0 20px;
+    height: 38px;
+    padding: 0 16px;
     border-radius: 9px;
     font-size: 14px;
     cursor: pointer;
@@ -268,6 +347,8 @@ async function testProxyConnection() {
     border: none;
     color: var(--text-inverse);
     background: var(--primary);
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: background 0.2s;
 }
 
@@ -278,5 +359,46 @@ async function testProxyConnection() {
 .test-proxy-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.error-message {
+    padding: 12px 16px;
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    color: var(--danger);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.success-message {
+    padding: 12px 16px;
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid var(--success);
+    border-radius: 8px;
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.button-icon {
+    width: 1em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .proxy-auth-row {
+        grid-template-columns: 1fr;
+    }
+
+    .test-proxy-row {
+        flex-direction: column;
+    }
 }
 </style>

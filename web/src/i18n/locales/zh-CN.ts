@@ -150,8 +150,8 @@ export default {
                 desc: '单个服务器最大连接数，启用多线程下载，范围 1-16',
             },
             downloadLimit: {
-                label: '下载速度限制',
-                desc: '设置为 0 表示不限速，单位 KB/s',
+                label: '全局下载速度限制',
+                desc: '设置为 0 表示不限制速度，单位 KB/s',
             },
             uploadLimit: {
                 label: '上传速度限制',
@@ -207,24 +207,32 @@ export default {
             httpProxySection: 'HTTP 代理设置',
             httpProxyUrl: {
                 label: '代理地址',
-                desc: 'HTTP 代理服务器地址',
-                placeholder: '例如：http://127.0.0.1:7890',
+                desc: '支持 HTTP/HTTPS/SOCKS5 代理，格式：http://host:port',
+                placeholder: 'http://127.0.0.1:7890',
             },
             httpProxyUser: {
                 label: '代理用户名',
-                desc: '代理验证用户名（可选）',
-                placeholder: '请输入用户名',
+                desc: '如果代理需要认证，填写用户名',
+                placeholder: '可选',
             },
             httpProxyPassword: {
                 label: '代理密码',
-                desc: '代理验证密码（可选）',
-                placeholder: '请输入密码',
+                desc: '如果代理需要认证，填写密码',
+                placeholder: '可选',
+            },
+            proxyTestUrl: {
+                label: '测试服务器地址',
+                desc: '用于测试代理连接是否正常的目标地址',
+                placeholder: 'https://www.google.com/generate_204',
             },
             testProxyConnection: {
-                label: '测试代理',
-                desc: '测试代理连接是否正常',
+                label: '测试代理连接',
+                desc: '测试通过代理连接指定服务器是否正常',
                 buttonText: '测试连接',
             },
+            proxyTestSuccess: '代理连接成功！响应时间：{elapsed}，HTTP 状态：{status}',
+            proxyTestFailed: '代理连接失败',
+            proxyTestNetworkError: '网络请求失败，请检查后端服务是否正常',
         },
         appearance: {
             theme: {
