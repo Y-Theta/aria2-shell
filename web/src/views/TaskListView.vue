@@ -148,15 +148,16 @@ const preloadOtherLists = () => {
 const startRefresh = () => {
     if (refreshInterval) {
         clearInterval(refreshInterval)
+        refreshInterval = null
     }
     
-    // UI直接从响应式缓存读取，只要缓存有数据会立即渲染
-    // 这里后台异步加载，不阻塞UI显示，只加载当前列表需要的数据
+    // 初始化时加载一次当前列表数据
     loadTasks()
     
-    refreshInterval = window.setInterval(loadTasks, refreshIntervalTime.value)
+    // 停止所有列表自动轮询，只在任务状态改变（新增/开始/暂停/删除）时由 refreshAllLists 触发更新
+    // 全局仪表盘保持5秒自动刷新以更新总速度和磁盘空间统计
     
-    // 启动全局仪表盘自动刷新（全局只启动一次）
+    // 启动全局仪表盘自动刷新（全局只启动一次，用于速度和统计数据更新）
     dashboardStore.startAutoRefresh(5000)
 }
 
