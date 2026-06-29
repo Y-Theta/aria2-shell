@@ -12,6 +12,7 @@ import{
 } from '../../../common/types'
 import { applyTheme, ThemeMode } from './theme'
 import { setLocale } from '../i18n'
+import { updateTitle } from './title'
 
 // 开发模式跳过登录配置
 const SKIP_LOGIN = import.meta.env.VITE_SKIP_LOGIN === 'true'
@@ -204,10 +205,24 @@ async function initializeSettings(): Promise<void> {
         if (settings.language) {
             setLocale(settings.language as string)
         }
+        // 更新页面标题
+        import('./title').then(({ updateTitle }) => {
+            updateTitle()
+        })
         isInitialized = true
         isLoading = false
     }
 }
+
+// 监听appName变化更新标题
+watch(
+    () => settings.appName,
+    () => {
+        import('./title').then(({ updateTitle }) => {
+            updateTitle()
+        })
+    }
+)
 
 // 公共 API
 export function useSettings() {

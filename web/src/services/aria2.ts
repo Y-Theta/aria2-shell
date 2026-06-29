@@ -287,3 +287,77 @@ export async function getTaskStatus(gid: string): Promise<Task | null> {
 
     return mapAria2StatusToTask(data.status)
 }
+
+interface DiskSpaceInfo {
+    path: string
+    total: number
+    free: number
+    available: number
+    used: number
+}
+
+interface DashboardResponse {
+    success: boolean
+    connected: boolean
+    version?: string
+    error?: string
+    downloadSpeed: number
+    uploadSpeed: number
+    numActive: number
+    numWaiting: number
+    numStopped: number
+    diskSpace: DiskSpaceInfo
+}
+
+interface DiskSpaceResponse {
+    success: boolean
+    path: string
+    total: number
+    free: number
+    available: number
+    used: number
+}
+
+export async function getDashboard(): Promise<DashboardResponse> {
+    const headers = getAuthHeaders()
+    // GET 请求不需要 Content-Type
+    const getHeaders = { ...headers }
+    delete getHeaders['Content-Type']
+    
+    const response = await fetch(`${API_CONFIG.baseUrl}/aria2/dashboard`, {
+        method: 'GET',
+        headers: getHeaders
+    })
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data as DashboardResponse
+}
+
+export async function getDiskSpace(path?: string): Promise<DiskSpaceResponse> {
+    const headers = getAuthHeaders()
+    // GET 请求不需要 Content-Type
+    const getHeaders = { ...headers }
+    delete getHeaders['Content-Type']
+    
+    const queryParams = path ? `?path=${encodeURIComponent(path)}` : ''
+    const response = await fetch(`${API_CONFIG.baseUrl}/filesystem/disk-space${queryParams}`, {
+        method: 'GET',
+        headers: getHeaders
+    })
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.success) {
+        throw new Error(data.message || 'Failed to get disk space')
+    }
+
+    return data as DiskSpaceResponse
+}

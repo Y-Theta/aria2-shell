@@ -25,11 +25,6 @@
         />
         <task-footer
             class="task-footer-component"
-            :totalDownloadSpeed="totalDownloadSpeed"
-            :totalUploadSpeed="totalUploadSpeed"
-            :downloadingCount="downloadingCount"
-            :availableSpace="availableSpace"
-            :totalTasks="tasks!.length"
         />
         <add-task-dialog v-model:visible="showAddTaskDialog" @addTask="handleConfirmAddTask" />
         <confirm-dialog
@@ -115,22 +110,7 @@ const deleteConfirmMessage = computed(() => {
     }
 })
 
-const totalDownloadSpeed = computed(() => {
-    const t = props.tasks || []
-    return t.reduce((sum, task) => sum + task.downloadSpeed, 0)
-})
 
-const totalUploadSpeed = computed(() => {
-    const t = props.tasks || []
-    return t.reduce((sum, task) => sum + task.uploadSpeed, 0)
-})
-
-const downloadingCount = computed(() => {
-    const t = props.tasks || []
-    return t.filter(task => task.status === 'downloading' || task.status === 'seeding').length
-})
-
-const availableSpace = ref(128 * 1024 * 1024 * 1024) // 128 GB
 
 const handleAddTask = () => {
     showAddTaskDialog.value = true

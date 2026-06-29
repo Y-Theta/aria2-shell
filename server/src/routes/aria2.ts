@@ -2,8 +2,10 @@ import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginAsync 
 import { getAria2Client } from "../aria2Manager.js";
 import { authPreHandler, handleError } from "./auth.js";
 import { getConnectionStatusAsync, markNeedRecheck, isConnected } from "../aria2Connection.js";
+import { userService } from "../userService.js";
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import os from 'os';
 
 const aria2Routes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     // Helper function to get aria2 client for current user
@@ -80,6 +82,82 @@ const aria2Routes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             await deleteFilesByPaths(filePaths, isTorrent);
         } catch (err) {
             console.error(`Failed to delete files for task ${gid}:`, err);
+        }
+    }
+
+    // Helper function to get available disk space
+    async function getDiskSpace(userId: number): Promise<{ total: number; free: number; available: number; used: number; path: string }> {
+        let targetPath: string;
+
+        // 尝试获取用户的默认下载路径
+        const downloadPathConfig = userService.getUserConfig(userId, 'downloadPath');
+        const savePathsConfig = userService.getUserConfig(userId, 'savePaths');
+        
+        let defaultPath = '';
+        if (downloadPathConfig && downloadPathConfig.value) {
+            defaultPath = downloadPathConfig.value;
+        } else if (savePathsConfig && savePathsConfig.value) {
+            try {
+                const paths = JSON.parse(savePathsConfig.value);
+                const defaultSavePath = paths.find((p: any) => p.isDefault);
+                if (defaultSavePath && defaultSavePath.path) {
+                    defaultPath = defaultSavePath.path;
+                }
+            } catch {
+                // 解析失败，忽略
+            }
+        }
+
+        if (defaultPath && defaultPath.trim()) {
+            targetPath = defaultPath.trim();
+        } else {
+            // 没有配置默认路径，根据操作系统选择
+            if (os.platform() === 'win32') {
+                // Windows: 获取当前脚本运行所在磁盘
+                const cwd = process.cwd();
+                targetPath = cwd.substring(0, 3); // 例如 "C:\"
+            } else {
+                // Linux/Unix: 根目录
+                targetPath = '/';
+            }
+        }
+
+        // 检查路径是否存在
+        const exists = await fs.access(targetPath).then(() => true).catch(() => false);
+        if (!exists) {
+            // 如果路径不存在，回退到默认路径
+            if (os.platform() === 'win32') {
+                targetPath = process.cwd().substring(0, 3);
+            } else {
+                targetPath = '/';
+            }
+        }
+
+        try {
+            // 获取磁盘统计信息
+            const statfs = await fs.statfs(targetPath);
+            
+            // 计算可用空间（字节）
+            const availableSpace = statfs.bavail * statfs.bsize;
+            const totalSpace = statfs.blocks * statfs.bsize;
+            const usedSpace = totalSpace - availableSpace;
+
+            return {
+                path: targetPath,
+                total: totalSpace,
+                free: availableSpace,
+                available: availableSpace,
+                used: usedSpace,
+            };
+        } catch (error) {
+            // 获取失败返回0
+            return {
+                path: targetPath,
+                total: 0,
+                free: 0,
+                available: 0,
+                used: 0,
+            };
         }
     }
 
@@ -419,6 +497,80 @@ const aria2Routes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             });
         } catch (error) {
             handleError(reply, error);
+        }
+    });
+
+    // 仪表盘综合接口：连接状态 + 全局速度统计 + 磁盘可用空间
+    fastify.get("/dashboard", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        const userId = getUserId(request);
+        
+        try {
+            // 并行获取连接状态和磁盘空间（磁盘空间不依赖aria2连接）
+            const [connectionStatus, diskSpace] = await Promise.all([
+                getConnectionStatusAsync(userId, true).catch((err) => ({
+                    connected: false,
+                    version: undefined,
+                    features: undefined,
+                    error: err.message
+                })),
+                getDiskSpace(userId)
+            ]);
+
+            // 初始化全局统计默认值
+            let globalStat: any = {
+                downloadSpeed: '0',
+                uploadSpeed: '0',
+                numActive: '0',
+                numWaiting: '0',
+                numStopped: '0',
+                numStoppedTotal: '0'
+            };
+
+            // 如果已连接aria2，获取全局统计
+            if (connectionStatus.connected) {
+                try {
+                    const aria2 = getClient(request);
+                    globalStat = await aria2.getGlobalStat();
+                } catch (err) {
+                    // 获取失败标记连接断开
+                    connectionStatus.connected = false;
+                    connectionStatus.error = (err as Error).message;
+                    markNeedRecheck(userId);
+                }
+            }
+
+            reply.send({
+                success: true,
+                connected: connectionStatus.connected,
+                version: connectionStatus.version,
+                error: connectionStatus.error,
+                // 速度统计（从getGlobalStat解析）
+                downloadSpeed: parseInt(globalStat.downloadSpeed || '0', 10),
+                uploadSpeed: parseInt(globalStat.uploadSpeed || '0', 10),
+                numActive: parseInt(globalStat.numActive || '0', 10),
+                numWaiting: parseInt(globalStat.numWaiting || '0', 10),
+                numStopped: parseInt(globalStat.numStopped || '0', 10),
+                // 磁盘空间
+                diskSpace
+            });
+        } catch (error) {
+            reply.send({
+                success: true,
+                connected: false,
+                downloadSpeed: 0,
+                uploadSpeed: 0,
+                numActive: 0,
+                numWaiting: 0,
+                numStopped: 0,
+                diskSpace: {
+                    total: 0,
+                    free: 0,
+                    available: 0,
+                    used: 0,
+                    path: ''
+                },
+                error: (error as Error).message
+            });
         }
     });
 

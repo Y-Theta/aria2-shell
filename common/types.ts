@@ -37,6 +37,7 @@ export type SettingKey =
     | 'theme'
     | 'language'
     | 'showRegister'
+    | 'appName'
     | 'savePaths'
     | 'btTrackerUrl'
     | 'btMaxUploadSpeed'
@@ -72,6 +73,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
     theme: 'light',
     language: 'zh-CN',
     showRegister: false,
+    appName: 'aria2-shell',
     savePaths: [
         {
             label: '默认',

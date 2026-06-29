@@ -1,6 +1,6 @@
 export default {
     common: {
-        appName: 'Bitstream',
+        appName: 'aria2-shell',
         language: 'Language',
         theme: 'Theme',
         light: 'Light',
@@ -232,6 +232,11 @@ export default {
                 desc: 'Select the interface display language',
                 zhCN: '简体中文',
                 enUS: 'English',
+            },
+            appName: {
+                label: 'Page Title',
+                desc: 'Customize the browser tab title',
+                placeholder: 'Enter page title',
             },
             showRegister: {
                 label: 'Show Registration',

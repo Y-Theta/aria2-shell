@@ -1,6 +1,6 @@
 export default {
     common: {
-        appName: 'Bitstream',
+        appName: 'aria2-shell',
         language: '语言',
         theme: '主题',
         light: '浅色',
@@ -232,6 +232,11 @@ export default {
                 desc: '选择界面显示语言',
                 zhCN: '简体中文',
                 enUS: 'English',
+            },
+            appName: {
+                label: '网页名称',
+                desc: '自定义浏览器标签页显示的名称',
+                placeholder: '请输入网页名称',
             },
             showRegister: {
                 label: '显示注册入口',

@@ -22,7 +22,16 @@
             />
         </SettingItem>
 
-
+        <SettingItem
+            :label="t('settings.appearance.appName.label')"
+            :description="t('settings.appearance.appName.desc')"
+            icon="fas fa-heading"
+        >
+            <TextControl
+                v-model="appName"
+                :placeholder="t('settings.appearance.appName.placeholder')"
+            />
+        </SettingItem>
     </div>
 </template>
 
@@ -32,6 +41,7 @@ import { useI18n } from 'vue-i18n'
 import { useSettings } from '../../services/settings'
 import SettingItem from './SettingItem.vue'
 import CustomSelect from '../common/CustomSelect.vue'
+import TextControl from '../common/TextControl.vue'
 
 const { t } = useI18n()
 const settingsService = useSettings()
@@ -39,6 +49,7 @@ const settings = settingsService.settings
 
 const theme = ref<string>((settings.theme as string) || 'light')
 const language = ref<string>((settings.language as string) || 'zh-CN')
+const appName = ref<string>((settings.appName as string) || 'aria2-shell')
 
 const themeOptions = computed(() => [
     { value: 'light', label: t('settings.appearance.theme.light') },
@@ -57,6 +68,10 @@ watch(theme, (value) => {
 
 watch(language, (value) => {
     settingsService.setSetting('language', value)
+})
+
+watch(appName, (value) => {
+    settingsService.setSetting('appName', value)
 })
 </script>
 

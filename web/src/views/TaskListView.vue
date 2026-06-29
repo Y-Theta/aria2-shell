@@ -18,16 +18,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, onActivated, onDeactivated } from 'vue'
+import { computed, onMounted, onUnmounted, onActivated, onDeactivated, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import TaskPage from './TaskPage.vue'
 import { getActiveTasks, getWaitingTasks, getStoppedTasks, pauseTask, unpauseTask, removeTask } from '../services/aria2'
 import { useTaskStore } from '../stores/taskStore'
+import { useDashboardStore } from '../stores/dashboardStore'
 import type { Task } from '@common/task'
 import type { ListType } from '@common/types'
 
 const route = useRoute()
 const taskStore = useTaskStore()
+const dashboardStore = useDashboardStore()
 let refreshInterval: number | null = null
 
 // 当前列表类型
@@ -56,6 +58,17 @@ const refreshIntervalTime = computed(() => {
             return 5000
     }
 })
+
+// 监听dashboard数据变化，同步更新可用空间到taskStore保持兼容
+// 初始同步
+taskStore.setAvailableSpace(dashboardStore.getDiskSpace.value)
+// 变化时同步
+watch(
+    () => dashboardStore.getDiskSpace.value,
+    (space) => {
+        taskStore.setAvailableSpace(space)
+    }
+)
 
 // 单个列表类型加载
 const loadTaskType = async (type: ListType): Promise<void> => {
@@ -148,6 +161,9 @@ const startRefresh = () => {
     }
     
     refreshInterval = window.setInterval(loadTasks, refreshIntervalTime.value)
+    
+    // 启动全局仪表盘自动刷新（全局只启动一次）
+    dashboardStore.startAutoRefresh(5000)
 }
 
 // 停止刷新
@@ -156,6 +172,7 @@ const stopRefresh = () => {
         clearInterval(refreshInterval)
         refreshInterval = null
     }
+    // 不停止dashboard刷新，让它全局保持运行
 }
 
 // 判断任务是否可以开始/暂停

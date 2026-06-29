@@ -94,16 +94,16 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../../services/auth.ts'
-import { useConnectionStore } from '../../stores/connectionStore.ts'
+import { useDashboardStore } from '../../stores/dashboardStore.ts'
 import type { MenuItem } from '@common/types'
 import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const { logout, isAuthenticated } = useAuth()
-const connection = useConnectionStore()
-const isConnected = computed(() => connection.isConnected.value)
-const version = computed(() => connection.version.value)
+const dashboard = useDashboardStore()
+const isConnected = computed(() => dashboard.isConnected.value)
+const version = computed(() => dashboard.getVersion.value)
 
 const isCollapsed = ref(false)
 const isMobile = ref(false)
@@ -145,8 +145,6 @@ const checkIsMobile = () => {
 onMounted(() => {
     checkIsMobile()
     window.addEventListener('resize', checkIsMobile)
-    // 启动连接状态监控
-    connection.startMonitoring()
 })
 
 onUnmounted(() => {
@@ -171,7 +169,8 @@ onUnmounted(() => {
 }
 
 .sidebar-header {
-    padding: var(--spacing-sm) var(--spacing-sm);
+    padding-left: var(--spacing-sm);
+    padding-right: var(--spacing-sm);
     border-bottom: 1px solid var(--sidebar-border);
     display: flex;
     align-items: center;
@@ -196,10 +195,6 @@ onUnmounted(() => {
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.2s ease;
-}
-
-.connection-status.clickable:hover {
-    background-color: rgba(31, 111, 235, 0.08);
 }
 
 .connection-status .status-dot {

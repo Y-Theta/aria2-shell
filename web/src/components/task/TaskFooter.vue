@@ -29,19 +29,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useTaskStore } from '../../stores/taskStore'
+import { useDashboardStore } from '../../stores/dashboardStore'
 
 const { t } = useI18n()
+const taskStore = useTaskStore()
+const dashboardStore = useDashboardStore()
 const isMobile = ref(false)
 
-defineProps<{
-    totalDownloadSpeed: number
-    totalUploadSpeed: number
-    downloadingCount: number
-    availableSpace: number
-    totalTasks: number
-}>()
+// 从 dashboardStore 获取全局统计数据（通过新接口获取，更准确）
+const totalDownloadSpeed = computed(() => dashboardStore.getDownloadSpeed.value)
+const totalUploadSpeed = computed(() => dashboardStore.getUploadSpeed.value)
+const downloadingCount = computed(() => dashboardStore.getActiveCount.value)
+const availableSpace = computed(() => dashboardStore.getDiskSpace.value)
+// 总任务数还是从taskStore统计（包含所有列表）
+const totalTasks = computed(() => taskStore.getTotalTasksCount.value)
 
 const checkIsMobile = () => {
     isMobile.value = window.innerWidth <= 768

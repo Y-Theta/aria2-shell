@@ -11,7 +11,7 @@
                 <div class="app-logo">
                     <i class="fas fa-download"></i>
                 </div>
-                <h1 class="app-title">{{ t('common.appName') }}</h1>
+                <h1 class="app-title">{{ appDisplayName }}</h1>
                 <p class="app-subtitle">{{ t('login.subtitle') }}</p>
             </div>
 
@@ -103,6 +103,10 @@ const { login, register, isAuthenticated } = useAuth()
 
 // 初始化设置服务
 const { settings } = useSettings()
+
+const appDisplayName = computed(() => {
+    return (settings.appName as string) || t('common.appName')
+})
 
 const showRegister = computed(() => {
     return settings.showRegister as boolean

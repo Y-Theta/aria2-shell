@@ -13,12 +13,37 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from './components/layout/Sidebar.vue'
+import { useTaskStore } from './stores/taskStore'
+import { useSettings } from './services/settings'
+import { setDownloadSpeed, updateTitle } from './services/title'
 
 const route = useRoute()
+const taskStore = useTaskStore()
+const { settings } = useSettings()
+
 const isLoginPage = computed(() => route.path === '/login')
+
+watch(
+    () => taskStore.getTotalDownloadSpeed.value,
+    (speed) => {
+        setDownloadSpeed(speed)
+    },
+    { immediate: true }
+)
+
+watch(
+    () => settings.appName,
+    () => {
+        updateTitle()
+    }
+)
+
+onMounted(() => {
+    updateTitle()
+})
 </script>
 
 <style scoped>

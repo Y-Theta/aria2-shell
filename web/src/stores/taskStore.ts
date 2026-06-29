@@ -5,6 +5,7 @@ import type { ListType } from '@common/types'
 interface TaskState {
     tasks: Record<ListType, Task[]>
     lastUpdated: Record<ListType, number>
+    availableSpace: number
 }
 
 const state = reactive<TaskState>({
@@ -19,7 +20,8 @@ const state = reactive<TaskState>({
         paused: 0,
         completed: 0,
         torrents: 0
-    }
+    },
+    availableSpace: 0
 })
 
 export function useTaskStore() {
@@ -96,6 +98,20 @@ export function useTaskStore() {
         return state.tasks.active.filter(t => t.status === 'downloading' || t.status === 'seeding').length
     })
 
+    const getTotalTasksCount = computed(() => {
+        let total = 0
+        for (const type of Object.keys(state.tasks) as ListType[]) {
+            total += state.tasks[type].length
+        }
+        return total
+    })
+
+    const setAvailableSpace = (space: number) => {
+        state.availableSpace = space
+    }
+
+    const getAvailableSpace = computed(() => state.availableSpace)
+
     return {
         state,
         setTasks,
@@ -108,6 +124,9 @@ export function useTaskStore() {
         getTaskCount,
         getTotalDownloadSpeed,
         getTotalUploadSpeed,
-        getDownloadingCount
+        getDownloadingCount,
+        getTotalTasksCount,
+        setAvailableSpace,
+        getAvailableSpace
     }
 }
