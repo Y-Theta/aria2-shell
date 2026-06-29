@@ -24,8 +24,7 @@ import TaskPage from './TaskPage.vue'
 import { getActiveTasks, getWaitingTasks, getStoppedTasks, pauseTask, unpauseTask, removeTask } from '../services/aria2'
 import { useTaskStore } from '../stores/taskStore'
 import type { Task } from '@common/task'
-
-type ListType = 'active' | 'paused' | 'completed' | 'torrents'
+import type { ListType } from '@common/types'
 
 const route = useRoute()
 const taskStore = useTaskStore()
@@ -43,18 +42,18 @@ const listType = computed<ListType>(() => {
 // 从缓存获取当前列表的任务
 const currentTasks = computed(() => taskStore.getTasks(listType.value).value)
 
-// 根据列表类型获取刷新间隔
+// 根据列表类型获取刷新间隔 - 降低请求频率
 const refreshIntervalTime = computed(() => {
     switch (listType.value) {
         case 'active':
-            return 2000
+            return 3000 // 活跃下载每3秒刷新一次
         case 'paused':
         case 'torrents':
-            return 3000
+            return 5000 // 暂停/种子页面每5秒刷新
         case 'completed':
-            return 5000
+            return 10000 // 已完成页面每10秒刷新
         default:
-            return 3000
+            return 5000
     }
 })
 

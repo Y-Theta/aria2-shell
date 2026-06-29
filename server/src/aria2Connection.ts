@@ -11,8 +11,9 @@ interface ConnectionStatus {
 }
 
 const statusCache = new Map<number, ConnectionStatus>();
-const CHECK_INTERVAL_MS = 15000; // 15秒检查一次
+const CHECK_INTERVAL_MS = 20000; // 20秒自动检查一次
 const CHECK_TIMEOUT_MS = 3000;
+const CACHE_TTL_MS = 10000; // 缓存10秒内不重复检查
 
 // 初始化定时器
 let checkInterval: NodeJS.Timeout | null = null;
@@ -40,8 +41,8 @@ function startCheckInterval() {
 async function checkConnection(userId: number, client: Aria2Client): Promise<ConnectionStatus> {
     const existing = statusCache.get(userId);
     
-    // 如果3秒内刚检查过，直接返回缓存
-    if (existing && Date.now() - existing.lastChecked < 3000) {
+    // 如果缓存时间未过期，直接返回缓存
+    if (existing && Date.now() - existing.lastChecked < CACHE_TTL_MS) {
         return existing;
     }
 

@@ -1,7 +1,6 @@
 import { reactive, computed } from 'vue'
 import type { Task } from '@common/task'
-
-type ListType = 'active' | 'paused' | 'completed' | 'torrents'
+import type { ListType } from '@common/types'
 
 interface TaskState {
     tasks: Record<ListType, Task[]>

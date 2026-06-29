@@ -57,8 +57,8 @@ export function useConnectionStore() {
         if (checkInterval) return
         // 立即检查一次
         checkConnection()
-        // 每10秒检查一次
-        checkInterval = window.setInterval(checkConnection, 10000)
+        // 每15秒检查一次连接状态
+        checkInterval = window.setInterval(checkConnection, 15000)
     }
 
     const stopMonitoring = () => {

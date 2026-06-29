@@ -88,10 +88,29 @@ export const DEFAULT_SETTINGS: SettingsState = {
     httpProxyPassword: '',
 };
 
+// 导航菜单项接口
+export interface MenuItem {
+    id: string;
+    labelKey: string;
+    icon: string;
+    to: string;
+}
+
+// 任务列表类型
+export type ListType = 'active' | 'paused' | 'completed' | 'torrents';
+
 // API 响应相关接口
 export interface ApiResponse<T = any> {
     success: boolean;
     message?: string;
+}
+
+// 连接状态响应
+export interface ConnectionStatusResponse extends ApiResponse {
+    connected: boolean;
+    version?: string;
+    features?: string[];
+    error?: string;
 }
 
 export interface ListResponse<T> extends ApiResponse {

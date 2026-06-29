@@ -92,22 +92,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useAuth } from '../../services/auth.ts'
 import { useConnectionStore } from '../../stores/connectionStore.ts'
+import type { MenuItem } from '@common/types'
 import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
-
-interface MenuItem {
-    id: string
-    labelKey: string
-    icon: string
-    to: string
-    badge?: number
-}
 
 const { t } = useI18n()
 const router = useRouter()
-const route = useRoute()
 const { logout, isAuthenticated } = useAuth()
 const connection = useConnectionStore()
 const isConnected = computed(() => connection.isConnected.value)
@@ -124,22 +116,6 @@ const statusMenuItems: MenuItem[] = [
     { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause', to: '/paused' },
     { id: 'torrents', labelKey: 'sidebar.torrents', icon: 'fas fa-file-arrow-down', to: '/torrents' },
 ]
-
-const settingItem: MenuItem = {
-    id: 'settings',
-    labelKey: 'sidebar.settings',
-    icon: 'fas fa-cog',
-    to: '/settings'
-}
-
-// 移动端显示所有菜单项
-const mobileMenuItems = [...statusMenuItems, settingItem]
-
-const allMenuItems = [...statusMenuItems, settingItem]
-
-const activeMenuItem = computed(() => {
-    return allMenuItems.find(item => route.path === item.to) || statusMenuItems[0]
-})
 
 const showLogoutConfirm = () => {
     showConfirmLogout.value = true
@@ -239,9 +215,9 @@ onUnmounted(() => {
 }
 
 .connection-status.connected .status-dot {
-    background-color: var(--success-green, #22c55e);
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
-    animation: pulse 2s infinite;
+    background-color: var(--success-green);
+    box-shadow: 0 0 8px rgba(45, 164, 78, 0.5);
+    animation: pulse-dot 2s infinite;
 }
 
 .connection-status.disconnected {
@@ -302,17 +278,6 @@ onUnmounted(() => {
 
 .sidebar.collapsed .collapse-btn {
     display: none;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.7;
-        transform: scale(0.9);
-    }
 }
 
 .collapse-btn {
@@ -515,7 +480,7 @@ onUnmounted(() => {
     .mobile-connection-status.disconnected {
         background-color: var(--error-red);
     }
-    
+
     /* 右侧设置 */
     .mobile-nav-right {
         display: flex;
@@ -524,7 +489,7 @@ onUnmounted(() => {
         height: 100%;
         width: 48px;
     }
-    
+
     .mobile-nav-item {
         width: 48px;
         height: 48px;
@@ -536,35 +501,14 @@ onUnmounted(() => {
         transition: all 0.2s ease;
         border-radius: 8px;
     }
-    
+
     .mobile-nav-item i {
         font-size: 20px;
     }
-    
+
     .mobile-nav-item.active {
         color: var(--primary-blue);
         background-color: rgba(31, 111, 235, 0.1);
-    }
-    
-    /* 弹出菜单样式 */
-    .fade-enter-active,
-    .fade-leave-active {
-        transition: opacity 0.2s ease;
-    }
-
-    .fade-enter-from,
-    .fade-leave-to {
-        opacity: 0;
-    }
-
-    .slide-up-enter-active,
-    .slide-up-leave-active {
-        transition: transform 0.3s ease;
-    }
-
-    .slide-up-enter-from,
-    .slide-up-leave-to {
-        transform: translateY(100%);
     }
 
     .mobile-menu-overlay {
