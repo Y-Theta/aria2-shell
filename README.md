@@ -1,6 +1,6 @@
 # BitStream - Aria2 下载管理器
 
-一个现代化的 Aria2 下载管理器，包含完整的 Web UI 和后端 API，支持任务管理、用户认证、设置配置等功能。
+一个现代化的 Aria2 下载管理器，包含完整的 Web UI 和后端 API，支持任务管理、用户认证、代理配置、多线程下载、BT 做种等功能。
 
 ## 项目架构
 
@@ -14,33 +14,61 @@ aria2-shell/
 ## 核心特性
 
 ✨ **下载管理**
-- 完整的任务列表（活跃、暂停、已完成）
+- 完整的任务分类（下载中、等待、已暂停、已完成、做种中、错误）
 - 添加、暂停、恢复、删除任务
+- 支持删除任务同时删除本地文件
+- 批量操作（批量暂停、开始、删除）
 - 实时速度和进度显示
-- 支持 HTTP(S)/FTP/Magnet 链接
+- 分片进度可视化
+- 多线程下载支持（最大 16 线程）
+- 全局下载/上传速度限制
+- 支持 HTTP(S)/FTP/Magnet 链接及种子文件上传
+- 虚拟滚动优化，支持大量任务流畅展示
+
+🎯 **BT/种子支持**
+- BT 种子文件上传
+- Magnet 磁力链接支持
+- 下载完成后继续做种
+- 可配置最小分享率和做种时间
+- 自定义 Tracker 服务器列表
+- BT 上传速度限制
+- 种子内文件列表展示
+
+🌐 **代理支持**
+- HTTP/HTTPS/SOCKS5 代理配置
+- 代理认证支持（用户名/密码）
+- 代理连接测试功能
+- 可配置代理测试地址
 
 🎨 **UI/UX 设计**
-- Vue3 + TypeScript 构建
-- 响应式布局，支持移动端
-- 深色/浅色主题切换
+- Vue3 + TypeScript + Vite 构建
+- 响应式布局
+- 深色/浅色/跟随系统主题切换
 - 国际化支持（中文/英文）
 - FontAwesome 图标库
+- 仪表盘统计（下载/上传速度、任务数量、磁盘空间）
 
 🔐 **用户认证**
 - 用户注册和登录
 - JWT Token 认证
 - 用户设置持久化
+- 密码修改功能
+- 可配置是否显示注册入口
 
 ⚙️ **丰富的设置**
-- 下载设置（最大任务数、速度限制）
-- Aria2 连接配置
-- 外观设置（主题、语言）
-- 可配置的保存路径列表
+- 下载设置（最大任务数、速度限制、多线程数、默认保存路径）
+- Aria2 连接配置（自动重连、超时设置）
+- 代理设置（HTTP/HTTPS/SOCKS5）
+- BT 设置（做种配置、Tracker）
+- 外观设置（主题、语言、网页名称）
+- 可配置的保存路径列表管理
 
 📁 **文件系统浏览**
 - 树状文件系统浏览
 - 目录导航
 - 路径选择功能
+- 新建文件夹功能
+- 磁盘空间查看
 
 ## 快速开始
 
@@ -56,14 +84,31 @@ aria2-shell/
 ```env
 # Server
 PORT=65002
+NODE_ENV=development
+ENABLE_REGISTER=true
 
 # Aria2
 ARIA2_RPC_URL=http://localhost:6800/jsonrpc
 ARIA2_RPC_SECRET=
+ARIA2_SECRET=
 
-# App
-NODE_ENV=development
+# Security
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=7d
+
+# Data
+DATA_DIR=./data
 ```
+
+**环境变量说明：**
+- `PORT` - 后端服务端口，默认 65002
+- `NODE_ENV` - 运行环境 (development/production)
+- `ENABLE_REGISTER` - 是否启用用户注册功能，默认 true
+- `ARIA2_RPC_URL` - Aria2 RPC 服务地址
+- `ARIA2_SECRET` / `ARIA2_RPC_SECRET` - Aria2 RPC 密钥
+- `JWT_SECRET` - JWT 加密密钥，生产环境务必修改
+- `JWT_EXPIRES_IN` - JWT 过期时间，默认 7 天
+- `DATA_DIR` - 数据存储目录，默认 ./data
 
 ### 启动后端服务器
 
@@ -74,6 +119,21 @@ npm run dev
 ```
 
 后端 API 运行在 `http://localhost:65002`
+
+#### CLI 工具
+
+后端提供 CLI 命令行工具用于用户管理：
+
+```bash
+# 注册新用户
+npm run cli:register
+
+# 列出所有用户
+npm run cli:list
+
+# 查看用户详情
+npm run cli:show <username>
+```
 
 ### 启动 Web 开发服务器
 
@@ -93,36 +153,48 @@ Web UI 运行在 `http://localhost:5173`
 web/
 ├── src/
 │   ├── components/          # Vue 组件库
-│   │   ├── settings/        # 设置相关组件
+│   │   ├── common/          # 通用控件组件
+│   │   │   ├── CustomSelect.vue
+│   │   │   ├── NumberControl.vue
+│   │   │   ├── SelectControl.vue
 │   │   │   ├── SwitchControl.vue
 │   │   │   ├── TextControl.vue
-│   │   │   ├── NumberControl.vue
-│   │   │   ├── CustomSelect.vue
-│   │   │   ├── SettingItem.vue
-│   │   │   ├── DownloadTab.vue
-│   │   │   ├── Aria2Tab.vue
+│   │   │   └── TextareaControl.vue
+│   │   ├── dialogs/         # 对话框组件
+│   │   │   ├── AddTaskDialog.vue       # 添加任务对话框
+│   │   │   ├── ConfirmDialog.vue       # 确认对话框
+│   │   │   └── FileSelectorDialog.vue  # 文件选择对话框
+│   │   ├── layout/          # 布局组件
+│   │   │   └── Sidebar.vue             # 侧边栏
+│   │   ├── settings/        # 设置相关组件
+│   │   │   ├── AboutTab.vue
 │   │   │   ├── AppearanceTab.vue
-│   │   │   └── AboutTab.vue
-│   │   ├── FileSelectorDialog.vue  # 文件选择对话框
-│   │   ├── SettingsPanel.vue        # 设置面板
-│   │   ├── Sidebar.vue              # 侧边栏
-│   │   ├── TaskList.vue             # 任务列表
-│   │   ├── TaskItem.vue             # 任务项
-│   │   ├── TaskToolbar.vue          # 任务工具栏
-│   │   ├── TaskFooter.vue           # 底部统计
-│   │   ├── AddTaskDialog.vue        # 添加任务对话框
-│   │   └── ConfirmDialog.vue        # 确认对话框
+│   │   │   ├── Aria2Tab.vue
+│   │   │   ├── DownloadTab.vue
+│   │   │   ├── SettingItem.vue
+│   │   │   ├── SettingsPanel.vue
+│   │   │   └── UserTab.vue
+│   │   └── task/            # 任务相关组件
+│   │       ├── TaskFooter.vue          # 底部统计
+│   │       ├── TaskItem.vue            # 任务项
+│   │       ├── TaskList.vue            # 任务列表
+│   │       ├── TaskProgressBar.vue     # 进度条
+│   │       └── TaskToolbar.vue         # 任务工具栏
 │   ├── views/               # 页面组件
 │   │   ├── LoginPage.vue
 │   │   ├── SettingsPage.vue
-│   │   ├── ActiveTasks.vue
-│   │   ├── PausedTasks.vue
-│   │   ├── CompletedTasks.vue
-│   │   └── Torrents.vue
+│   │   ├── TaskListView.vue  # 任务列表视图（下载中/已完成/已暂停/种子）
+│   │   └── TaskPage.vue
 │   ├── services/            # 业务服务
-│   │   ├── settings.ts
-│   │   ├── theme.ts
-│   │   └── auth.ts
+│   │   ├── aria2.ts         # Aria2 API 服务
+│   │   ├── auth.ts          # 认证服务
+│   │   ├── settings.ts      # 设置服务
+│   │   ├── theme.ts         # 主题服务
+│   │   └── title.ts         # 标题服务
+│   ├── stores/              # Pinia 状态管理
+│   │   ├── connectionStore.ts
+│   │   ├── dashboardStore.ts
+│   │   └── taskStore.ts
 │   ├── i18n/                # 国际化
 │   │   ├── index.ts
 │   │   └── locales/
@@ -131,8 +203,9 @@ web/
 │   ├── config/              # 配置
 │   │   └── api.ts
 │   ├── types/               # TypeScript 类型定义
-│   │   ├── settings.ts
-│   │   └── aria2.d.ts
+│   │   ├── components.ts
+│   │   ├── env.d.ts
+│   │   └── settings.ts
 │   ├── styles/              # 全局样式
 │   │   └── main.css
 │   ├── router/              # 路由
@@ -150,17 +223,21 @@ web/
 server/
 ├── src/
 │   ├── server.ts            # Fastify 服务器入口
+│   ├── cli.ts               # CLI 启动入口
 │   ├── routes/              # API 路由
-│   │   ├── auth.ts          # 认证路由（登录/注册）
+│   │   ├── auth.ts          # 认证路由（登录/注册/修改密码）
 │   │   ├── user.ts          # 用户路由（配置管理）
 │   │   ├── aria2.ts         # Aria2 代理路由
-│   │   └── filesystem.ts    # 文件系统路由
+│   │   ├── filesystem.ts    # 文件系统路由
+│   │   └── proxy.ts         # 代理测试路由
 │   ├── aria2Client.ts       # Aria2 RPC 客户端
+│   ├── aria2Connection.ts   # Aria2 连接管理
+│   ├── aria2Manager.ts      # Aria2 任务管理
 │   ├── store.ts             # 数据存储
 │   ├── userService.ts       # 用户服务
+│   ├── utils.ts             # 工具函数
 │   └── types/               # 类型定义
-│       ├── user.d.ts
-│       └── aria2.d.ts
+│       └── user.d.ts
 ├── data/                    # 数据目录
 │   └── store.json
 ├── dist/                    # 编译输出
@@ -174,6 +251,7 @@ server/
 ### 认证
 - `POST /api/auth/login` - 用户登录
 - `POST /api/auth/register` - 用户注册
+- `POST /api/auth/change-password` - 修改密码
 
 ### 用户配置
 - `GET /api/user/configs` - 获取所有配置
@@ -187,15 +265,21 @@ server/
 - `GET /api/aria2/active` - 获取活跃任务
 - `GET /api/aria2/waiting` - 获取等待任务
 - `GET /api/aria2/stopped` - 获取已停止任务
+- `GET /api/aria2/dashboard` - 获取仪表盘统计数据
 - `POST /api/aria2/pause/:gid` - 暂停任务
 - `POST /api/aria2/unpause/:gid` - 恢复任务
 - `DELETE /api/aria2/remove/:gid` - 删除任务
 - `DELETE /api/aria2/force-remove/:gid` - 强制删除任务
+- `DELETE /api/aria2/remove-result/:gid` - 删除已完成任务记录
 - `GET /api/aria2/global-stat` - 获取全局状态
 - `GET /api/aria2/version` - 获取 Aria2 版本
 
 ### 文件系统
 - `GET /api/filesystem/list` - 获取目录结构
+- `GET /api/filesystem/disk-space` - 获取磁盘空间信息
+
+### 代理
+- `POST /api/proxy/test` - 测试代理连接
 
 ## 开发指南
 
@@ -323,19 +407,36 @@ html[data-theme="dark"] {
 }
 ```
 
+主题支持三种模式：
+- `light` - 浅色模式
+- `dark` - 深色模式
+- `system` - 跟随系统主题
+
 ## 常见问题
 
 **Q: 启动时出现端口被占用错误**
 A: 修改 `.env` 文件中的 `PORT` 配置
 
 **Q: Aria2 连接失败**
-A: 确保 Aria2 RPC 服务已启动，检查 `.env` 文件中的连接配置
+A: 确保 Aria2 RPC 服务已启动，检查 `.env` 文件中的连接配置，确认 RPC 密钥是否正确
 
 **Q: 如何重置所有设置**
 A: 在设置面板的 "关于" 标签页中点击 "恢复默认"
 
 **Q: 如何添加新的语言**
 A: 在 `web/src/i18n/locales/` 中添加新的语言文件，并在 `web/src/i18n/index.ts` 中注册
+
+**Q: 如何关闭注册功能**
+A: 在 `.env` 文件中设置 `ENABLE_REGISTER=false`，登录页面将隐藏注册按钮
+
+**Q: 代理连接测试失败怎么办**
+A: 检查代理地址格式是否正确（支持 http://、https://、socks5://），确认代理服务是否正常运行，检查防火墙设置
+
+**Q: 删除任务时如何同时删除本地文件**
+A: 删除任务时勾选"同时删除本地文件"选项即可
+
+**Q: BT 任务下载完成后如何停止做种**
+A: 在设置 -> 下载 中关闭"任务完成后继续做种"选项，或配置"最小分享率"和"最小做种时间"
 
 ## 许可证
 
