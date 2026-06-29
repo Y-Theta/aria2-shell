@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginAsync } from "fastify";
 import { getAria2Client } from "../aria2Manager.js";
 import { authPreHandler, handleError } from "./auth.js";
+import { getConnectionStatusAsync, markNeedRecheck, isConnected } from "../aria2Connection.js";
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -10,6 +11,31 @@ const aria2Routes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const userId = (request as any).user.id;
         return getAria2Client(userId);
     }
+
+    function getUserId(request: FastifyRequest): number {
+        return (request as any).user.id;
+    }
+
+    // 连接状态健康检查接口
+    fastify.get("/connection-status", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const userId = getUserId(request);
+            const status = await getConnectionStatusAsync(userId, true);
+            reply.send({
+                success: true,
+                connected: status.connected,
+                version: status.version,
+                features: status.features,
+                error: status.error
+            });
+        } catch (error) {
+            reply.send({
+                success: true,
+                connected: false,
+                error: (error as Error).message
+            });
+        }
+    });
 
     // Helper function to delete local files by paths
     async function deleteFilesByPaths(filePaths: string[], isTorrent: boolean = false) {
@@ -139,56 +165,75 @@ const aria2Routes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         }
     });
 
+    // 封装空数据返回
+    function sendEmptyList(reply: FastifyReply) {
+        reply.send({ success: true, list: [] });
+    }
+
+    // 处理错误并标记需要重新检查连接
+    function handleAria2Error(userId: number, error: any, reply: FastifyReply) {
+        // 如果是连接错误，标记需要重新检查
+        if (error && (error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET' || error.status === 0 || error.name === 'Aria2HttpError')) {
+            markNeedRecheck(userId);
+            sendEmptyList(reply);
+            return;
+        }
+        sendEmptyList(reply);
+    }
+
     // 获取活跃任务
     fastify.get("/active", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        const userId = getUserId(request);
         try {
+            if (!isConnected(userId)) {
+                sendEmptyList(reply);
+                return;
+            }
             const aria2 = getClient(request);
             const list = await aria2.tellActive();
-
-            reply.send({
-                success: true,
-                list,
-            });
+            reply.send({ success: true, list });
         } catch (error) {
-            handleError(reply, error);
+            handleAria2Error(userId, error, reply);
         }
     });
 
     // 获取等待任务
     fastify.get("/waiting", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        const userId = getUserId(request);
         try {
+            if (!isConnected(userId)) {
+                sendEmptyList(reply);
+                return;
+            }
             const query = request.query as { offset?: string | number; num?: string | number };
             const offset = Number(query.offset ?? 0);
             const num = Number(query.num ?? 20);
 
             const aria2 = getClient(request);
             const list = await aria2.tellWaiting(offset, num);
-
-            reply.send({
-                success: true,
-                list,
-            });
+            reply.send({ success: true, list });
         } catch (error) {
-            handleError(reply, error);
+            handleAria2Error(userId, error, reply);
         }
     });
 
     // 获取已停止任务
     fastify.get("/stopped", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        const userId = getUserId(request);
         try {
+            if (!isConnected(userId)) {
+                sendEmptyList(reply);
+                return;
+            }
             const query = request.query as { offset?: string | number; num?: string | number };
             const offset = Number(query.offset ?? 0);
             const num = Number(query.num ?? 20);
 
             const aria2 = getClient(request);
             const list = await aria2.tellStopped(offset, num);
-
-            reply.send({
-                success: true,
-                list,
-            });
+            reply.send({ success: true, list });
         } catch (error) {
-            handleError(reply, error);
+            handleAria2Error(userId, error, reply);
         }
     });
 

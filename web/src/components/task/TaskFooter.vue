@@ -110,9 +110,9 @@ const formatSpeed = (bytesPerSecond: number) => {
 
 @media (max-width: 768px) {
     .task-footer {
-        justify-content: center;
+        justify-content: space-between;
         padding: var(--spacing-sm) var(--spacing-md);
-        gap: var(--spacing-lg);
+        gap: var(--spacing-md);
         border-top: none;
     }
 
@@ -123,6 +123,38 @@ const formatSpeed = (bytesPerSecond: number) => {
 
     .footer-stat .label {
         display: none;
+    }
+
+    .connection-indicator {
+        margin-right: auto;
+    }
+
+    .connection-indicator .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: block;
+    }
+
+    .connection-indicator.connected .status-dot {
+        background-color: #22c55e;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        animation: footer-pulse 2s infinite;
+    }
+
+    .connection-indicator.disconnected .status-dot {
+        background-color: #ef4444;
+    }
+}
+
+@keyframes footer-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(0.9);
     }
 }
 </style>

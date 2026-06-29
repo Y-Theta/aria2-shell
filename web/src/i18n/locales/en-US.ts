@@ -29,6 +29,8 @@ export default {
         failedTitle: 'Connect to aria2 failed',
         failedDesc: 'Please check whether the aria2 service is running or the network is available.',
         retry: 'Retry',
+        connected: 'Connected',
+        disconnected: 'Disconnected',
     },
     sidebar: {
         title: 'Downloader',

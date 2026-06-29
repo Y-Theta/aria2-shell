@@ -29,6 +29,8 @@ export default {
         failedTitle: ' aria2 连接失败',
         failedDesc: '请检查 aria2 是否已启动，或网络连接是否正常。',
         retry: '重新连接',
+        connected: '已连接',
+        disconnected: '未连接',
     },
     sidebar: {
         title: '下载器',

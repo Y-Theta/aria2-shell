@@ -1,12 +1,16 @@
 <template>
     <aside class="sidebar" :class="{ collapsed: isCollapsed, 'is-mobile': isMobile }">
         <div class="sidebar-header">
-            <div class="logo" @click="toggleCollapse">
-                <i class="fas fa-download"></i>
-                <span v-if="!isCollapsed && !isMobile" class="logo-text">Bitstream</span>
+            <div class="connection-status clickable" :class="{ connected: isConnected, disconnected: !isConnected }" @click="toggleCollapse">
+                <span class="status-dot"></span>
+                <div v-if="!isCollapsed && !isMobile" class="status-content">
+                    <span class="status-label">{{ isConnected ? t('connection.connected') : t('connection.disconnected') }}</span>
+                    <span v-if="isConnected && version" class="version-text">aria2 {{ version }}</span>
+                </div>
+                <!-- 收起时只显示圆点，不显示图标 -->
             </div>
 
-            <button class="collapse-btn" type="button" @click="toggleCollapse" v-if="!isMobile">
+            <button class="collapse-btn" type="button" @click.stop="toggleCollapse" v-if="!isMobile">
                 <i :class="isCollapsed ? 'fas fa-angle-right' : 'fas fa-angle-left'"></i>
             </button>
         </div>
@@ -39,10 +43,23 @@
 
         <!-- 移动端底部导航 -->
         <template v-else>
-            <button class="mobile-bottom-nav" type="button" @click="toggleMobileMenu">
-                <i :class="activeMenuItem.icon"></i>
-                <span class="nav-label">{{ t(activeMenuItem.labelKey) }}</span>
+            <!-- 左侧：菜单按钮 -->
+            <button class="mobile-nav-menu-btn" type="button" @click="toggleMobileMenu">
+                <i class="fas fa-bars"></i>
             </button>
+            
+            <!-- 中间：连接状态 -->
+            <div class="mobile-connection-status" :class="{ connected: isConnected, disconnected: !isConnected }" :title="isConnected ? (version ? `aria2 ${version} - ${t('connection.connected')}` : t('connection.connected')) : t('connection.disconnected')">
+                <i v-if="isConnected" class="fas fa-circle-check"></i>
+                <i v-else class="fas fa-circle-xmark"></i>
+            </div>
+            
+            <!-- 右侧：设置 -->
+            <nav class="mobile-nav-right">
+                <router-link class="mobile-nav-item" active-class="active" to="/settings">
+                    <i class="fas fa-cog"></i>
+                </router-link>
+            </nav>
         </template>
 
         <!-- 移动端弹出菜单 -->
@@ -52,24 +69,14 @@
                     <Transition name="slide-up">
                         <div class="mobile-menu-dialog" @click.stop>
                             <div class="mobile-menu-content">
-                                <div class="mobile-menu-section">{{ t('sidebar.status') }}</div>
-                                <router-link v-for="item in statusMenuItems" :key="item.id" class="nav-item"
-                                    active-class="active" :to="item.to" @click="selectMenuItem(item)">
+                                <div class="mobile-menu-header">
+                                    <span>{{ t('sidebar.status') }}</span>
+                                </div>
+                                <router-link v-for="item in statusMenuItems" :key="item.id" class="mobile-menu-item"
+                                    active-class="active" :to="item.to" @click="closeMobileMenu">
                                     <i :class="item.icon"></i>
-                                    <span class="nav-label">{{ t(item.labelKey) }}</span>
+                                    <span class="menu-label">{{ t(item.labelKey) }}</span>
                                 </router-link>
-                                <div class="mobile-menu-section">{{ t('sidebar.features') }}</div>
-                                <router-link class="nav-item" active-class="active" to="/settings"
-                                    @click="selectMenuItem(settingItem)">
-                                    <i class="fas fa-cog"></i>
-                                    <span class="nav-label">{{ t('sidebar.settings') }}</span>
-                                </router-link>
-                                <div class="mobile-menu-divider"></div>
-                                <button class="nav-item logout-btn" type="button" @click="showLogoutConfirm"
-                                    v-if="isAuthenticated">
-                                    <i class="fas fa-right-from-bracket"></i>
-                                    <span class="nav-label">{{ t('common.logout') }}</span>
-                                </button>
                             </div>
                         </div>
                     </Transition>
@@ -87,6 +94,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../../services/auth.ts'
+import { useConnectionStore } from '../../stores/connectionStore.ts'
 import ConfirmDialog from '../dialogs/ConfirmDialog.vue'
 
 interface MenuItem {
@@ -101,6 +109,10 @@ const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const { logout, isAuthenticated } = useAuth()
+const connection = useConnectionStore()
+const isConnected = computed(() => connection.isConnected.value)
+const version = computed(() => connection.version.value)
+
 const isCollapsed = ref(false)
 const isMobile = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -120,6 +132,9 @@ const settingItem: MenuItem = {
     to: '/settings'
 }
 
+// 移动端显示所有菜单项
+const mobileMenuItems = [...statusMenuItems, settingItem]
+
 const allMenuItems = [...statusMenuItems, settingItem]
 
 const activeMenuItem = computed(() => {
@@ -133,10 +148,6 @@ const showLogoutConfirm = () => {
 const confirmLogout = () => {
     logout()
     router.push('/login')
-}
-
-const selectMenuItem = (_item: MenuItem) => {
-    closeMobileMenu()
 }
 
 const toggleCollapse = () => {
@@ -158,6 +169,8 @@ const checkIsMobile = () => {
 onMounted(() => {
     checkIsMobile()
     window.addEventListener('resize', checkIsMobile)
+    // 启动连接状态监控
+    connection.startMonitoring()
 })
 
 onUnmounted(() => {
@@ -182,7 +195,7 @@ onUnmounted(() => {
 }
 
 .sidebar-header {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-sm);
     border-bottom: 1px solid var(--sidebar-border);
     display: flex;
     align-items: center;
@@ -190,32 +203,116 @@ onUnmounted(() => {
     min-height: 56px;
 }
 
-.logo {
+.connection-status {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: color 0.2s ease;
+    font-weight: 500;
+    color: var(--text-secondary);
     overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    padding: 8px var(--spacing-md);
+    margin: 0 var(--spacing-xs);
 }
 
-.logo:hover {
-    color: var(--primary-blue);
+.connection-status.clickable {
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
-.logo i {
-    font-size: 22px;
-    width: 24px;
-    text-align: center;
+.connection-status.clickable:hover {
+    background-color: rgba(31, 111, 235, 0.08);
+}
+
+.connection-status .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
     flex-shrink: 0;
+    transition: all 0.3s ease;
 }
 
-.logo-text {
-    user-select: none;
+.connection-status.connected {
+    color: var(--text-primary);
+}
+
+.connection-status.connected .status-dot {
+    background-color: var(--success-green, #22c55e);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    animation: pulse 2s infinite;
+}
+
+.connection-status.disconnected {
+    color: var(--error-red, #ef4444);
+}
+
+.connection-status.disconnected .status-dot {
+    background-color: var(--error-red, #ef4444);
+}
+
+.status-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     white-space: nowrap;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.status-label {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.version-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+.connection-status.connected .version-text {
+    color: var(--text-muted);
+}
+
+.connection-status.disconnected .version-text {
+    color: rgba(239, 68, 68, 0.7);
+}
+
+/* 收起时居中显示圆点 */
+.sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: var(--spacing-sm) 0;
+}
+
+.sidebar.collapsed .connection-status {
+    justify-content: center;
+    padding: 8px 0;
+    margin: 0;
+    width: 100%;
+}
+
+.sidebar.collapsed .connection-status .status-dot {
+    width: 12px;
+    height: 12px;
+}
+
+.sidebar.collapsed .collapse-btn {
+    display: none;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(0.9);
+    }
 }
 
 .collapse-btn {
@@ -350,104 +447,6 @@ onUnmounted(() => {
     background-color: rgba(220, 53, 69, 0.1);
 }
 
-.mobile-menu-section {
-    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-xs);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    user-select: none;
-}
-
-.mobile-menu-divider {
-    height: 1px;
-    background-color: var(--border-gray);
-    margin: var(--spacing-sm) var(--spacing-xs);
-}
-
-/* 移动端弹出菜单样式 */
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-    transition: transform 0.3s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-    transform: translateY(100%);
-}
-
-.mobile-menu-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.36);
-    backdrop-filter: blur(2px);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    z-index: 9999;
-    padding-bottom: 80px;
-}
-
-:global(html[data-theme='dark']) .mobile-menu-overlay,
-:global(html.dark) .mobile-menu-overlay {
-    background: rgba(0, 0, 0, 0.56);
-}
-
-.mobile-menu-dialog {
-    background-color: var(--panel-bg);
-    border-radius: 12px;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
-    width: 90%;
-    max-width: 400px;
-    max-height: 70vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
-}
-
-.mobile-menu-content {
-    padding: var(--spacing-sm);
-    overflow-y: auto;
-}
-
-.mobile-menu-content .nav-item {
-    padding: 10px var(--spacing-md);
-    margin: 2px var(--spacing-xs);
-    border-radius: 10px;
-}
-
-.mobile-menu-content .nav-item i {
-    font-size: 18px;
-}
-
-.mobile-menu-content .nav-label {
-    display: block;
-    font-size: 14px;
-}
-
-.mobile-menu-content .badge {
-    display: block;
-}
-
-.mobile-menu-content .logout-btn {
-    padding: 10px var(--spacing-md);
-    margin: 2px var(--spacing-xs);
-    border-radius: 10px;
-    width: calc(100% - var(--spacing-md));
-}
-
 /* 手机端适配 */
 @media (max-width: 768px) {
     .sidebar.is-mobile {
@@ -467,6 +466,179 @@ onUnmounted(() => {
         border-top: 1px solid var(--sidebar-border);
         overflow: visible;
         transition: none;
+        padding: 0 var(--spacing-lg);
+    }
+    
+    /* 左侧菜单按钮 */
+    .mobile-nav-menu-btn {
+        width: 48px;
+        height: 48px;
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--neutral-gray);
+        font-size: 20px;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .mobile-nav-menu-btn:hover,
+    .mobile-nav-menu-btn:active {
+        color: var(--primary-blue);
+        background-color: rgba(31, 111, 235, 0.08);
+    }
+    
+    /* 中间连接状态 */
+    .mobile-connection-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        border-radius: 16px;
+        background-color: var(--success-green);
+        margin: 0 -28px;
+        margin-top: -24px;
+        z-index: 10;
+        transition: all 0.2s ease;
+    }
+    
+    .mobile-connection-status i {
+        font-size: 24px;
+        color: white;
+    }
+    
+    .mobile-connection-status.disconnected {
+        background-color: var(--error-red);
+    }
+    
+    /* 右侧设置 */
+    .mobile-nav-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        height: 100%;
+        width: 48px;
+    }
+    
+    .mobile-nav-item {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--neutral-gray);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+    }
+    
+    .mobile-nav-item i {
+        font-size: 20px;
+    }
+    
+    .mobile-nav-item.active {
+        color: var(--primary-blue);
+        background-color: rgba(31, 111, 235, 0.1);
+    }
+    
+    /* 弹出菜单样式 */
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: opacity 0.2s ease;
+    }
+
+    .fade-enter-from,
+    .fade-leave-to {
+        opacity: 0;
+    }
+
+    .slide-up-enter-active,
+    .slide-up-leave-active {
+        transition: transform 0.3s ease;
+    }
+
+    .slide-up-enter-from,
+    .slide-up-leave-to {
+        transform: translateY(100%);
+    }
+
+    .mobile-menu-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.36);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        z-index: 9999;
+        padding-bottom: 80px;
+        padding-left: var(--spacing-md);
+    }
+
+    :global(html[data-theme='dark']) .mobile-menu-overlay,
+    :global(html.dark) .mobile-menu-overlay {
+        background: rgba(0, 0, 0, 0.56);
+    }
+
+    .mobile-menu-dialog {
+        background-color: var(--panel-bg);
+        border-radius: 12px;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+        width: 160px;
+        overflow: hidden;
+        margin-left: 0;
+    }
+
+    .mobile-menu-content {
+        padding: var(--spacing-xs);
+    }
+    
+    .mobile-menu-header {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .mobile-menu-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: 12px var(--spacing-md);
+        margin: 2px 0;
+        border-radius: 8px;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 14px;
+    }
+    
+    .mobile-menu-item i {
+        font-size: 18px;
+        width: 20px;
+        text-align: center;
+        color: var(--neutral-gray);
+    }
+
+    .mobile-menu-item:hover,
+    .mobile-menu-item:active {
+        background-color: var(--bg-gray);
+    }
+    
+    .mobile-menu-item.active {
+        color: var(--primary-blue);
+        background-color: rgba(31, 111, 235, 0.1);
+    }
+    
+    .mobile-menu-item.active i {
+        color: var(--primary-blue);
     }
 
     .sidebar.is-mobile.collapsed {
@@ -478,83 +650,11 @@ onUnmounted(() => {
     }
 
     .sidebar.is-mobile .nav-menu {
-        flex: none;
-        padding: 0;
-        flex-direction: row;
-        gap: 0;
-        height: 100%;
-    }
-
-    .sidebar.is-mobile .nav-section-title {
         display: none;
     }
 
     .sidebar.is-mobile .sidebar-footer {
-        padding: 0;
-        border-top: none;
-        flex-direction: row;
-        gap: 0;
-        height: 100%;
-    }
-
-    .sidebar.is-mobile .nav-item {
-        height: 100%;
-        flex: none;
-        padding: 0 var(--spacing-md);
-        gap: var(--spacing-sm);
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        border-radius: 0;
-        margin: 0;
-        min-width: 144px;
-    }
-
-    .sidebar.is-mobile .nav-item.menu-toggle {
-        width: 64px;
-        flex: none;
-    }
-
-    .sidebar.is-mobile .nav-item i {
-        font-size: 20px;
-    }
-
-    .sidebar.is-mobile .nav-label,
-    .sidebar.is-mobile .badge {
         display: none;
-    }
-
-    .mobile-bottom-nav {
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-sm) var(--spacing-lg);
-        background-color: var(--panel-bg);
-        color: var(--primary-blue);
-        text-decoration: none;
-        gap: var(--spacing-sm);
-        transition: all 0.2s ease;
-        height: 100%;
-        border: none;
-        cursor: pointer;
-        font-family: inherit;
-    }
-
-    .mobile-bottom-nav:hover {
-        background-color: var(--bg-gray);
-    }
-
-    .mobile-bottom-nav .nav-label {
-        font-size: 14px;
-        font-weight: 600;
-        display: block;
-    }
-
-    /* 放大主要图标 */
-    .mobile-bottom-nav i:first-of-type {
-        font-size: 24px !important;
     }
 }
 </style>
