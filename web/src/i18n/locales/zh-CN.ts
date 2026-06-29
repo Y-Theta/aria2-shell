@@ -78,6 +78,9 @@ export default {
         downloadingCount: '正在下载',
         availableSpace: '可用空间',
         totalTasks: '总任务',
+        completedSize: '已下载',
+        totalSize: '总大小',
+        pieces: '分片进度',
         expand: '展开',
         collapse: '收起',
         batchOperation: '批量操作',
@@ -141,6 +144,10 @@ export default {
             maxActiveDownloads: {
                 label: '最大同时下载任务数',
                 desc: '限制同时处于下载状态的任务数量',
+            },
+            maxConnections: {
+                label: '下载线程数',
+                desc: '单个服务器最大连接数，启用多线程下载，范围 1-16',
             },
             downloadLimit: {
                 label: '下载速度限制',

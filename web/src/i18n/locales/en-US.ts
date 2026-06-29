@@ -78,6 +78,9 @@ export default {
         downloadingCount: 'Downloading',
         availableSpace: 'Available Space',
         totalTasks: 'Total Tasks',
+        completedSize: 'Downloaded',
+        totalSize: 'Total Size',
+        pieces: 'Piece Progress',
         expand: 'Expand',
         collapse: 'Collapse',
         batchOperation: 'Batch Operation',
@@ -141,6 +144,10 @@ export default {
             maxActiveDownloads: {
                 label: 'Max Active Downloads',
                 desc: 'Limit the number of tasks in downloading state at the same time',
+            },
+            maxConnections: {
+                label: 'Download Threads',
+                desc: 'Max connections per server for multi-threaded downloading, range 1-16',
             },
             downloadLimit: {
                 label: 'Download Speed Limit',

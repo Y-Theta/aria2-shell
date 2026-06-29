@@ -13,6 +13,18 @@
         </SettingItem>
 
         <SettingItem
+            :label="t('settings.download.maxConnections.label')"
+            :description="t('settings.download.maxConnections.desc')"
+            icon="fas fa-network-wired"
+        >
+            <NumberControl
+                v-model="maxConnections"
+                :min="1"
+                :max="16"
+            />
+        </SettingItem>
+
+        <SettingItem
             :label="t('settings.download.downloadLimit.label')"
             :description="t('settings.download.downloadLimit.desc')"
             icon="fas fa-arrow-down-wide-short"
@@ -99,6 +111,7 @@ const settingsService = useSettings()
 const settings = settingsService.settings
 
 const maxActiveDownloads = ref<number>(settings.maxActiveDownloads as number)
+const maxConnections = ref<number>(settings.maxConnections as number)
 const downloadLimit = ref<number>(settings.downloadLimit as number)
 const uploadLimit = ref<number>(settings.uploadLimit as number)
 const savePaths = ref<SavePath[]>([])
@@ -135,6 +148,10 @@ watch(() => settings.savePaths, () => {
 
 watch(maxActiveDownloads, (value) => {
     settingsService.setSetting('maxActiveDownloads', value)
+})
+
+watch(maxConnections, (value) => {
+    settingsService.setSetting('maxConnections', value)
 })
 
 watch(downloadLimit, (value) => {

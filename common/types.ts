@@ -27,6 +27,7 @@ export type SettingKey =
     | 'minimizeToTray'
     | 'downloadPath'
     | 'maxActiveDownloads'
+    | 'maxConnections'
     | 'downloadLimit'
     | 'uploadLimit'
     | 'keepSeeding'
@@ -63,6 +64,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
     minimizeToTray: true,
     downloadPath: '',
     maxActiveDownloads: 5,
+    maxConnections: 5,
     downloadLimit: 0,
     uploadLimit: 0,
     keepSeeding: true,

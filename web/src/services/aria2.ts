@@ -68,13 +68,15 @@ function mapAria2StatusToTask(status: Aria2Status): Task {
         id: status.gid,
         name: getTaskName(status),
         totalSize,
+        completedSize,
         progress,
         downloadSpeed,
         uploadSpeed,
         status: isSeeding ? 'seeding' : mappedStatus,
         isTorrent,
         path: status.dir,
-        files
+        files,
+        bitfield: status.bitfield
     }
 }
 

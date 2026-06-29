@@ -10,6 +10,7 @@ export interface Task {
     id: string
     name: string
     totalSize: number
+    completedSize: number
     progress: number
     downloadSpeed: number
     uploadSpeed: number
@@ -17,4 +18,5 @@ export interface Task {
     isTorrent?: boolean
     path?: string
     files?: TorrentFile[]
+    bitfield?: string
 }

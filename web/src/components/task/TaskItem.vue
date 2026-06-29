@@ -1,6 +1,8 @@
 <template>
-    <div class="task-item" :class="{ expanded: isExpanded, selected: isSelected }">
+    <Teleport to="body">
         <div v-if="tooltipVisible" class="task-tooltip" :style="tooltipStyle">{{ task.name }}</div>
+    </Teleport>
+    <div class="task-item" :class="{ expanded: isExpanded, selected: isSelected }">
         <div class="task-main" @click="handleMainClick">
             <!-- 桌面端布局 -->
             <div class="desktop-layout">
@@ -110,7 +112,99 @@
         </div>
 
         <div v-if="isExpanded" class="task-expanded">
+            <!-- 常规任务详情面板 -->
+            <template v-if="!task.isTorrent || !task.files || task.files.length === 0">
+                <!-- 顶部统计卡片：5列布局 -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">{{ t('taskPage.completedSize') }}</div>
+                        <div class="stat-value">{{ formatSize(task.completedSize) }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">{{ t('taskPage.totalSize') }}</div>
+                        <div class="stat-value">{{ formatSize(task.totalSize) }}</div>
+                    </div>
+                    <div class="stat-item stat-item-blue">
+                        <div class="stat-label">{{ t('taskPage.downloadSpeed') }}</div>
+                        <div class="stat-value">{{ formatSpeed(task.downloadSpeed) }}</div>
+                        <div class="stat-indicator stat-indicator-blue"></div>
+                    </div>
+                    <div class="stat-item stat-item-green">
+                        <div class="stat-label">{{ t('taskPage.uploadSpeed') }}</div>
+                        <div class="stat-value">{{ formatSpeed(task.uploadSpeed) }}</div>
+                        <div class="stat-indicator stat-indicator-green"></div>
+                    </div>
+                    <div class="stat-item stat-item-orange">
+                        <div class="stat-label">{{ t('taskPage.progress') }}</div>
+                        <div class="stat-value">{{ task.progress }}%</div>
+                        <div class="stat-indicator stat-indicator-orange"></div>
+                    </div>
+                </div>
+
+                <!-- Bitfield 分片进度条卡片 -->
+                <div v-if="task.bitfield && task.progress < 100" class="detail-card bitfield-card">
+                    <div class="bitfield-continuous-bar">
+                        <!-- 整体进度淡色背景 -->
+                        <div class="bitfield-progress-bg" :style="{ width: task.progress + '%' }"></div>
+                        <!-- 已下载分片连续高亮填充 -->
+                        <template v-for="(segment, index) in downloadedSegments" :key="index">
+                            <div 
+                                class="filled-segment"
+                                :style="{ left: segment.left + '%', width: segment.width + '%' }"
+                            ></div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 下载路径卡片 -->
+                <div v-if="task.path" class="detail-card path-card">
+                    <div class="path-value">{{ task.path }}</div>
+                </div>
+            </template>
+
+            <!-- Torrent 文件列表 -->
             <div v-if="task.isTorrent && task.files && task.files.length > 0" class="torrent-files">
+                <!-- Torrent任务也显示统计信息 -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">{{ t('taskPage.completedSize') }}</div>
+                        <div class="stat-value">{{ formatSize(task.completedSize) }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">{{ t('taskPage.totalSize') }}</div>
+                        <div class="stat-value">{{ formatSize(task.totalSize) }}</div>
+                    </div>
+                    <div class="stat-item stat-item-blue">
+                        <div class="stat-label">{{ t('taskPage.downloadSpeed') }}</div>
+                        <div class="stat-value">{{ formatSpeed(task.downloadSpeed) }}</div>
+                        <div class="stat-indicator stat-indicator-blue"></div>
+                    </div>
+                    <div class="stat-item stat-item-green">
+                        <div class="stat-label">{{ t('taskPage.uploadSpeed') }}</div>
+                        <div class="stat-value">{{ formatSpeed(task.uploadSpeed) }}</div>
+                        <div class="stat-indicator stat-indicator-green"></div>
+                    </div>
+                    <div class="stat-item stat-item-orange">
+                        <div class="stat-label">{{ t('taskPage.progress') }}</div>
+                        <div class="stat-value">{{ task.progress }}%</div>
+                        <div class="stat-indicator stat-indicator-orange"></div>
+                    </div>
+                </div>
+
+                <div v-if="task.bitfield && task.progress < 100" class="detail-card bitfield-card">
+                    <div class="bitfield-continuous-bar">
+                        <!-- 整体进度淡色背景 -->
+                        <div class="bitfield-progress-bg" :style="{ width: task.progress + '%' }"></div>
+                        <!-- 已下载分片连续高亮填充 -->
+                        <template v-for="(segment, index) in downloadedSegments" :key="index">
+                            <div 
+                                class="filled-segment"
+                                :style="{ left: segment.left + '%', width: segment.width + '%' }"
+                            ></div>
+                        </template>
+                    </div>
+                </div>
+
                 <div class="files-header">
                     <span class="files-title">{{ t('taskPage.torrentFileList') }} ({{ task.files.length }})</span>
                 </div>
@@ -129,25 +223,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div v-else class="expanded-row">
-                <div class="expanded-item">
-                    <span class="label">{{ t('taskPage.downloadSpeed') }}:</span>
-                    <span class="value">{{ formatSpeed(task.downloadSpeed) }}</span>
-                </div>
-                <div class="expanded-item">
-                    <span class="label">{{ t('taskPage.uploadSpeed') }}:</span>
-                    <span class="value">{{ formatSpeed(task.uploadSpeed) }}</span>
-                </div>
-                <div class="expanded-item">
-                    <span class="label">{{ t('taskPage.progress') }}:</span>
-                    <span class="value">{{ task.progress }}%</span>
-                </div>
-            </div>
-            <div class="expanded-row" v-if="task.path">
-                <div class="expanded-item full-width expanded-path">
-                    <span class="label">{{ t('settings.general.downloadPath.desc') }}:</span>
-                    <span class="value">{{ task.path }}</span>
+
+                <div v-if="task.path" class="detail-card path-card">
+                    <div class="path-value">{{ task.path }}</div>
                 </div>
             </div>
         </div>
@@ -165,18 +243,98 @@ interface Column {
     label: string
 }
 
+interface BitfieldSegment {
+    downloaded: boolean
+    left: number
+    width: number
+}
+
+interface ContinuousSegment {
+    left: number
+    width: number
+}
+
 const { t } = useI18n()
 const tooltipVisible = ref(false)
 const tooltipStyle = ref({})
+
+/**
+ * 解析bitfield，生成连续已下载分段（用于连续高亮填充）
+ * 将连续的已下载bit合并成一个连续区块
+ */
+const downloadedSegments = computed<ContinuousSegment[]>(() => {
+    const { bitfield } = props.task
+    if (!bitfield) return []
+
+    // 将十六进制字符串转换为二进制位数组
+    const bits: boolean[] = []
+    for (let i = 0; i < bitfield.length; i++) {
+        const hex = bitfield[i]
+        const nibble = parseInt(hex, 16)
+        if (isNaN(nibble)) continue
+        bits.push(!!(nibble & 0x8))
+        bits.push(!!(nibble & 0x4))
+        bits.push(!!(nibble & 0x2))
+        bits.push(!!(nibble & 0x1))
+    }
+
+    if (bits.length === 0) return []
+
+    const segments: ContinuousSegment[] = []
+    let currentStart = -1
+
+    for (let i = 0; i < bits.length; i++) {
+        if (bits[i]) {
+            if (currentStart === -1) {
+                // 开始一个新的已下载分段
+                currentStart = i
+            }
+        } else {
+            if (currentStart !== -1) {
+                // 结束当前已下载分段
+                const left = (currentStart / bits.length) * 100
+                const width = ((i - currentStart) / bits.length) * 100
+                segments.push({ left, width })
+                currentStart = -1
+            }
+        }
+    }
+
+    // 处理最后一个分段
+    if (currentStart !== -1) {
+        const left = (currentStart / bits.length) * 100
+        const width = ((bits.length - currentStart) / bits.length) * 100
+        segments.push({ left, width })
+    }
+
+    return segments
+})
 
 const showTooltip = (event: MouseEvent) => {
     const target = event.currentTarget as HTMLElement
     const textEl = target.querySelector('.task-name-text') as HTMLElement
     if (textEl && textEl.scrollWidth > textEl.clientWidth) {
         const rect = target.getBoundingClientRect()
+        // position: fixed 使用视口坐标（Teleport 到 body，不受父元素影响）
+        let left = rect.left + rect.width / 2
+        const top = rect.top - 8
+        
+        // 边界检查：确保 tooltip 不超出视口左右边界
+        const tooltipMaxWidth = 300
+        const viewportWidth = window.innerWidth
+        const minLeft = tooltipMaxWidth / 2 + 8
+        const maxLeft = viewportWidth - tooltipMaxWidth / 2 - 8
+        
+        if (left < minLeft) {
+            left = minLeft
+        } else if (left > maxLeft) {
+            left = maxLeft
+        }
+        
         tooltipStyle.value = {
-            left: `${rect.left + window.scrollX}px`,
-            top: `${rect.top + window.scrollY - 35}px`
+            left: `${left}px`,
+            top: `${top}px`,
+            transform: 'translate(-50%, -100%)'
         }
         tooltipVisible.value = true
     }
@@ -515,14 +673,117 @@ const formatSpeed = (bytesPerSecond: number) => {
 .task-expanded {
     padding: 0 var(--spacing-lg) var(--spacing-lg);
     border-top: 1px solid var(--border-gray);
-}
-
-.torrent-files {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
     padding-top: var(--spacing-md);
 }
 
+/* 统计信息网格 - 5列布局 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    padding: var(--spacing-sm) var(--spacing-sm);
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+/* 桌面端隐藏颜色指示条，因为现在是行内布局 */
+.stat-indicator {
+    display: none;
+}
+
+.stat-indicator-blue {
+    background-color: #2563eb;
+}
+
+.stat-indicator-green {
+    background-color: #22c55e;
+}
+
+.stat-indicator-orange {
+    background-color: #f59e0b;
+}
+
+/* 详情卡片通用样式 */
+.detail-card {
+    background-color: var(--bg-gray);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+}
+
+/* 分片进度条 - 连续填充样式 */
+.bitfield-card {
+    padding: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+}
+
+.bitfield-continuous-bar {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    background-color: var(--border-gray);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bitfield-progress-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background-color: var(--primary-blue-10);
+    transition: width 0.3s ease;
+}
+
+/* 已下载分片高亮填充 */
+.filled-segment {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: var(--primary-blue);
+    transition: all 0.2s ease;
+}
+
+.path-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    word-break: break-all;
+    opacity: 0.8;
+}
+
+/* Torrent 文件列表 */
+.torrent-files {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
 .files-header {
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 0;
 }
 
 .files-title {
@@ -609,35 +870,6 @@ const formatSpeed = (bytesPerSecond: number) => {
     min-width: 72px;
     color: var(--text-secondary);
     text-align: right;
-}
-
-.expanded-row {
-    display: flex;
-    gap: var(--spacing-lg);
-    padding-top: var(--spacing-md);
-    flex-wrap: wrap;
-}
-
-.expanded-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.expanded-item.full-width {
-    flex: 1;
-    min-width: 100%;
-}
-
-.expanded-item .label {
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-.expanded-item .value {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
 }
 
 /* 移动端样式 */
@@ -754,7 +986,66 @@ const formatSpeed = (bytesPerSecond: number) => {
     .expanded-path .label {
         display: none;
     }
+
+    /* 移动端展开面板适配 */
+    .task-expanded {
+        padding: 0 var(--spacing-md) var(--spacing-md);
+        padding-top: var(--spacing-md);
+    }
+
+    /* 移动端保持5列单行布局，不换行 */
+    .stats-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 2px;
+    }
+
+    .stat-item {
+        flex-direction: column;
+        align-items: center;
+        padding: var(--spacing-sm) 2px;
+        gap: 2px;
+    }
+
+    .stat-label {
+        font-size: 9px;
+    }
+
+    .stat-value {
+        font-size: 11px;
+        line-height: 1.2;
+    }
+
+    /* 移动端恢复显示颜色指示条 */
+    .stat-indicator {
+        display: block;
+        width: 20px;
+        height: 2px;
+        margin-top: 1px;
+    }
+
+    /* 移动端详情卡片 */
+    .detail-card {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .bitfield-card {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .bitfield-continuous-bar {
+        height: 14px;
+    }
+
+    .path-card {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .path-value {
+        font-size: 12px;
+        word-break: break-all;
+    }
 }
+
 
 .task-tooltip {
     position: fixed;
@@ -765,9 +1056,10 @@ const formatSpeed = (bytesPerSecond: number) => {
     font-size: 13px;
     max-width: 300px;
     word-wrap: break-word;
-    z-index: 1000;
+    z-index: 9999;
     pointer-events: none;
     box-shadow: 0 2px 8px var(--shadow-black);
+    white-space: normal;
 }
 
 .task-tooltip::after {

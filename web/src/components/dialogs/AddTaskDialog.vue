@@ -276,6 +276,12 @@ const confirm = async () => {
         if (useProxy.value && (settingsService.settings.httpProxyUrl as string)?.trim()) {
             options['all-proxy'] = (settingsService.settings.httpProxyUrl as string).trim()
         }
+        // 下载线程数配置：多线程下载
+        const maxConnections = settingsService.settings.maxConnections as number || 5
+        // aria2 多线程下载关键参数
+        options['max-connection-per-server'] = String(maxConnections) // 单个服务器最大连接数
+        options['split'] = String(maxConnections) // 分片数量，与连接数一致
+        options['min-split-size'] = '100M' // 最小分片大小 1MB，让小文件也能多线程
 
         const newGids: string[] = []
         
