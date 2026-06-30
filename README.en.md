@@ -6,14 +6,21 @@ A modern Aria2 download manager with a complete Web UI and backend API, supporti
 
 ## Screenshots
 
-### Login Page
+### Desktop
+
+#### Login Page
 ![Login Page](screenshots/login_en.png)
 
-### Task List
+#### Task List
 ![Task List](screenshots/download_en.png)
 
-### Settings Page
+#### Settings Page
 ![Settings Page](screenshots/setting_en.png)
+
+### Mobile
+
+#### Task List (Mobile)
+![Task List Mobile](screenshots/download_mobile_en.png)
 
 ## Project Structure
 

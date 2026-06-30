@@ -6,14 +6,21 @@
 
 ## 界面预览
 
-### 登录页面
+### 桌面端
+
+#### 登录页面
 ![登录页面](screenshots/login.png)
 
-### 任务列表
+#### 任务列表
 ![任务列表](screenshots/download.png)
 
-### 设置页面
+#### 设置页面
 ![设置页面](screenshots/setting.png)
+
+### 移动端
+
+#### 任务列表（移动端）
+![任务列表移动端](screenshots/download_mobile.png)
 
 ## 项目架构
 
