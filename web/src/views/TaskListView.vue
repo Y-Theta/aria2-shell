@@ -21,7 +21,7 @@
 import { computed, onMounted, onUnmounted, onActivated, onDeactivated, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import TaskPage from './TaskPage.vue'
-import { getActiveTasks, getWaitingTasks, getStoppedTasks, pauseTask, unpauseTask, removeTask } from '../services/aria2'
+import { getActiveTasks, getWaitingTasks, getStoppedTasks, getAllTaskLists, pauseTask, unpauseTask, removeTask } from '../services/aria2'
 import { useTaskStore } from '../stores/taskStore'
 import { useDashboardStore } from '../stores/dashboardStore'
 import type { Task } from '@common/task'
@@ -75,8 +75,26 @@ const loadTaskType = async (type: ListType): Promise<void> => {
     try {
         switch (type) {
             case 'active': {
-                const loadedTasks = await getActiveTasks()
-                taskStore.setTasks('active', loadedTasks)
+                // 下载中页面定时刷新时，每5次大约有1次全量更新所有列表缓存
+                // 这样既能保持高频刷新下载进度，又不会太频繁请求大列表
+                // 全量更新会顺便更新paused/completed/torrents缓存，用户切换页面时无需等待
+                const useFullSync = Math.random() < 0.2
+                
+                if (useFullSync) {
+                    const { active, waiting, stopped } = await getAllTaskLists(1000)
+                    taskStore.setTasks('active', active)
+                    taskStore.setTasks('paused', waiting)
+                    taskStore.setTasks('completed', stopped.filter(t => t.status === 'completed'))
+                    
+                    // 更新torrents列表缓存
+                    const allTasks = [...active, ...waiting, ...stopped]
+                    const torrentTasks = allTasks.filter(t => t.isTorrent)
+                    taskStore.setTasks('torrents', torrentTasks)
+                } else {
+                    // 普通刷新只获取active列表，减少数据传输
+                    const loadedTasks = await getActiveTasks()
+                    taskStore.setTasks('active', loadedTasks)
+                }
                 break
             }
             case 'paused': {
@@ -91,11 +109,8 @@ const loadTaskType = async (type: ListType): Promise<void> => {
                 break
             }
             case 'torrents': {
-                const [active, waiting, stopped] = await Promise.all([
-                    getActiveTasks(),
-                    getWaitingTasks(0, 50),
-                    getStoppedTasks(0, 50)
-                ])
+                // 使用批量接口，一次请求获取所有列表，减少2个HTTP请求
+                const { active, waiting, stopped } = await getAllTaskLists(1000)
                 // 更新所有相关缓存
                 taskStore.setTasks('active', active)
                 taskStore.setTasks('paused', waiting)
@@ -154,8 +169,11 @@ const startRefresh = () => {
     // 初始化时加载一次当前列表数据
     loadTasks()
     
-    // 停止所有列表自动轮询，只在任务状态改变（新增/开始/暂停/删除）时由 refreshAllLists 触发更新
-    // 全局仪表盘保持5秒自动刷新以更新总速度和磁盘空间统计
+    // 下载中(active)和种子(torrents)页面需要定时刷新，更新任务进度和速度
+    // 暂停(paused)/已完成(completed)页面不需要自动刷新
+    if (listType.value === 'active' || listType.value === 'torrents') {
+        refreshInterval = window.setInterval(loadTasks, refreshIntervalTime.value)
+    }
     
     // 启动全局仪表盘自动刷新（全局只启动一次，用于速度和统计数据更新）
     dashboardStore.startAutoRefresh(5000)

@@ -315,6 +315,47 @@ const aria2Routes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         }
     });
 
+    // 一次性获取所有列表（active + waiting + stopped），减少网络请求次数
+    fastify.get("/all-lists", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
+        const userId = getUserId(request);
+        try {
+            if (!isConnected(userId)) {
+                reply.send({
+                    success: true,
+                    active: [],
+                    waiting: [],
+                    stopped: []
+                });
+                return;
+            }
+            const query = request.query as { offset?: string | number; num?: string | number };
+            const num = Number(query.num ?? 1000); // 默认获取足够多的任务
+
+            const aria2 = getClient(request);
+            // 并行获取三个列表，减少等待时间
+            const [activeList, waitingList, stoppedList] = await Promise.all([
+                aria2.tellActive(),
+                aria2.tellWaiting(0, num),
+                aria2.tellStopped(0, num)
+            ]);
+
+            reply.send({
+                success: true,
+                active: activeList,
+                waiting: waitingList,
+                stopped: stoppedList
+            });
+        } catch (error) {
+            handleAria2Error(userId, error, reply);
+            reply.send({
+                success: true,
+                active: [],
+                waiting: [],
+                stopped: []
+            });
+        }
+    });
+
     // 暂停任务
     fastify.post("/pause/:gid", { preHandler: authPreHandler }, async (request: FastifyRequest, reply: FastifyReply) => {
         try {

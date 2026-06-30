@@ -1,8 +1,8 @@
 <template>
     <div class="task-list">
-        <div v-if="tasks.length === 0" class="empty-state">
+        <div v-if="filteredTasks.length === 0" class="empty-state">
             <i class="fas fa-inbox"></i>
-            <p>{{ t('sidebar.all') }}</p>
+            <p>{{ searchText ? '没有找到匹配的任务' : t('sidebar.all') }}</p>
         </div>
         <div v-else class="task-table">
             <!-- 表头 -->
@@ -65,6 +65,20 @@ interface Column {
     label: string
 }
 
+// 带搜索索引的任务项，预处理后的数据结构
+interface IndexedTask {
+    task: Task
+    searchText: string  // 预计算的搜索文本（文件名+GID+路径转小写）
+}
+
+interface LayoutItem {
+    index: number
+    task: Task
+    top: number
+    height: number
+    bottom: number
+}
+
 const { t } = useI18n()
 
 const defaultColumns: Column[] = [
@@ -91,15 +105,20 @@ const startX = ref<number>(0)
 const isDragging = ref(false)
 const temporaryOrder = ref<Column[] | null>(null)
 const selectedIds = ref<string[]>([])
-const expandedIds = ref<Set<string>>(new Set()) // 管理展开状态
+const expandedIds = ref<Set<string>>(new Set())
 
 // 虚拟滚动相关
 const scrollContainer = ref<HTMLDivElement | null>(null)
-const itemHeight = ref(72) // 每个TaskItem的高度
+const itemHeight = ref(72)
+const expandedItemHeight = ref(272) // 展开后的高度
 const visibleTasks = ref<Task[]>([])
 const offsetY = ref(0)
 const startIndex = ref(0)
 const endIndex = ref(0)
+
+// 布局缓存 - 预先计算好的位置信息
+const layoutCache = ref<LayoutItem[]>([])
+const totalHeight = ref(0)
 
 const visibleColumns = computed(() => {
     return temporaryOrder.value || columnOrder.value
@@ -111,21 +130,93 @@ const props = defineProps<{
     isBatchMode: boolean
 }>()
 
-const filteredTasks = computed(() => {
-    if (!props.searchText) return props.tasks
-    const searchLower = props.searchText.toLowerCase()
-    return props.tasks.filter(task => 
-        task.name.toLowerCase().includes(searchLower)
-    )
+// 防抖处理后的搜索文本
+const debouncedSearchText = ref('')
+let searchDebounceTimer: number | null = null
+
+// 监听搜索文本，添加200ms防抖
+watch(() => props.searchText, (newText) => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer)
+    }
+    searchDebounceTimer = window.setTimeout(() => {
+        debouncedSearchText.value = newText.toLowerCase().trim()
+    }, 200)
+}, { immediate: true })
+
+// 预处理任务索引 - 加载时一次性计算好搜索文本
+const indexedTasks = computed<IndexedTask[]>(() => {
+    return props.tasks.map(task => {
+        // 预处理：拼接所有搜索字段并转小写，只做一次
+        const searchParts = [
+            task.name || '',
+            task.id || '',
+            task.path || ''
+        ]
+        return {
+            task,
+            searchText: searchParts.join(' ').toLowerCase()
+        }
+    })
 })
 
-const totalHeight = computed(() => {
-    let height = 0
-    for (const task of filteredTasks.value) {
-        height += expandedIds.value.has(task.id) ? (itemHeight.value + 200) : itemHeight.value
+// 过滤后的任务（使用防抖和预处理索引）
+const filteredTasks = computed<Task[]>(() => {
+    const search = debouncedSearchText.value
+    if (!search) {
+        return props.tasks
     }
-    return height
+    return indexedTasks.value
+        .filter(item => item.searchText.includes(search))
+        .map(item => item.task)
 })
+
+// 二分查找：在布局缓存中找到第一个可见项的索引
+function binarySearchStart(scrollTop: number): number {
+    let low = 0
+    let high = layoutCache.value.length - 1
+    
+    while (low <= high) {
+        const mid = Math.floor((low + high) / 2)
+        const item = layoutCache.value[mid]
+        
+        if (item.bottom < scrollTop) {
+            low = mid + 1
+        } else if (item.top > scrollTop) {
+            high = mid - 1
+        } else {
+            return mid
+        }
+    }
+    
+    return Math.max(0, low)
+}
+
+// 重新计算布局缓存
+function recalculateLayout() {
+    const tasks = filteredTasks.value
+    const items: LayoutItem[] = []
+    let currentTop = 0
+    
+    for (let i = 0; i < tasks.length; i++) {
+        const task = tasks[i]
+        const isExpanded = expandedIds.value.has(task.id)
+        const height = isExpanded ? expandedItemHeight.value : itemHeight.value
+        
+        items.push({
+            index: i,
+            task,
+            top: currentTop,
+            height,
+            bottom: currentTop + height
+        })
+        
+        currentTop += height
+    }
+    
+    layoutCache.value = items
+    totalHeight.value = currentTop
+}
 
 const toggleExpand = (id: string) => {
     if (expandedIds.value.has(id)) {
@@ -133,6 +224,8 @@ const toggleExpand = (id: string) => {
     } else {
         expandedIds.value.add(id)
     }
+    // 展开/收起时只需要重新计算布局，不需要全量重新过滤
+    recalculateLayout()
     nextTick(() => {
         updateVisibleItems()
     })
@@ -167,14 +260,14 @@ const getColumnStyle = (columnId: string) => {
     }
 }
 
-// 更新可见的任务项
+// 更新可见的任务项 - 使用二分查找优化
 const updateVisibleItems = () => {
     if (!scrollContainer.value) return
     
-    const tasks = filteredTasks.value
+    const cache = layoutCache.value
     
     // 空列表处理
-    if (tasks.length === 0) {
+    if (cache.length === 0) {
         visibleTasks.value = []
         offsetY.value = 0
         startIndex.value = 0
@@ -184,54 +277,36 @@ const updateVisibleItems = () => {
     
     const scrollTop = scrollContainer.value.scrollTop
     const containerHeight = scrollContainer.value.clientHeight
+    const viewportBottom = scrollTop + containerHeight
     
-    // 计算每个项目的高度和位置
-    const items = []
-    let currentHeight = 0
+    // 使用二分查找找到起始索引
+    const startIdx = binarySearchStart(scrollTop)
     
-    for (let i = 0; i < tasks.length; i++) {
-        const task = tasks[i]
-        const height = expandedIds.value.has(task.id) ? (itemHeight.value + 200) : itemHeight.value
-        items.push({
-            index: i,
-            task,
-            top: currentHeight,
-            height
-        })
-        currentHeight += height
-    }
-    
-    // 找到第一个与滚动区域重叠的项目
-    let startIdx = 0
-    for (let i = 0; i < items.length; i++) {
-        if (items[i].top + items[i].height > scrollTop) {
-            startIdx = i
-            break
-        }
-    }
-    
-    // 找到最后一个与滚动区域重叠的项目
-    let endIdx = items.length - 1
-    for (let i = startIdx; i < items.length; i++) {
-        if (items[i].top > scrollTop + containerHeight) {
+    // 找到结束索引（从起始位置线性查找，因为可见项很少，不需要二次二分）
+    let endIdx = cache.length - 1
+    for (let i = startIdx; i < cache.length; i++) {
+        if (cache[i].top > viewportBottom) {
             endIdx = i - 1
             break
         }
     }
     
     // 加上buffer
-    const buffer = 5
+    const buffer = 8
     const newStartIndex = Math.max(0, startIdx - buffer)
-    const newEndIndex = Math.min(items.length, endIdx + buffer)
+    const newEndIndex = Math.min(cache.length, endIdx + buffer + 1)
     
     startIndex.value = newStartIndex
     endIndex.value = newEndIndex
     
     // 计算偏移量
-    offsetY.value = items[newStartIndex] ? items[newStartIndex].top : 0
+    offsetY.value = cache[newStartIndex] ? cache[newStartIndex].top : 0
     
     // 更新可见任务
-    visibleTasks.value = tasks.slice(newStartIndex, newEndIndex)
+    visibleTasks.value = []
+    for (let i = newStartIndex; i < newEndIndex; i++) {
+        visibleTasks.value.push(cache[i].task)
+    }
 }
 
 const handleScroll = () => {
@@ -322,19 +397,28 @@ watch(() => props.isBatchMode, (newVal) => {
     }
 })
 
-// 当任务变化时，重新计算可见项
-watch(() => filteredTasks.value, () => {
-    updateVisibleItems()
-}, { deep: true })
+// 统一监听数据源变化，重新计算布局和可见项
+// 使用 shallow watch 不深度遍历对象，比原来 deep: true 性能好很多
+watch([() => props.tasks, debouncedSearchText], () => {
+    recalculateLayout()
+    nextTick(() => {
+        updateVisibleItems()
+    })
+}, { deep: false })
 
+// 组件挂载和卸载
 onMounted(() => {
     // 延迟确保DOM渲染
     nextTick(() => {
+        recalculateLayout()
         updateVisibleItems()
     })
 })
 
 onUnmounted(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer)
+    }
     document.removeEventListener('mousemove', handleDragMove)
     document.removeEventListener('mouseup', handleDragEnd)
     document.removeEventListener('mousemove', handleResize)

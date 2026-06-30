@@ -140,6 +140,41 @@ export async function getStoppedTasks(offset = 0, num = 50): Promise<Task[]> {
     return (data.list || []).map(mapAria2StatusToTask)
 }
 
+export interface AllListsResponse {
+    active: Task[]
+    waiting: Task[]
+    stopped: Task[]
+}
+
+// 一次性获取所有列表，减少网络请求次数（用于种子页面和全量刷新）
+export async function getAllTaskLists(num = 1000): Promise<AllListsResponse> {
+    const headers = getAuthHeaders()
+    // GET 请求不需要 Content-Type
+    const getHeaders = { ...headers }
+    delete getHeaders['Content-Type']
+    
+    const response = await fetch(`${API_CONFIG.baseUrl}/aria2/all-lists?num=${num}`, {
+        method: 'GET',
+        headers: getHeaders
+    })
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.success) {
+        throw new Error(data.message || 'Failed to fetch all task lists')
+    }
+
+    return {
+        active: (data.active || []).map(mapAria2StatusToTask),
+        waiting: (data.waiting || []).map(mapAria2StatusToTask),
+        stopped: (data.stopped || []).map(mapAria2StatusToTask)
+    }
+}
+
 export async function pauseTask(gid: string): Promise<string> {
     const headers = getAuthHeaders()
     // POST 请求不带 body 时移除 Content-Type，避免 Fastify 空 body 报错
