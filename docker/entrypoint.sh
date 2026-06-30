@@ -31,7 +31,11 @@ if [ ! -f /app/server/.env ] && [ -f /app/data/server/.env ]; then
 fi
 
 echo "Starting aria2..."
-aria2c --conf-path=/app/data/aria2/aria2.conf --rpc-secret="${ARIA2_SECRET:-}" &
+ARIA2_ARGS="--conf-path=/app/data/aria2/aria2.conf"
+if [ -n "${ARIA2_SECRET:-}" ]; then
+    ARIA2_ARGS="$ARIA2_ARGS --rpc-secret=$ARIA2_SECRET"
+fi
+aria2c $ARIA2_ARGS &
 
 echo "Starting nginx..."
 nginx -g "daemon off;" &
