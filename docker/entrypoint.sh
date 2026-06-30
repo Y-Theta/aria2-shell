@@ -13,6 +13,14 @@ if [ ! -f /app/data/aria2/aria2.conf ]; then
     cp /app/aria2.conf.template /app/data/aria2/aria2.conf
 fi
 
+# Remove empty rpc-secret line which causes aria2 to fail
+sed -i '/^rpc-secret=$/d' /app/data/aria2/aria2.conf
+
+# Add rpc-secret if environment variable is set and not already in config
+if [ -n "${ARIA2_SECRET:-}" ] && ! grep -q "^rpc-secret=" /app/data/aria2/aria2.conf; then
+    echo "rpc-secret=$ARIA2_SECRET" >> /app/data/aria2/aria2.conf
+fi
+
 if [ ! -f /app/data/server/.env ]; then
     cat > /app/data/server/.env << EOF
 PORT=65004
@@ -31,11 +39,7 @@ if [ ! -f /app/server/.env ] && [ -f /app/data/server/.env ]; then
 fi
 
 echo "Starting aria2..."
-ARIA2_ARGS="--conf-path=/app/data/aria2/aria2.conf"
-if [ -n "${ARIA2_SECRET:-}" ]; then
-    ARIA2_ARGS="$ARIA2_ARGS --rpc-secret=$ARIA2_SECRET"
-fi
-aria2c $ARIA2_ARGS &
+aria2c --conf-path=/app/data/aria2/aria2.conf &
 
 echo "Starting nginx..."
 nginx -g "daemon off;" &
