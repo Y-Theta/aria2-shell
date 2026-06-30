@@ -112,8 +112,8 @@ const showConfirmLogout = ref(false)
 
 const statusMenuItems: MenuItem[] = [
     { id: 'active', labelKey: 'sidebar.active', icon: 'fas fa-circle-play', to: '/active' },
-    { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check', to: '/completed' },
     { id: 'paused', labelKey: 'sidebar.paused', icon: 'fas fa-circle-pause', to: '/paused' },
+    { id: 'completed', labelKey: 'sidebar.completed', icon: 'fas fa-circle-check', to: '/completed' },
     { id: 'torrents', labelKey: 'sidebar.torrents', icon: 'fas fa-file-arrow-down', to: '/torrents' },
 ]
 

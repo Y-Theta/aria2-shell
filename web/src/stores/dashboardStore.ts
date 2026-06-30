@@ -1,5 +1,6 @@
-import { reactive, computed } from 'vue'
+import { reactive, computed, watch } from 'vue'
 import { getDashboard } from '../services/aria2'
+import { useAuth } from '../services/auth'
 
 interface DiskSpace {
     path: string
@@ -43,9 +44,52 @@ const state = reactive<DashboardState>({
 
 let refreshTimer: number | null = null
 let isStarted = false
+let currentInterval = 5000
+const { isAuthenticated } = useAuth()
+
+// 监听登录状态变化（模块作用域，只创建一次）
+watch(isAuthenticated, (authenticated) => {
+    if (authenticated) {
+        // 登录后，如果已经调用过startAutoRefresh，重新启动定时器
+        if (isStarted && !refreshTimer) {
+            fetchDashboardData()
+            refreshTimer = window.setInterval(fetchDashboardData, currentInterval)
+        }
+    } else {
+        // 登出时停止定时器
+        if (refreshTimer) {
+            clearInterval(refreshTimer)
+            refreshTimer = null
+        }
+        // 重置状态
+        Object.assign(state, {
+            connected: false,
+            version: undefined,
+            error: undefined,
+            downloadSpeed: 0,
+            uploadSpeed: 0,
+            numActive: 0,
+            numWaiting: 0,
+            numStopped: 0,
+            diskSpace: {
+                path: '',
+                total: 0,
+                free: 0,
+                available: 0,
+                used: 0
+            },
+            lastUpdated: 0
+        })
+    }
+})
 
 // 获取最新仪表盘数据并更新状态
 export const fetchDashboardData = async (): Promise<void> => {
+    // 未登录时不请求接口
+    if (!isAuthenticated.value) {
+        return
+    }
+    
     try {
         const data = await getDashboard()
         Object.assign(state, {
@@ -83,13 +127,16 @@ export function useDashboardStore() {
     const getError = computed(() => state.error)
 
     const startAutoRefresh = (intervalMs: number = 5000) => {
+        currentInterval = intervalMs
         if (isStarted) {
             return
         }
         isStarted = true
-        // 立即获取一次数据
-        fetchDashboardData()
-        refreshTimer = window.setInterval(fetchDashboardData, intervalMs)
+        // 未登录时不立即请求，等登录后由watch自动启动
+        if (isAuthenticated.value) {
+            fetchDashboardData()
+            refreshTimer = window.setInterval(fetchDashboardData, intervalMs)
+        }
     }
 
     const stopAutoRefresh = () => {
