@@ -19,7 +19,7 @@ WORKDIR /app
 COPY server/dist/ ./server/dist/
 COPY server/package.json ./server/
 COPY web/dist/ ./web/
-COPY nginx/nginx.conf /etc/nginx/sites-available/default
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY aria2/aria2.conf /app/aria2.conf.template
 COPY docker/entrypoint.sh /app/entrypoint.sh
 
@@ -29,8 +29,7 @@ RUN cd /app/server && npm install --production && \
     touch /app/data/aria2/aria2.session && \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log && \
-    rm -f /etc/nginx/sites-enabled/default && \
-    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+    rm -f /etc/nginx/sites-enabled/default
 
 EXPOSE 8080 65004 6800
 

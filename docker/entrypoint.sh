@@ -16,6 +16,10 @@ fi
 # Remove empty rpc-secret line which causes aria2 to fail
 sed -i '/^rpc-secret=$/d' /app/data/aria2/aria2.conf
 
+# Remove log file setting to let aria2 log to stdout
+sed -i '/^log=/d' /app/data/aria2/aria2.conf
+sed -i '/^log-level=/d' /app/data/aria2/aria2.conf
+
 # Add rpc-secret if environment variable is set and not already in config
 if [ -n "${ARIA2_SECRET:-}" ] && ! grep -q "^rpc-secret=" /app/data/aria2/aria2.conf; then
     echo "rpc-secret=$ARIA2_SECRET" >> /app/data/aria2/aria2.conf
@@ -39,10 +43,8 @@ if [ ! -f /app/server/.env ] && [ -f /app/data/server/.env ]; then
 fi
 
 echo "Starting aria2..."
-aria2c --conf-path=/app/data/aria2/aria2.conf &
-
-echo "Starting nginx..."
-nginx -g "daemon off;" &
+aria2c --conf-path=/app/data/aria2/aria2.conf --log=- --log-level=notice &
+ARIA2_PID=$!
 
 echo "Starting server..."
 cd /app/server
@@ -55,6 +57,23 @@ export ARIA2_RPC_URL=${ARIA2_RPC_URL:-http://localhost:6800/jsonrpc}
 export ARIA2_SECRET=${ARIA2_SECRET:-}
 export ENABLE_REGISTER=${ENABLE_REGISTER:-false}
 node dist/server.js &
+SERVER_PID=$!
 
-wait -n
-exit $?
+echo "Starting nginx..."
+nginx -g "daemon off;" &
+NGINX_PID=$!
+
+shutdown() {
+    echo "Shutting down..."
+    kill $NGINX_PID 2>/dev/null || true
+    kill $SERVER_PID 2>/dev/null || true
+    kill $ARIA2_PID 2>/dev/null || true
+    wait $NGINX_PID $SERVER_PID $ARIA2_PID 2>/dev/null || true
+    exit 0
+}
+
+trap shutdown SIGTERM SIGINT
+
+wait -n $ARIA2_PID $SERVER_PID $NGINX_PID
+echo "One process exited, shutting down container..."
+shutdown
