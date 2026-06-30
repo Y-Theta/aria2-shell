@@ -14,7 +14,7 @@ if [ ! -f /app/data/aria2/aria2.conf ]; then
 fi
 
 if [ ! -f /app/data/server/.env ]; then
-    cat &gt; /app/data/server/.env &lt;&lt; EOF
+    cat > /app/data/server/.env << EOF
 PORT=65004
 NODE_ENV=production
 DATA_DIR=/app/data/server
@@ -26,15 +26,15 @@ ENABLE_REGISTER=false
 EOF
 fi
 
-if [ ! -f /app/server/.env ] &amp;&amp; [ -f /app/data/server/.env ]; then
+if [ ! -f /app/server/.env ] && [ -f /app/data/server/.env ]; then
     ln -sf /app/data/server/.env /app/server/.env
 fi
 
 echo "Starting aria2..."
-aria2c --conf-path=/app/data/aria2/aria2.conf --rpc-secret="${ARIA2_SECRET:-}" &amp;
+aria2c --conf-path=/app/data/aria2/aria2.conf --rpc-secret="${ARIA2_SECRET:-}" &
 
 echo "Starting nginx..."
-nginx -g "daemon off;" &amp;
+nginx -g "daemon off;" &
 
 echo "Starting server..."
 cd /app/server
@@ -46,7 +46,7 @@ export JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
 export ARIA2_RPC_URL=${ARIA2_RPC_URL:-http://localhost:6800/jsonrpc}
 export ARIA2_SECRET=${ARIA2_SECRET:-}
 export ENABLE_REGISTER=${ENABLE_REGISTER:-false}
-node dist/server.js &amp;
+node dist/server.js &
 
 wait -n
 exit $?
