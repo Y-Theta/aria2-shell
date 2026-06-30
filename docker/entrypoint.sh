@@ -20,6 +20,9 @@ sed -i '/^rpc-secret=$/d' /app/data/aria2/aria2.conf
 sed -i '/^log=/d' /app/data/aria2/aria2.conf
 sed -i '/^log-level=/d' /app/data/aria2/aria2.conf
 
+# Ensure file ends with newline
+sed -i -e '$a\' /app/data/aria2/aria2.conf
+
 # Add rpc-secret if environment variable is set and not already in config
 if [ -n "${ARIA2_SECRET:-}" ] && ! grep -q "^rpc-secret=" /app/data/aria2/aria2.conf; then
     echo "rpc-secret=$ARIA2_SECRET" >> /app/data/aria2/aria2.conf
