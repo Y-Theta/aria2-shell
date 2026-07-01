@@ -144,17 +144,41 @@ async function showUser() {
     rl.close();
 }
 
+function createUserNonInteractive(username: string, password: string) {
+    username = username.trim();
+    if (!username) {
+        console.error("用户名不能为空！");
+        process.exit(1);
+    }
+
+    if (!password || password.length < 6) {
+        console.error("密码长度至少为6位！");
+        process.exit(1);
+    }
+
+    const existingUser = userService.getUserByUsername(username);
+    if (existingUser) {
+        console.log(`用户 ${username} 已存在，跳过创建`);
+        return;
+    }
+
+    const user = userService.createUser(username, password);
+    console.log(`默认管理员用户已创建: ${username}`);
+}
+
 // 解析命令行参数
 const args = process.argv.slice(2);
 if (args.length === 0) {
     console.log("使用方法:");
-    console.log("  node dist/cli.js register  - 注册新用户");
-    console.log("  node dist/cli.js list      - 显示用户列表");
-    console.log("  node dist/cli.js show      - 查看用户详细信息");
+    console.log("  node dist/cli.js register              - 注册新用户（交互式）");
+    console.log("  node dist/cli.js list                  - 显示用户列表");
+    console.log("  node dist/cli.js show                  - 查看用户详细信息");
+    console.log("  node dist/cli.js create <user> <pass>  - 非交互式创建用户");
     console.log();
-    console.log("  tsx src/cli.ts register    - 开发环境注册新用户");
-    console.log("  tsx src/cli.ts list        - 开发环境显示用户列表");
-    console.log("  tsx src/cli.ts show        - 开发环境查看用户详细信息");
+    console.log("  tsx src/cli.ts register                - 开发环境注册新用户");
+    console.log("  tsx src/cli.ts list                    - 开发环境显示用户列表");
+    console.log("  tsx src/cli.ts show                    - 开发环境查看用户详细信息");
+    console.log("  tsx src/cli.ts create <user> <pass>    - 开发环境非交互式创建用户");
     process.exit(0);
 }
 
@@ -168,6 +192,13 @@ switch (command) {
         break;
     case "show":
         await showUser();
+        break;
+    case "create":
+        if (args.length < 3) {
+            console.error("用法: cli create <username> <password>");
+            process.exit(1);
+        }
+        createUserNonInteractive(args[1], args[2]);
         break;
     default:
         console.error(`未知命令: ${command}`);

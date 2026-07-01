@@ -13,40 +13,68 @@ if [ ! -f /app/data/aria2/aria2.conf ]; then
     cp /app/aria2.conf.template /app/data/aria2/aria2.conf
 fi
 
-# Create a clean runtime config by filtering out problematic lines
-# Remove empty rpc-secret, log settings, and any corrupted lines
-TMP_CONF=$(mktemp)
-grep -v '^rpc-secret=$' /app/data/aria2/aria2.conf | \
-    grep -v '^log=' | \
-    grep -v '^log-level=' | \
-    grep -v '^$' | \
-    grep -E '^[a-z-]+=.+$' > "$TMP_CONF" || true
+# Always generate a clean runtime config from template to avoid any corruption issues
+# User customizations via env vars will override settings when needed
+cp /app/aria2.conf.template /app/data/aria2/aria2.conf.runtime
 
-# Ensure file ends with newline
-echo "" >> "$TMP_CONF"
-mv "$TMP_CONF" /app/data/aria2/aria2.conf.runtime
+# Merge valid custom settings from user config if file exists
+if [ -f /app/data/aria2/aria2.conf ]; then
+    echo "Merging user customizations from aria2.conf..."
+    TMP_USER=$(mktemp)
+    grep -E '^[a-z][a-z0-9-]*=[^=[:space:]]+$' /app/data/aria2/aria2.conf 2>/dev/null | \
+        grep -v '^rpc-secret=$' | \
+        grep -v '^log=' | \
+        grep -v '^log-level=' | \
+        sort -u > "$TMP_USER" || true
 
-# Build aria2 command arguments
+    if [ -s "$TMP_USER" ]; then
+        TMP_MERGED=$(mktemp)
+        while IFS= read -r line; do
+            key="${line%%=*}"
+            if ! grep -q "^${key}=" "$TMP_USER"; then
+                echo "$line" >> "$TMP_MERGED"
+            fi
+        done < /app/aria2.conf.template
+        cat "$TMP_USER" >> "$TMP_MERGED"
+        mv "$TMP_MERGED" /app/data/aria2/aria2.conf.runtime
+    fi
+    rm -f "$TMP_USER"
+fi
+
+# Build aria2 command
 ARIA2_CMD="aria2c --conf-path=/app/data/aria2/aria2.conf.runtime --log=- --log-level=notice"
 if [ -n "${ARIA2_SECRET:-}" ]; then
     ARIA2_CMD="$ARIA2_CMD --rpc-secret=$ARIA2_SECRET"
 fi
 
-if [ ! -f /app/data/server/.env ]; then
-    cat > /app/data/server/.env << EOF
+# Create server .env file with correct paths ALWAYS
+cat > /app/data/server/.env << EOF
 PORT=65004
 NODE_ENV=production
 DATA_DIR=/app/data/server
 JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
-JWT_EXPIRES_IN=7d
-ARIA2_RPC_URL=http://localhost:6800/jsonrpc
+JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+ARIA2_RPC_URL=${ARIA2_RPC_URL:-http://localhost:6800/jsonrpc}
 ARIA2_SECRET=${ARIA2_SECRET:-}
-ENABLE_REGISTER=false
+ENABLE_REGISTER=${ENABLE_REGISTER:-false}
 EOF
+
+# Always create symlink
+ln -sf /app/data/server/.env /app/server/.env
+
+# Migrate store.json if it exists in wrong location
+if [ -f /app/data/store.json ] && [ ! -f /app/data/server/store.json ]; then
+    echo "Migrating existing store.json to correct location..."
+    mv /app/data/store.json /app/data/server/store.json
 fi
 
-if [ ! -f /app/server/.env ] && [ -f /app/data/server/.env ]; then
-    ln -sf /app/data/server/.env /app/server/.env
+# Create default admin user if ADMIN_USERNAME and ADMIN_PASSWORD are set and no users exist
+if [ -n "${ADMIN_USERNAME:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ]; then
+    echo "Checking for default admin user..."
+    cd /app/server
+    DATA_DIR=/app/data/server JWT_SECRET="${JWT_SECRET:-your-secret-key-change-in-production}" \
+        node dist/cli.js create "${ADMIN_USERNAME}" "${ADMIN_PASSWORD}" \
+        || echo "Warning: Failed to create admin user"
 fi
 
 echo "Starting aria2..."
